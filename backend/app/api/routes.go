@@ -239,6 +239,23 @@ func (a *app) mountRoutes(r *chi.Mux, chain *errchain.ErrChain, repos *repo.AllR
 		r.Put("/maintenance/{id}", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryUpdate(), userMW...))
 		r.Delete("/maintenance/{id}", chain.ToHandlerFunc(v1Ctrl.HandleMaintenanceEntryDelete(), userMW...))
 
+		// Setups
+		r.Get("/setups", chain.ToHandlerFunc(v1Ctrl.HandleSetupsGetAll(), userMW...))
+		r.Post("/setups", chain.ToHandlerFunc(v1Ctrl.HandleSetupsCreate(), userMW...))
+		r.Get("/setups/{id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupGet(), userMW...))
+		r.Put("/setups/{id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupUpdate(), userMW...))
+		r.Delete("/setups/{id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupDelete(), userMW...))
+		r.Get("/setups/{id}/parts", chain.ToHandlerFunc(v1Ctrl.HandleSetupPartsGet(), userMW...))
+		r.Get("/setups/{id}/parts/current", chain.ToHandlerFunc(v1Ctrl.HandleSetupPartsCurrentGet(), userMW...))
+		r.Post("/setups/{id}/parts", chain.ToHandlerFunc(v1Ctrl.HandleSetupPartAdd(), userMW...))
+		r.Delete("/setups/{id}/parts/{part_id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupPartRemove(), userMW...))
+		r.Delete("/setups/{id}/parts/{part_id}/purge", chain.ToHandlerFunc(v1Ctrl.HandleSetupPartDelete(), userMW...))
+		r.Get("/setups/{id}/sessions", chain.ToHandlerFunc(v1Ctrl.HandleSetupSessionsGet(), userMW...))
+		r.Post("/setups/{id}/sessions", chain.ToHandlerFunc(v1Ctrl.HandleSetupSessionCreate(), userMW...))
+		r.Put("/setups/{id}/sessions/{session_id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupSessionUpdate(), userMW...))
+		r.Delete("/setups/{id}/sessions/{session_id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupSessionDelete(), userMW...))
+		r.Get("/entities/{id}/setup-history", chain.ToHandlerFunc(v1Ctrl.HandleEntitySetupHistoryGet(), userMW...))
+
 		// Notifiers
 		r.Get("/notifiers", chain.ToHandlerFunc(v1Ctrl.HandleGetUserNotifiers(), userMW...))
 		r.Post("/notifiers", chain.ToHandlerFunc(v1Ctrl.HandleCreateNotifier(), userMW...))
