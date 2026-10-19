@@ -8,11 +8,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 )
 
@@ -27,14 +27,14 @@ type BuildCreate struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Sport       string `json:"sport"`
-	Status     string `json:"status" validate:"omitempty,oneof=assembled disassembled retired"`
+	Status      string `json:"status" validate:"omitempty,oneof=assembled disassembled retired"`
 }
 
 type BuildUpdate struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Sport       string `json:"sport"`
-	Status     string `json:"status" validate:"omitempty,oneof=assembled disassembled retired"`
+	Status      string `json:"status" validate:"omitempty,oneof=assembled disassembled retired"`
 }
 
 type BuildOut struct {

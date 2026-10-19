@@ -72,6 +72,9 @@ func (svc *GroupService) CreateGroup(ctx Context, name string) (repo.Group, erro
 	if err := ensureDefaultEntityTypes(ctx.Context, svc.repos, group.ID); err != nil {
 		return repo.Group{}, err
 	}
+	if err := ensureBuildPartTemplates(ctx.Context, svc.repos, group.ID); err != nil {
+		return repo.Group{}, err
+	}
 
 	return group, nil
 }

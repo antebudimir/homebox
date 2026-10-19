@@ -259,6 +259,12 @@ func (svc *UserService) RegisterUser(ctx context.Context, data UserRegistration,
 			recordServiceSpanError(span, err)
 			return repo.UserOut{}, err
 		}
+		if err := ensureBuildPartTemplates(bootstrapCtx, svc.repos, usr.DefaultGroupID); err != nil {
+			recordServiceSpanError(bootstrapSpan, err)
+			bootstrapSpan.End()
+			recordServiceSpanError(span, err)
+			return repo.UserOut{}, err
+		}
 
 		bootstrapSpan.SetAttributes(
 			attribute.Int("tags.created.count", tagsCreated),
@@ -609,6 +615,13 @@ func (svc *UserService) registerOIDCUser(ctx context.Context, issuer, subject, e
 		bootstrapSpan.End()
 		recordServiceSpanError(span, err)
 		log.Err(err).Msg("Failed to ensure default entity types")
+		return repo.UserOut{}, err
+	}
+	if err := ensureBuildPartTemplates(bootstrapCtx, svc.repos, group.ID); err != nil {
+		recordServiceSpanError(bootstrapSpan, err)
+		bootstrapSpan.End()
+		recordServiceSpanError(span, err)
+		log.Err(err).Msg("Failed to seed build part templates")
 		return repo.UserOut{}, err
 	}
 

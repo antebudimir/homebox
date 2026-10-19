@@ -8,8 +8,8 @@ import (
 	"github.com/hay-kot/httpkit/errchain"
 	"github.com/sysadminsmedia/homebox/backend/internal/core/services"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/repo"
-	"github.com/sysadminsmedia/homebox/backend/internal/web/adapters"
 	"github.com/sysadminsmedia/homebox/backend/internal/sys/validate"
+	"github.com/sysadminsmedia/homebox/backend/internal/web/adapters"
 )
 
 // HandleBuildsGetAll godoc
