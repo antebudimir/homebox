@@ -219,6 +219,20 @@ func TestBuildRepository_MountGuards(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, out.Warnings, "part_mounted_elsewhere")
 
+	// Positions are pre-defined per sport; an off-config position warns
+	// but the mount still succeeds.
+	skate, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{Name: "Skate Build", Sport: "skateboarding"})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = tRepos.Builds.Delete(ctx, tGroup.ID, skate.ID) })
+	out, err = tRepos.Builds.AddPart(ctx, tGroup.ID, skate.ID, BuildPartCreate{EntityID: entities[1].ID, Position: "not_a_position"})
+	require.NoError(t, err)
+	assert.Contains(t, out.Warnings, "unknown_position")
+
+	// A known position for the sport raises no warning.
+	out, err = tRepos.Builds.AddPart(ctx, tGroup.ID, skate.ID, BuildPartCreate{EntityID: entities[0].ID, Position: "front_truck"})
+	require.NoError(t, err)
+	assert.NotContains(t, out.Warnings, "unknown_position")
+
 	// Mounting on a disassembled build warns but succeeds.
 	_, err = tRepos.Builds.Update(ctx, tGroup.ID, build.ID, BuildUpdate{Name: build.Name, Status: "disassembled"})
 	require.NoError(t, err)

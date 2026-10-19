@@ -6,7 +6,7 @@
   import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
   import { Input } from "@/components/ui/input";
   import { Label } from "@/components/ui/label";
-    import BaseContainer from "@/components/Base/Container.vue";
+  import BaseContainer from "@/components/Base/Container.vue";
   import BaseSectionHeader from "@/components/Base/SectionHeader.vue";
   import BaseCard from "@/components/Base/Card.vue";
   import type { BuildStatus } from "~~/lib/api/types/data-contracts";
@@ -22,6 +22,12 @@
   });
 
   const api = useUserApi();
+
+  const { data: sportsData } = useAsyncData("build-sports", async () => {
+    const { data } = await api.builds.getSports();
+    return data ?? [];
+  });
+  const sports = computed(() => (Array.isArray(sportsData.value) ? sportsData.value : []));
 
   const { data: builds, refresh } = useAsyncData("builds", async () => {
     const { data, error } = await api.builds.getAll();
@@ -92,7 +98,9 @@
           </div>
           <span
             class="rounded-full px-2 py-1 text-xs"
-            :class="buildItem.status === 'assembled' ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
+            :class="
+              buildItem.status === 'assembled' ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'
+            "
           >
             {{ $t(`builds.status.${buildItem.status}`) }}
           </span>
@@ -115,11 +123,22 @@
             </div>
             <div class="flex flex-col gap-2">
               <Label for="build-sport">{{ $t("builds.sport") }}</Label>
-              <Input id="build-sport" v-model="createForm.sport" />
+              <select
+                id="build-sport"
+                v-model="createForm.sport"
+                class="rounded-md border bg-background px-3 py-2 text-sm"
+              >
+                <option value="">—</option>
+                <option v-for="sport in sports" :key="sport.slug" :value="sport.slug">{{ sport.label }}</option>
+              </select>
             </div>
             <div class="flex flex-col gap-2">
               <Label for="build-status">{{ $t("builds.status.label") }}</Label>
-              <select id="build-status" v-model="createForm.status" class="bg-background border rounded-md px-3 py-2 text-sm">
+              <select
+                id="build-status"
+                v-model="createForm.status"
+                class="rounded-md border bg-background px-3 py-2 text-sm"
+              >
                 <option value="assembled">{{ $t("builds.status.assembled") }}</option>
                 <option value="disassembled">{{ $t("builds.status.disassembled") }}</option>
                 <option value="retired">{{ $t("builds.status.retired") }}</option>

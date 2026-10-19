@@ -6,6 +6,7 @@ import type {
   BuildPartCreate,
   BuildPartOut,
   BuildStatsOut,
+  SportPositionConfig,
   BuildUpdate,
   UsageSessionCreate,
   UsageSessionOut,
@@ -13,6 +14,10 @@ import type {
 } from "../types/data-contracts";
 
 export class BuildsAPI extends BaseAPI {
+  getSports() {
+    return this.http.get<SportPositionConfig[]>({ url: route(`/builds/sports`) });
+  }
+
   getAll() {
     return this.http.get<BuildOut[]>({ url: route(`/builds`) });
   }

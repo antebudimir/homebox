@@ -243,6 +243,7 @@ func (a *app) mountRoutes(r *chi.Mux, chain *errchain.ErrChain, repos *repo.AllR
 		r.Get("/builds", chain.ToHandlerFunc(v1Ctrl.HandleBuildsGetAll(), userMW...))
 		r.Post("/builds", chain.ToHandlerFunc(v1Ctrl.HandleBuildsCreate(), userMW...))
 		r.Get("/builds/statistics", chain.ToHandlerFunc(v1Ctrl.HandleBuildsStats(), userMW...))
+		r.Get("/builds/sports", chain.ToHandlerFunc(v1Ctrl.HandleBuildSports(), userMW...))
 		r.Get("/builds/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBuildGet(), userMW...))
 		r.Put("/builds/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBuildUpdate(), userMW...))
 		r.Delete("/builds/{id}", chain.ToHandlerFunc(v1Ctrl.HandleBuildDelete(), userMW...))

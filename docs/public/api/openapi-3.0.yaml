@@ -158,6 +158,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/repo.BuildOut"
+  /v1/builds/sports:
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - Builds
+      summary: Get Supported Build Sports
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/repo.SportPositionConfig"
   /v1/builds/statistics:
     get:
       security:
@@ -2459,6 +2475,18 @@ components:
         - RoleAdmin
         - RoleUser
         - RoleAttachments
+    build.Status:
+      type: string
+      enum:
+        - assembled
+        - assembled
+        - disassembled
+        - retired
+      x-enum-varnames:
+        - DefaultStatus
+        - StatusAssembled
+        - StatusDisassembled
+        - StatusRetired
     currencies.Currency:
       type: object
       properties:
@@ -2637,15 +2665,16 @@ components:
         id:
           description: ID of the ent.
           type: string
-        is_active:
-          description: IsActive holds the value of the "is_active" field.
-          type: boolean
         name:
           description: Name holds the value of the "name" field.
           type: string
         sport:
           description: Sport holds the value of the "sport" field.
           type: string
+        status:
+          description: Status holds the value of the "status" field.
+          allOf:
+            - $ref: "#/components/schemas/build.Status"
         updated_at:
           description: UpdatedAt holds the value of the "updated_at" field.
           type: string
@@ -3694,12 +3723,16 @@ components:
       properties:
         description:
           type: string
-        isActive:
-          type: boolean
         name:
           type: string
         sport:
           type: string
+        status:
+          type: string
+          enum:
+            - assembled
+            - disassembled
+            - retired
     repo.BuildOut:
       type: object
       properties:
@@ -3707,11 +3740,11 @@ components:
           type: string
         id:
           type: string
-        isActive:
-          type: boolean
         name:
           type: string
         sport:
+          type: string
+        status:
           type: string
     repo.BuildPartAddOut:
       type: object
@@ -3756,12 +3789,16 @@ components:
       properties:
         description:
           type: string
-        isActive:
-          type: boolean
         name:
           type: string
         sport:
           type: string
+        status:
+          type: string
+          enum:
+            - assembled
+            - disassembled
+            - retired
     repo.BuildsStatsOut:
       type: object
       properties:
@@ -4635,6 +4672,17 @@ components:
           type: integer
         total:
           type: integer
+    repo.SportPositionConfig:
+      type: object
+      properties:
+        label:
+          type: string
+        positions:
+          type: array
+          items:
+            type: string
+        slug:
+          type: string
     repo.TagCreate:
       type: object
       required:

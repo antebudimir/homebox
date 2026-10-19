@@ -10,7 +10,13 @@
   import BaseContainer from "@/components/Base/Container.vue";
   import BaseSectionHeader from "@/components/Base/SectionHeader.vue";
   import BaseCard from "@/components/Base/Card.vue";
-  import type { EntitySummary, BuildOut, BuildPartOut, BuildStatus, UsageSessionOut } from "~~/lib/api/types/data-contracts";
+  import type {
+    EntitySummary,
+    BuildOut,
+    BuildPartOut,
+    BuildStatus,
+    UsageSessionOut,
+  } from "~~/lib/api/types/data-contracts";
 
   definePageMeta({
     middleware: ["auth"],
@@ -19,6 +25,12 @@
   const { t } = useI18n();
   const route = useRoute();
   const api = useUserApi();
+
+  const { data: sportsData } = useAsyncData("build-sports", async () => {
+    const { data } = await api.builds.getSports();
+    return data ?? [];
+  });
+  const sports = computed(() => (Array.isArray(sportsData.value) ? sportsData.value : []));
 
   const buildId = computed(() => route.params.id as string);
 
@@ -50,6 +62,13 @@
   onMounted(loadAll);
 
   const currentParts = computed(() => parts.value.filter(p => !p.removedDate));
+
+  const currentSportPositions = computed(() => {
+    if (!build.value?.sport) {
+      return [];
+    }
+    return sports.value.find(s => s.slug === build.value?.sport)?.positions ?? [];
+  });
 
   // --- edit / delete build ---
   const showEdit = ref(false);
@@ -224,7 +243,9 @@
               {{ build.name }}
               <span
                 class="ml-3 rounded-full px-2 py-1 text-xs"
-                :class="build.status === 'assembled' ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
+                :class="
+                  build.status === 'assembled' ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'
+                "
               >
                 {{ $t(`builds.status.${build.status}`) }}
               </span>
@@ -353,11 +374,22 @@
               </div>
               <div class="flex flex-col gap-2">
                 <Label for="edit-sport">{{ $t("builds.sport") }}</Label>
-                <Input id="edit-sport" v-model="editForm.sport" />
+                <select
+                  id="edit-sport"
+                  v-model="editForm.sport"
+                  class="rounded-md border bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">—</option>
+                  <option v-for="sport in sports" :key="sport.slug" :value="sport.slug">{{ sport.label }}</option>
+                </select>
               </div>
               <div class="flex flex-col gap-2">
                 <Label for="edit-status">{{ $t("builds.status.label") }}</Label>
-                <select id="edit-status" v-model="editForm.status" class="bg-background border rounded-md px-3 py-2 text-sm">
+                <select
+                  id="edit-status"
+                  v-model="editForm.status"
+                  class="rounded-md border bg-background px-3 py-2 text-sm"
+                >
                   <option value="assembled">{{ $t("builds.status.assembled") }}</option>
                   <option value="disassembled">{{ $t("builds.status.disassembled") }}</option>
                   <option value="retired">{{ $t("builds.status.retired") }}</option>
@@ -410,7 +442,14 @@
               </div>
               <div class="flex flex-col gap-2">
                 <Label for="mount-position">{{ $t("builds.parts.position") }}</Label>
-                <Input id="mount-position" v-model="mountForm.position" />
+                <select
+                  id="mount-position"
+                  v-model="mountForm.position"
+                  class="rounded-md border bg-background px-3 py-2 text-sm"
+                >
+                  <option value="">—</option>
+                  <option v-for="pos in currentSportPositions" :key="pos" :value="pos">{{ pos }}</option>
+                </select>
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" @click="showMount = false">{{ $t("global.cancel") }}</Button>

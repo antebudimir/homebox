@@ -268,6 +268,33 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/builds/sports": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get Supported Build Sports",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/repo.SportPositionConfig"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/v1/builds/statistics": {
             "get": {
                 "security": [
@@ -3801,6 +3828,21 @@ const docTemplate = `{
                 "RoleAttachments"
             ]
         },
+        "build.Status": {
+            "type": "string",
+            "enum": [
+                "assembled",
+                "assembled",
+                "disassembled",
+                "retired"
+            ],
+            "x-enum-varnames": [
+                "DefaultStatus",
+                "StatusAssembled",
+                "StatusDisassembled",
+                "StatusRetired"
+            ]
+        },
         "currencies.Currency": {
             "type": "object",
             "properties": {
@@ -4063,10 +4105,6 @@ const docTemplate = `{
                     "description": "ID of the ent.",
                     "type": "string"
                 },
-                "is_active": {
-                    "description": "IsActive holds the value of the \"is_active\" field.",
-                    "type": "boolean"
-                },
                 "name": {
                     "description": "Name holds the value of the \"name\" field.",
                     "type": "string"
@@ -4074,6 +4112,14 @@ const docTemplate = `{
                 "sport": {
                     "description": "Sport holds the value of the \"sport\" field.",
                     "type": "string"
+                },
+                "status": {
+                    "description": "Status holds the value of the \"status\" field.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/build.Status"
+                        }
+                    ]
                 },
                 "updated_at": {
                     "description": "UpdatedAt holds the value of the \"updated_at\" field.",
@@ -5570,14 +5616,19 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "isActive": {
-                    "type": "boolean"
-                },
                 "name": {
                     "type": "string"
                 },
                 "sport": {
                     "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "assembled",
+                        "disassembled",
+                        "retired"
+                    ]
                 }
             }
         },
@@ -5590,13 +5641,13 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "isActive": {
-                    "type": "boolean"
-                },
                 "name": {
                     "type": "string"
                 },
                 "sport": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -5665,14 +5716,19 @@ const docTemplate = `{
                 "description": {
                     "type": "string"
                 },
-                "isActive": {
-                    "type": "boolean"
-                },
                 "name": {
                     "type": "string"
                 },
                 "sport": {
                     "type": "string"
+                },
+                "status": {
+                    "type": "string",
+                    "enum": [
+                        "assembled",
+                        "disassembled",
+                        "retired"
+                    ]
                 }
             }
         },
@@ -6914,6 +6970,23 @@ const docTemplate = `{
                 },
                 "total": {
                     "type": "integer"
+                }
+            }
+        },
+        "repo.SportPositionConfig": {
+            "type": "object",
+            "properties": {
+                "label": {
+                    "type": "string"
+                },
+                "positions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "slug": {
+                    "type": "string"
                 }
             }
         },

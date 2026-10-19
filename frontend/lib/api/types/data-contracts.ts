@@ -1477,6 +1477,12 @@ export interface ValidateErrorResponse {
 
 export type BuildStatus = "assembled" | "disassembled" | "retired";
 
+export interface SportPositionConfig {
+  slug: string;
+  label: string;
+  positions: string[];
+}
+
 export interface BuildCreate {
   /** @minLength 1 */
   name: string;

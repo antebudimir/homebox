@@ -3,6 +3,7 @@ package repo
 import (
 	"context"
 	"errors"
+	"slices"
 	"time"
 
 	"github.com/google/uuid"
@@ -277,6 +278,14 @@ func (r *BuildRepository) AddPart(ctx context.Context, gid, buildID uuid.UUID, i
 
 	if b.Status == build.StatusDisassembled {
 		warnings = append(warnings, "build_disassembled")
+	}
+
+	// Soft-validate the position against the build's sport; unknown sports
+	// or empty positions are left untouched.
+	if input.Position != "" {
+		if positions := SportPositions(b.Sport); positions != nil && !slices.Contains(positions, input.Position) {
+			warnings = append(warnings, "unknown_position")
+		}
 	}
 
 	created, err := r.db.BuildPart.Create().

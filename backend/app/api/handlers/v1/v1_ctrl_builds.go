@@ -160,6 +160,22 @@ func (ctrl *V1Controller) HandleBuildPartAdd() errchain.HandlerFunc {
 	return adapters.ActionID("id", fn, http.StatusCreated)
 }
 
+// HandleBuildSports godoc
+//
+//	@Summary	Get Supported Build Sports
+//	@Tags		Builds
+//	@Produce	json
+//	@Success	200	{array}	repo.SportPositionConfig
+//	@Router		/v1/builds/sports [GET]
+//	@Security	Bearer
+func (ctrl *V1Controller) HandleBuildSports() errchain.HandlerFunc {
+	fn := func(r *http.Request, _ struct{}) ([]repo.SportPositionConfig, error) {
+		return ctrl.repo.Builds.Sports(), nil
+	}
+
+	return adapters.Query(fn, http.StatusOK)
+}
+
 // HandleBuildsStats godoc
 //
 //	@Summary	Get Build Statistics

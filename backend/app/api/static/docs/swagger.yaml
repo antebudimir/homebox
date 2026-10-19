@@ -30,6 +30,18 @@ definitions:
     - RoleAdmin
     - RoleUser
     - RoleAttachments
+  build.Status:
+    enum:
+    - assembled
+    - assembled
+    - disassembled
+    - retired
+    type: string
+    x-enum-varnames:
+    - DefaultStatus
+    - StatusAssembled
+    - StatusDisassembled
+    - StatusRetired
   currencies.Currency:
     properties:
       code:
@@ -202,15 +214,16 @@ definitions:
       id:
         description: ID of the ent.
         type: string
-      is_active:
-        description: IsActive holds the value of the "is_active" field.
-        type: boolean
       name:
         description: Name holds the value of the "name" field.
         type: string
       sport:
         description: Sport holds the value of the "sport" field.
         type: string
+      status:
+        allOf:
+        - $ref: '#/definitions/build.Status'
+        description: Status holds the value of the "status" field.
       updated_at:
         description: UpdatedAt holds the value of the "updated_at" field.
         type: string
@@ -1242,11 +1255,15 @@ definitions:
     properties:
       description:
         type: string
-      isActive:
-        type: boolean
       name:
         type: string
       sport:
+        type: string
+      status:
+        enum:
+        - assembled
+        - disassembled
+        - retired
         type: string
     required:
     - name
@@ -1257,11 +1274,11 @@ definitions:
         type: string
       id:
         type: string
-      isActive:
-        type: boolean
       name:
         type: string
       sport:
+        type: string
+      status:
         type: string
     type: object
   repo.BuildPartAddOut:
@@ -1304,11 +1321,15 @@ definitions:
     properties:
       description:
         type: string
-      isActive:
-        type: boolean
       name:
         type: string
       sport:
+        type: string
+      status:
+        enum:
+        - assembled
+        - disassembled
+        - retired
         type: string
     required:
     - name
@@ -2180,6 +2201,17 @@ definitions:
         type: integer
       total:
         type: integer
+    type: object
+  repo.SportPositionConfig:
+    properties:
+      label:
+        type: string
+      positions:
+        items:
+          type: string
+        type: array
+      slug:
+        type: string
     type: object
   repo.TagCreate:
     properties:
@@ -3122,6 +3154,22 @@ paths:
       security:
       - Bearer: []
       summary: Update a Usage Session
+      tags:
+      - Builds
+  /v1/builds/sports:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/repo.SportPositionConfig'
+            type: array
+      security:
+      - Bearer: []
+      summary: Get Supported Build Sports
       tags:
       - Builds
   /v1/builds/statistics:
