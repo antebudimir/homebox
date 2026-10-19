@@ -249,6 +249,7 @@
   import MdiAccount from "~icons/mdi/account";
   import MdiCog from "~icons/mdi/cog";
   import MdiWrench from "~icons/mdi/wrench";
+  import MdiSkateboard from "~icons/mdi/skate";
   import MdiPlus from "~icons/mdi/plus";
   import MdiLogout from "~icons/mdi/logout";
   import MdiFileDocumentMultiple from "~icons/mdi/file-document-multiple";
@@ -442,6 +443,13 @@
       active: computed(() => route.path === "/maintenance"),
       name: computed(() => t("menu.maintenance")),
       to: "/maintenance",
+    },
+    {
+      icon: MdiSkateboard,
+      id: 70,
+      active: computed(() => route.path.startsWith("/setups") || route.path.startsWith("/setup/")),
+      name: computed(() => t("menu.setups")),
+      to: "/setups",
     },
     {
       icon: MdiAccount,

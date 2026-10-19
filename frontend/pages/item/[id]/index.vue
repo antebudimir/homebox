@@ -471,6 +471,11 @@
         to: `/item/${itemId.value}/maintenance`,
       },
       {
+        id: "setup-history",
+        name: "setups.history.tab",
+        to: `/item/${itemId.value}/setup-history`,
+      },
+      {
         id: "edit",
         name: "global.edit",
         to: `/item/${itemId.value}/edit`,
