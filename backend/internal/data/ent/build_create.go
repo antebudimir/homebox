@@ -72,16 +72,16 @@ func (_c *BuildCreate) SetNillableDescription(v *string) *BuildCreate {
 	return _c
 }
 
-// SetIsActive sets the "is_active" field.
-func (_c *BuildCreate) SetIsActive(v bool) *BuildCreate {
-	_c.mutation.SetIsActive(v)
+// SetStatus sets the "status" field.
+func (_c *BuildCreate) SetStatus(v build.Status) *BuildCreate {
+	_c.mutation.SetStatus(v)
 	return _c
 }
 
-// SetNillableIsActive sets the "is_active" field if the given value is not nil.
-func (_c *BuildCreate) SetNillableIsActive(v *bool) *BuildCreate {
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_c *BuildCreate) SetNillableStatus(v *build.Status) *BuildCreate {
 	if v != nil {
-		_c.SetIsActive(*v)
+		_c.SetStatus(*v)
 	}
 	return _c
 }
@@ -198,9 +198,9 @@ func (_c *BuildCreate) defaults() {
 		v := build.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.IsActive(); !ok {
-		v := build.DefaultIsActive
-		_c.mutation.SetIsActive(v)
+	if _, ok := _c.mutation.Status(); !ok {
+		v := build.DefaultStatus
+		_c.mutation.SetStatus(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := build.DefaultID()
@@ -229,8 +229,13 @@ func (_c *BuildCreate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Build.description": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.IsActive(); !ok {
-		return &ValidationError{Name: "is_active", err: errors.New(`ent: missing required field "Build.is_active"`)}
+	if _, ok := _c.mutation.Status(); !ok {
+		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Build.status"`)}
+	}
+	if v, ok := _c.mutation.Status(); ok {
+		if err := build.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Build.status": %w`, err)}
+		}
 	}
 	if v, ok := _c.mutation.Sport(); ok {
 		if err := build.SportValidator(v); err != nil {
@@ -291,9 +296,9 @@ func (_c *BuildCreate) createSpec() (*Build, *sqlgraph.CreateSpec) {
 		_spec.SetField(build.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
-	if value, ok := _c.mutation.IsActive(); ok {
-		_spec.SetField(build.FieldIsActive, field.TypeBool, value)
-		_node.IsActive = value
+	if value, ok := _c.mutation.Status(); ok {
+		_spec.SetField(build.FieldStatus, field.TypeEnum, value)
+		_node.Status = value
 	}
 	if value, ok := _c.mutation.Sport(); ok {
 		_spec.SetField(build.FieldSport, field.TypeString, value)

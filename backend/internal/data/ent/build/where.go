@@ -76,11 +76,6 @@ func Description(v string) predicate.Build {
 	return predicate.Build(sql.FieldEQ(FieldDescription, v))
 }
 
-// IsActive applies equality check predicate on the "is_active" field. It's identical to IsActiveEQ.
-func IsActive(v bool) predicate.Build {
-	return predicate.Build(sql.FieldEQ(FieldIsActive, v))
-}
-
 // Sport applies equality check predicate on the "sport" field. It's identical to SportEQ.
 func Sport(v string) predicate.Build {
 	return predicate.Build(sql.FieldEQ(FieldSport, v))
@@ -306,14 +301,24 @@ func DescriptionContainsFold(v string) predicate.Build {
 	return predicate.Build(sql.FieldContainsFold(FieldDescription, v))
 }
 
-// IsActiveEQ applies the EQ predicate on the "is_active" field.
-func IsActiveEQ(v bool) predicate.Build {
-	return predicate.Build(sql.FieldEQ(FieldIsActive, v))
+// StatusEQ applies the EQ predicate on the "status" field.
+func StatusEQ(v Status) predicate.Build {
+	return predicate.Build(sql.FieldEQ(FieldStatus, v))
 }
 
-// IsActiveNEQ applies the NEQ predicate on the "is_active" field.
-func IsActiveNEQ(v bool) predicate.Build {
-	return predicate.Build(sql.FieldNEQ(FieldIsActive, v))
+// StatusNEQ applies the NEQ predicate on the "status" field.
+func StatusNEQ(v Status) predicate.Build {
+	return predicate.Build(sql.FieldNEQ(FieldStatus, v))
+}
+
+// StatusIn applies the In predicate on the "status" field.
+func StatusIn(vs ...Status) predicate.Build {
+	return predicate.Build(sql.FieldIn(FieldStatus, vs...))
+}
+
+// StatusNotIn applies the NotIn predicate on the "status" field.
+func StatusNotIn(vs ...Status) predicate.Build {
+	return predicate.Build(sql.FieldNotIn(FieldStatus, vs...))
 }
 
 // SportEQ applies the EQ predicate on the "sport" field.

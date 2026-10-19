@@ -27,8 +27,13 @@ func (Build) Mixin() []ent.Mixin {
 // Fields of the Build.
 func (Build) Fields() []ent.Field {
 	return []ent.Field{
-		field.Bool("is_active").
-			Default(false),
+		field.Enum("status").
+			Values(
+				"assembled",
+				"disassembled",
+				"retired",
+			).
+			Default("assembled"),
 		field.String("sport").
 			MaxLen(64).
 			Optional(),

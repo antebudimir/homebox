@@ -17,12 +17,11 @@ func TestBuildRepository_CRUD(t *testing.T) {
 		Name:        "Park Deck",
 		Description: "Main street build",
 		Sport:       "skateboarding",
-		IsActive:    true,
 	})
 	require.NoError(t, err)
 	assert.NotEqual(t, [16]byte{}, created.ID)
 	assert.Equal(t, "Park Deck", created.Name)
-	assert.True(t, created.IsActive)
+	assert.Equal(t, "assembled", created.Status)
 
 	got, err := tRepos.Builds.GetOne(ctx, tGroup.ID, created.ID)
 	require.NoError(t, err)
@@ -32,11 +31,11 @@ func TestBuildRepository_CRUD(t *testing.T) {
 		Name:        "Park Deck v2",
 		Description: "Updated",
 		Sport:       "skateboarding",
-		IsActive:    false,
+		Status:      "retired",
 	})
 	require.NoError(t, err)
 	assert.Equal(t, "Park Deck v2", updated.Name)
-	assert.False(t, updated.IsActive)
+	assert.Equal(t, "retired", updated.Status)
 
 	all, err := tRepos.Builds.GetAll(ctx, tGroup.ID)
 	require.NoError(t, err)

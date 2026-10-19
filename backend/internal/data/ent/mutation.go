@@ -2624,7 +2624,7 @@ type BuildMutation struct {
 	updated_at            *time.Time
 	name                  *string
 	description           *string
-	is_active             *bool
+	status                *build.Status
 	sport                 *string
 	clearedFields         map[string]struct{}
 	group                 *uuid.UUID
@@ -2901,40 +2901,40 @@ func (m *BuildMutation) ResetDescription() {
 	delete(m.clearedFields, build.FieldDescription)
 }
 
-// SetIsActive sets the "is_active" field.
-func (m *BuildMutation) SetIsActive(b bool) {
-	m.is_active = &b
+// SetStatus sets the "status" field.
+func (m *BuildMutation) SetStatus(b build.Status) {
+	m.status = &b
 }
 
-// IsActive returns the value of the "is_active" field in the mutation.
-func (m *BuildMutation) IsActive() (r bool, exists bool) {
-	v := m.is_active
+// Status returns the value of the "status" field in the mutation.
+func (m *BuildMutation) Status() (r build.Status, exists bool) {
+	v := m.status
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIsActive returns the old "is_active" field's value of the Build entity.
+// OldStatus returns the old "status" field's value of the Build entity.
 // If the Build object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BuildMutation) OldIsActive(ctx context.Context) (v bool, err error) {
+func (m *BuildMutation) OldStatus(ctx context.Context) (v build.Status, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsActive requires an ID field in the mutation")
+		return v, errors.New("OldStatus requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
 	}
-	return oldValue.IsActive, nil
+	return oldValue.Status, nil
 }
 
-// ResetIsActive resets all changes to the "is_active" field.
-func (m *BuildMutation) ResetIsActive() {
-	m.is_active = nil
+// ResetStatus resets all changes to the "status" field.
+func (m *BuildMutation) ResetStatus() {
+	m.status = nil
 }
 
 // SetSport sets the "sport" field.
@@ -3180,8 +3180,8 @@ func (m *BuildMutation) Fields() []string {
 	if m.description != nil {
 		fields = append(fields, build.FieldDescription)
 	}
-	if m.is_active != nil {
-		fields = append(fields, build.FieldIsActive)
+	if m.status != nil {
+		fields = append(fields, build.FieldStatus)
 	}
 	if m.sport != nil {
 		fields = append(fields, build.FieldSport)
@@ -3202,8 +3202,8 @@ func (m *BuildMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case build.FieldDescription:
 		return m.Description()
-	case build.FieldIsActive:
-		return m.IsActive()
+	case build.FieldStatus:
+		return m.Status()
 	case build.FieldSport:
 		return m.Sport()
 	}
@@ -3223,8 +3223,8 @@ func (m *BuildMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldName(ctx)
 	case build.FieldDescription:
 		return m.OldDescription(ctx)
-	case build.FieldIsActive:
-		return m.OldIsActive(ctx)
+	case build.FieldStatus:
+		return m.OldStatus(ctx)
 	case build.FieldSport:
 		return m.OldSport(ctx)
 	}
@@ -3264,12 +3264,12 @@ func (m *BuildMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetDescription(v)
 		return nil
-	case build.FieldIsActive:
-		v, ok := value.(bool)
+	case build.FieldStatus:
+		v, ok := value.(build.Status)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIsActive(v)
+		m.SetStatus(v)
 		return nil
 	case build.FieldSport:
 		v, ok := value.(string)
@@ -3354,8 +3354,8 @@ func (m *BuildMutation) ResetField(name string) error {
 	case build.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case build.FieldIsActive:
-		m.ResetIsActive()
+	case build.FieldStatus:
+		m.ResetStatus()
 		return nil
 	case build.FieldSport:
 		m.ResetSport()

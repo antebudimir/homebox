@@ -1053,13 +1053,17 @@
     },
     "builds": {
         "page_title": "Builds",
-        "empty": "No builds yet. Create your first setup to start tracking your gear.",
-        "create": "New Setup",
-        "active": "Active",
-        "inactive": "Inactive",
+        "empty": "No builds yet. Create your first build to start tracking your gear.",
+        "create": "New Build",
+        "status": {
+            "label": "Status",
+            "assembled": "Assembled",
+            "disassembled": "Disassembled",
+            "retired": "Retired"
+        },
         "sport": "Sport",
-        "edit": "Edit Setup",
-        "delete_confirm": "Are you sure you want to delete this setup? Mounting history and sessions will be removed.",
+        "edit": "Edit Build",
+        "delete_confirm": "Are you sure you want to delete this build? Mounting history and sessions will be removed.",
         "parts": {
             "title": "Mounted Parts",
             "current": "Current",
@@ -1087,18 +1091,18 @@
         },
         "history": {
             "title": "Mounting History",
-            "setup": "Setup",
-            "empty": "This part has never been mounted on a setup.",
+            "build": "Build",
+            "empty": "This part has never been mounted on a build.",
             "currently_mounted": "Currently mounted",
             "tab": "Mounting History"
         },
         "toast": {
             "created": "Setup created",
-            "failed_create": "Failed to create setup",
+            "failed_create": "Failed to create build",
             "updated": "Setup updated",
-            "failed_update": "Failed to update setup",
+            "failed_update": "Failed to update build",
             "deleted": "Setup deleted",
-            "failed_delete": "Failed to delete setup",
+            "failed_delete": "Failed to delete build",
             "failed_load": "Failed to load builds",
             "part_added": "Part mounted",
             "part_failed_add": "Failed to mount part",

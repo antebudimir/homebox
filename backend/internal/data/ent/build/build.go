@@ -3,6 +3,7 @@
 package build
 
 import (
+	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -23,8 +24,8 @@ const (
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
-	// FieldIsActive holds the string denoting the is_active field in the database.
-	FieldIsActive = "is_active"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 	// FieldSport holds the string denoting the sport field in the database.
 	FieldSport = "sport"
 	// EdgeGroup holds the string denoting the group edge name in mutations.
@@ -65,7 +66,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldName,
 	FieldDescription,
-	FieldIsActive,
+	FieldStatus,
 	FieldSport,
 }
 
@@ -101,13 +102,38 @@ var (
 	NameValidator func(string) error
 	// DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	DescriptionValidator func(string) error
-	// DefaultIsActive holds the default value on creation for the "is_active" field.
-	DefaultIsActive bool
 	// SportValidator is a validator for the "sport" field. It is called by the builders before save.
 	SportValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// StatusAssembled is the default value of the Status enum.
+const DefaultStatus = StatusAssembled
+
+// Status values.
+const (
+	StatusAssembled    Status = "assembled"
+	StatusDisassembled Status = "disassembled"
+	StatusRetired      Status = "retired"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusAssembled, StatusDisassembled, StatusRetired:
+		return nil
+	default:
+		return fmt.Errorf("build: invalid enum value for status field: %q", s)
+	}
+}
 
 // OrderOption defines the ordering options for the Build queries.
 type OrderOption func(*sql.Selector)
@@ -137,9 +163,9 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
-// ByIsActive orders the results by the is_active field.
-func ByIsActive(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsActive, opts...).ToFunc()
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
 // BySport orders the results by the sport field.

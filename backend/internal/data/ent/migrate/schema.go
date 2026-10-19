@@ -136,7 +136,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "name", Type: field.TypeString, Size: 255},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 1000},
-		{Name: "is_active", Type: field.TypeBool, Default: false},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"assembled", "disassembled", "retired"}, Default: "assembled"},
 		{Name: "sport", Type: field.TypeString, Nullable: true, Size: 64},
 		{Name: "group_builds", Type: field.TypeUUID},
 	}

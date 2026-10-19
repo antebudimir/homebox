@@ -27,8 +27,8 @@ type Build struct {
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
-	// IsActive holds the value of the "is_active" field.
-	IsActive bool `json:"is_active,omitempty"`
+	// Status holds the value of the "status" field.
+	Status build.Status `json:"status,omitempty"`
 	// Sport holds the value of the "sport" field.
 	Sport string `json:"sport,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -85,9 +85,7 @@ func (*Build) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case build.FieldIsActive:
-			values[i] = new(sql.NullBool)
-		case build.FieldName, build.FieldDescription, build.FieldSport:
+		case build.FieldName, build.FieldDescription, build.FieldStatus, build.FieldSport:
 			values[i] = new(sql.NullString)
 		case build.FieldCreatedAt, build.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -140,11 +138,11 @@ func (_m *Build) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Description = value.String
 			}
-		case build.FieldIsActive:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_active", values[i])
+		case build.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				_m.IsActive = value.Bool
+				_m.Status = build.Status(value.String)
 			}
 		case build.FieldSport:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -222,8 +220,8 @@ func (_m *Build) String() string {
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
 	builder.WriteString(", ")
-	builder.WriteString("is_active=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IsActive))
+	builder.WriteString("status=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Status))
 	builder.WriteString(", ")
 	builder.WriteString("sport=")
 	builder.WriteString(_m.Sport)

@@ -6,10 +6,10 @@
   import { DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
   import { Input } from "@/components/ui/input";
   import { Label } from "@/components/ui/label";
-  import { Switch } from "@/components/ui/switch";
-  import BaseContainer from "@/components/Base/Container.vue";
+    import BaseContainer from "@/components/Base/Container.vue";
   import BaseSectionHeader from "@/components/Base/SectionHeader.vue";
   import BaseCard from "@/components/Base/Card.vue";
+  import type { BuildStatus } from "~~/lib/api/types/data-contracts";
 
   definePageMeta({
     middleware: ["auth"],
@@ -41,7 +41,7 @@
     name: "",
     description: "",
     sport: "",
-    isActive: true,
+    status: "assembled" as BuildStatus,
   });
 
   async function createBuild() {
@@ -63,7 +63,7 @@
     createForm.name = "";
     createForm.description = "";
     createForm.sport = "";
-    createForm.isActive = true;
+    createForm.status = "assembled";
     await refresh();
     await navigateTo(`/builds/${data.id}`);
   }
@@ -92,9 +92,9 @@
           </div>
           <span
             class="rounded-full px-2 py-1 text-xs"
-            :class="buildItem.isActive ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
+            :class="buildItem.status === 'assembled' ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
           >
-            {{ buildItem.isActive ? $t("builds.active") : $t("builds.inactive") }}
+            {{ $t(`builds.status.${buildItem.status}`) }}
           </span>
         </NuxtLink>
       </BaseCard>
@@ -117,10 +117,14 @@
               <Label for="build-sport">{{ $t("builds.sport") }}</Label>
               <Input id="build-sport" v-model="createForm.sport" />
             </div>
-            <Label class="flex cursor-pointer items-center gap-2">
-              <Switch v-model="createForm.isActive" />
-              {{ $t("builds.active") }}
-            </Label>
+            <div class="flex flex-col gap-2">
+              <Label for="build-status">{{ $t("builds.status.label") }}</Label>
+              <select id="build-status" v-model="createForm.status" class="bg-background border rounded-md px-3 py-2 text-sm">
+                <option value="assembled">{{ $t("builds.status.assembled") }}</option>
+                <option value="disassembled">{{ $t("builds.status.disassembled") }}</option>
+                <option value="retired">{{ $t("builds.status.retired") }}</option>
+              </select>
+            </div>
             <DialogFooter>
               <Button type="button" variant="outline" @click="showCreate = false">
                 {{ $t("global.cancel") }}

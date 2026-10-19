@@ -1475,12 +1475,14 @@ export interface ValidateErrorResponse {
   fields: string;
 }
 
+export type BuildStatus = "assembled" | "disassembled" | "retired";
+
 export interface BuildCreate {
   /** @minLength 1 */
   name: string;
   description: string;
   sport: string;
-  isActive: boolean;
+  status?: BuildStatus;
 }
 
 export interface BuildUpdate {
@@ -1488,7 +1490,7 @@ export interface BuildUpdate {
   name: string;
   description: string;
   sport: string;
-  isActive: boolean;
+  status?: BuildStatus;
 }
 
 export interface BuildOut {
@@ -1496,7 +1498,7 @@ export interface BuildOut {
   name: string;
   description: string;
   sport: string;
-  isActive: boolean;
+  status: BuildStatus;
 }
 
 export interface BuildPartCreate {

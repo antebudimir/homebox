@@ -25,14 +25,14 @@ type BuildCreate struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Sport       string `json:"sport"`
-	IsActive    bool   `json:"isActive"`
+	Status     string `json:"status" validate:"omitempty,oneof=assembled disassembled retired"`
 }
 
 type BuildUpdate struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Sport       string `json:"sport"`
-	IsActive    bool   `json:"isActive"`
+	Status     string `json:"status" validate:"omitempty,oneof=assembled disassembled retired"`
 }
 
 type BuildOut struct {
@@ -40,7 +40,7 @@ type BuildOut struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
 	Sport       string    `json:"sport"`
-	IsActive    bool      `json:"isActive"`
+	Status      string    `json:"status"`
 }
 
 type BuildPartCreate struct {
@@ -114,7 +114,7 @@ func mapBuild(s *ent.Build) BuildOut {
 		Name:        s.Name,
 		Description: s.Description,
 		Sport:       s.Sport,
-		IsActive:    s.IsActive,
+		Status:      string(s.Status),
 	}
 }
 
@@ -158,7 +158,7 @@ func buildScoped(gid uuid.UUID) predicate.Build {
 func (r *BuildRepository) GetAll(ctx context.Context, gid uuid.UUID) ([]BuildOut, error) {
 	builds, err := r.db.Build.Query().
 		Where(buildScoped(gid)).
-		Order(ent.Desc(build.FieldIsActive), ent.Desc(build.FieldCreatedAt)).
+		Order(ent.Desc(build.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
@@ -177,24 +177,30 @@ func (r *BuildRepository) GetOne(ctx context.Context, gid, id uuid.UUID) (BuildO
 }
 
 func (r *BuildRepository) Create(ctx context.Context, gid uuid.UUID, input BuildCreate) (BuildOut, error) {
+	status := build.Status(input.Status)
+	if input.Status == "" {
+		status = build.StatusAssembled
+	}
 	s, err := r.db.Build.Create().
 		SetGroupID(gid).
 		SetName(input.Name).
 		SetDescription(input.Description).
 		SetSport(input.Sport).
-		SetIsActive(input.IsActive).
+		SetStatus(status).
 		Save(ctx)
 	return mapBuildErr(s, err)
 }
 
 func (r *BuildRepository) Update(ctx context.Context, gid, id uuid.UUID, input BuildUpdate) (BuildOut, error) {
-	s, err := r.db.Build.Update().
+	update := r.db.Build.Update().
 		Where(build.ID(id), buildScoped(gid)).
 		SetName(input.Name).
 		SetDescription(input.Description).
-		SetSport(input.Sport).
-		SetIsActive(input.IsActive).
-		Save(ctx)
+		SetSport(input.Sport)
+	if input.Status != "" {
+		update.SetStatus(build.Status(input.Status))
+	}
+	s, err := update.Save(ctx)
 	if err != nil {
 		return BuildOut{}, err
 	}

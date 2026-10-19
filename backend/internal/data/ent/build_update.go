@@ -72,16 +72,16 @@ func (_u *BuildUpdate) ClearDescription() *BuildUpdate {
 	return _u
 }
 
-// SetIsActive sets the "is_active" field.
-func (_u *BuildUpdate) SetIsActive(v bool) *BuildUpdate {
-	_u.mutation.SetIsActive(v)
+// SetStatus sets the "status" field.
+func (_u *BuildUpdate) SetStatus(v build.Status) *BuildUpdate {
+	_u.mutation.SetStatus(v)
 	return _u
 }
 
-// SetNillableIsActive sets the "is_active" field if the given value is not nil.
-func (_u *BuildUpdate) SetNillableIsActive(v *bool) *BuildUpdate {
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *BuildUpdate) SetNillableStatus(v *build.Status) *BuildUpdate {
 	if v != nil {
-		_u.SetIsActive(*v)
+		_u.SetStatus(*v)
 	}
 	return _u
 }
@@ -248,6 +248,11 @@ func (_u *BuildUpdate) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Build.description": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Status(); ok {
+		if err := build.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Build.status": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Sport(); ok {
 		if err := build.SportValidator(v); err != nil {
 			return &ValidationError{Name: "sport", err: fmt.Errorf(`ent: validator failed for field "Build.sport": %w`, err)}
@@ -283,8 +288,8 @@ func (_u *BuildUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(build.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.IsActive(); ok {
-		_spec.SetField(build.FieldIsActive, field.TypeBool, value)
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(build.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Sport(); ok {
 		_spec.SetField(build.FieldSport, field.TypeString, value)
@@ -471,16 +476,16 @@ func (_u *BuildUpdateOne) ClearDescription() *BuildUpdateOne {
 	return _u
 }
 
-// SetIsActive sets the "is_active" field.
-func (_u *BuildUpdateOne) SetIsActive(v bool) *BuildUpdateOne {
-	_u.mutation.SetIsActive(v)
+// SetStatus sets the "status" field.
+func (_u *BuildUpdateOne) SetStatus(v build.Status) *BuildUpdateOne {
+	_u.mutation.SetStatus(v)
 	return _u
 }
 
-// SetNillableIsActive sets the "is_active" field if the given value is not nil.
-func (_u *BuildUpdateOne) SetNillableIsActive(v *bool) *BuildUpdateOne {
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (_u *BuildUpdateOne) SetNillableStatus(v *build.Status) *BuildUpdateOne {
 	if v != nil {
-		_u.SetIsActive(*v)
+		_u.SetStatus(*v)
 	}
 	return _u
 }
@@ -660,6 +665,11 @@ func (_u *BuildUpdateOne) check() error {
 			return &ValidationError{Name: "description", err: fmt.Errorf(`ent: validator failed for field "Build.description": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Status(); ok {
+		if err := build.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Build.status": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Sport(); ok {
 		if err := build.SportValidator(v); err != nil {
 			return &ValidationError{Name: "sport", err: fmt.Errorf(`ent: validator failed for field "Build.sport": %w`, err)}
@@ -712,8 +722,8 @@ func (_u *BuildUpdateOne) sqlSave(ctx context.Context) (_node *Build, err error)
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(build.FieldDescription, field.TypeString)
 	}
-	if value, ok := _u.mutation.IsActive(); ok {
-		_spec.SetField(build.FieldIsActive, field.TypeBool, value)
+	if value, ok := _u.mutation.Status(); ok {
+		_spec.SetField(build.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Sport(); ok {
 		_spec.SetField(build.FieldSport, field.TypeString, value)

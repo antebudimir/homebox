@@ -168,10 +168,6 @@ func init() {
 	buildDescDescription := buildMixinFields1[1].Descriptor()
 	// build.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
 	build.DescriptionValidator = buildDescDescription.Validators[0].(func(string) error)
-	// buildDescIsActive is the schema descriptor for is_active field.
-	buildDescIsActive := buildFields[0].Descriptor()
-	// build.DefaultIsActive holds the default value on creation for the is_active field.
-	build.DefaultIsActive = buildDescIsActive.Default.(bool)
 	// buildDescSport is the schema descriptor for sport field.
 	buildDescSport := buildFields[1].Descriptor()
 	// build.SportValidator is a validator for the "sport" field. It is called by the builders before save.

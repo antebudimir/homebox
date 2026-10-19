@@ -10,7 +10,7 @@
   import BaseContainer from "@/components/Base/Container.vue";
   import BaseSectionHeader from "@/components/Base/SectionHeader.vue";
   import BaseCard from "@/components/Base/Card.vue";
-  import type { EntitySummary, BuildOut, BuildPartOut, UsageSessionOut } from "~~/lib/api/types/data-contracts";
+  import type { EntitySummary, BuildOut, BuildPartOut, BuildStatus, UsageSessionOut } from "~~/lib/api/types/data-contracts";
 
   definePageMeta({
     middleware: ["auth"],
@@ -54,7 +54,7 @@
   // --- edit / delete build ---
   const showEdit = ref(false);
   const saving = ref(false);
-  const editForm = reactive({ name: "", description: "", sport: "", isActive: true });
+  const editForm = reactive({ name: "", description: "", sport: "", status: "assembled" as BuildStatus });
 
   function openEdit() {
     if (!build.value) {
@@ -63,7 +63,7 @@
     editForm.name = build.value.name;
     editForm.description = build.value.description;
     editForm.sport = build.value.sport;
-    editForm.isActive = build.value.isActive;
+    editForm.status = build.value.status;
     showEdit.value = true;
   }
 
@@ -224,9 +224,9 @@
               {{ build.name }}
               <span
                 class="ml-3 rounded-full px-2 py-1 text-xs"
-                :class="build.isActive ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
+                :class="build.status === 'assembled' ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
               >
-                {{ build.isActive ? $t("builds.active") : $t("builds.inactive") }}
+                {{ $t(`builds.status.${build.status}`) }}
               </span>
             </BaseSectionHeader>
             <p v-if="build.description" class="text-foreground/70">{{ build.description }}</p>
@@ -355,10 +355,14 @@
                 <Label for="edit-sport">{{ $t("builds.sport") }}</Label>
                 <Input id="edit-sport" v-model="editForm.sport" />
               </div>
-              <Label class="flex cursor-pointer items-center gap-2">
-                <Switch v-model="editForm.isActive" />
-                {{ $t("builds.active") }}
-              </Label>
+              <div class="flex flex-col gap-2">
+                <Label for="edit-status">{{ $t("builds.status.label") }}</Label>
+                <select id="edit-status" v-model="editForm.status" class="bg-background border rounded-md px-3 py-2 text-sm">
+                  <option value="assembled">{{ $t("builds.status.assembled") }}</option>
+                  <option value="disassembled">{{ $t("builds.status.disassembled") }}</option>
+                  <option value="retired">{{ $t("builds.status.retired") }}</option>
+                </select>
+              </div>
               <DialogFooter>
                 <Button type="button" variant="outline" @click="showEdit = false">{{ $t("global.cancel") }}</Button>
                 <Button type="submit" :disabled="saving">{{ $t("global.save") }}</Button>
