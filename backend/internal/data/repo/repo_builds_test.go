@@ -199,6 +199,40 @@ func TestBuildRepository_Stats(t *testing.T) {
 	assert.InDelta(t, 75.5, stats.CostPerSession, 0.001)
 }
 
+func TestBuildRepository_MountGuards(t *testing.T) {
+	ctx := context.Background()
+	entities := useEntities(t, 2)
+
+	build, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{Name: "Guard Build"})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = tRepos.Builds.Delete(ctx, tGroup.ID, build.ID) })
+
+	// Mounting the same part on a second build warns but succeeds.
+	other, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{Name: "Other Build"})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = tRepos.Builds.Delete(ctx, tGroup.ID, other.ID) })
+
+	_, err = tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{EntityID: entities[0].ID})
+	require.NoError(t, err)
+
+	out, err := tRepos.Builds.AddPart(ctx, tGroup.ID, other.ID, BuildPartCreate{EntityID: entities[0].ID})
+	require.NoError(t, err)
+	assert.Contains(t, out.Warnings, "part_mounted_elsewhere")
+
+	// Mounting on a disassembled build warns but succeeds.
+	_, err = tRepos.Builds.Update(ctx, tGroup.ID, build.ID, BuildUpdate{Name: build.Name, Status: "disassembled"})
+	require.NoError(t, err)
+	out, err = tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{EntityID: entities[1].ID})
+	require.NoError(t, err)
+	assert.Contains(t, out.Warnings, "build_disassembled")
+
+	// Mounting on a retired build is rejected.
+	_, err = tRepos.Builds.Update(ctx, tGroup.ID, build.ID, BuildUpdate{Name: build.Name, Status: "retired"})
+	require.NoError(t, err)
+	_, err = tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{EntityID: entities[1].ID})
+	assert.ErrorIs(t, err, ErrBuildRetired)
+}
+
 func TestBuildRepository_Sessions(t *testing.T) {
 	ctx := context.Background()
 

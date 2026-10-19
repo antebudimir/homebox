@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -8,6 +9,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/core/services"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/repo"
 	"github.com/sysadminsmedia/homebox/backend/internal/web/adapters"
+	"github.com/sysadminsmedia/homebox/backend/internal/sys/validate"
 )
 
 // HandleBuildsGetAll godoc
@@ -148,7 +150,11 @@ func (ctrl *V1Controller) HandleBuildPartsCurrentGet() errchain.HandlerFunc {
 func (ctrl *V1Controller) HandleBuildPartAdd() errchain.HandlerFunc {
 	fn := func(r *http.Request, ID uuid.UUID, body repo.BuildPartCreate) (repo.BuildPartAddOut, error) {
 		auth := services.NewContext(r.Context())
-		return ctrl.repo.Builds.AddPart(auth, auth.GID, ID, body)
+		out, err := ctrl.repo.Builds.AddPart(auth, auth.GID, ID, body)
+		if errors.Is(err, repo.ErrBuildRetired) {
+			return repo.BuildPartAddOut{}, validate.NewRequestError(err, http.StatusConflict)
+		}
+		return out, err
 	}
 
 	return adapters.ActionID("id", fn, http.StatusCreated)

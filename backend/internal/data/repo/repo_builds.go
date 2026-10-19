@@ -2,6 +2,7 @@ package repo
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/google/uuid"
@@ -102,6 +103,9 @@ type UsageSessionOut struct {
 	Notes           string    `json:"notes"`
 	Rating          int       `json:"rating"`
 }
+
+// ErrBuildRetired is returned when trying to mount a part on a retired build.
+var ErrBuildRetired = errors.New("build is retired; set its status to assembled or disassembled to mount parts")
 
 var (
 	mapBuildErr  = mapTErrFunc(mapBuild)
@@ -225,8 +229,9 @@ func (r *BuildRepository) Delete(ctx context.Context, gid, id uuid.UUID) error {
 
 // AddPart mounts a part on the build. The part (Entity) must belong to the
 // caller's group, mirroring the ownership check in MaintenanceEntryRepository.
-// Non-blocking warnings (machine-readable codes) are returned alongside the
-// created assignment; they never fail the mount.
+// Mounting on a retired build is rejected (ErrBuildRetired). Non-blocking
+// warnings (machine-readable codes) are returned alongside the created
+// assignment; they never fail the mount.
 func (r *BuildRepository) AddPart(ctx context.Context, gid, buildID uuid.UUID, input BuildPartCreate) (BuildPartAddOut, error) {
 	e, err := r.db.Entity.Query().
 		Where(entity.ID(input.EntityID), entity.HasGroupWith(group.ID(gid))).
@@ -234,6 +239,44 @@ func (r *BuildRepository) AddPart(ctx context.Context, gid, buildID uuid.UUID, i
 		Only(ctx)
 	if err != nil {
 		return BuildPartAddOut{}, err
+	}
+
+	b, err := r.db.Build.Query().
+		Where(build.ID(buildID), buildScoped(gid)).
+		Only(ctx)
+	if err != nil {
+		return BuildPartAddOut{}, err
+	}
+	if b.Status == build.StatusRetired {
+		return BuildPartAddOut{}, ErrBuildRetired
+	}
+
+	warnings := []string{}
+	if et := e.Edges.EntityType; et != nil && et.IsLocation {
+		warnings = append(warnings, "entity_is_location")
+	}
+
+	// A part can only be physically mounted on one build at a time; warn
+	// (but don't block) when it is currently mounted on another build.
+	current, err := r.db.BuildPart.Query().
+		Where(
+			buildpart.EntityID(input.EntityID),
+			buildpart.RemovedDateIsNil(),
+			buildpart.HasBuildWith(buildScoped(gid)),
+		).
+		All(ctx)
+	if err != nil {
+		return BuildPartAddOut{}, err
+	}
+	for _, cp := range current {
+		if cp.BuildID != buildID {
+			warnings = append(warnings, "part_mounted_elsewhere")
+			break
+		}
+	}
+
+	if b.Status == build.StatusDisassembled {
+		warnings = append(warnings, "build_disassembled")
 	}
 
 	created, err := r.db.BuildPart.Create().
@@ -248,11 +291,6 @@ func (r *BuildRepository) AddPart(ctx context.Context, gid, buildID uuid.UUID, i
 	part, err := r.GetPart(ctx, gid, created.ID)
 	if err != nil {
 		return BuildPartAddOut{}, err
-	}
-
-	warnings := []string{}
-	if et := e.Edges.EntityType; et != nil && et.IsLocation {
-		warnings = append(warnings, "entity_is_location")
 	}
 
 	return BuildPartAddOut{Part: part, Warnings: warnings}, nil
