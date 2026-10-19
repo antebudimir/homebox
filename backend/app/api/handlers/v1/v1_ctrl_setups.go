@@ -91,12 +91,12 @@ func (ctrl *V1Controller) HandleSetupUpdate() errchain.HandlerFunc {
 //	@Router		/v1/setups/{id} [DELETE]
 //	@Security	Bearer
 func (ctrl *V1Controller) HandleSetupDelete() errchain.HandlerFunc {
-	fn := func(r *http.Request, ID uuid.UUID, _ struct{}) (any, error) {
+	fn := func(r *http.Request, ID uuid.UUID) (any, error) {
 		auth := services.NewContext(r.Context())
 		return nil, ctrl.repo.Setups.Delete(auth, auth.GID, ID)
 	}
 
-	return adapters.ActionID("id", fn, http.StatusNoContent)
+	return adapters.CommandID("id", fn, http.StatusNoContent)
 }
 
 // HandleSetupPartsGet godoc
@@ -181,12 +181,12 @@ func (ctrl *V1Controller) HandleSetupsStats() errchain.HandlerFunc {
 //	@Router		/v1/setups/{id}/parts/{part_id} [DELETE]
 //	@Security	Bearer
 func (ctrl *V1Controller) HandleSetupPartRemove() errchain.HandlerFunc {
-	fn := func(r *http.Request, partID uuid.UUID, _ struct{}) (any, error) {
+	fn := func(r *http.Request, partID uuid.UUID) (any, error) {
 		auth := services.NewContext(r.Context())
 		return nil, ctrl.repo.Setups.RemovePart(auth, auth.GID, partID)
 	}
 
-	return adapters.ActionID("part_id", fn, http.StatusNoContent)
+	return adapters.CommandID("part_id", fn, http.StatusNoContent)
 }
 
 // HandleSetupPartDelete godoc
@@ -199,12 +199,12 @@ func (ctrl *V1Controller) HandleSetupPartRemove() errchain.HandlerFunc {
 //	@Router		/v1/setups/{id}/parts/{part_id}/purge [DELETE]
 //	@Security	Bearer
 func (ctrl *V1Controller) HandleSetupPartDelete() errchain.HandlerFunc {
-	fn := func(r *http.Request, partID uuid.UUID, _ struct{}) (any, error) {
+	fn := func(r *http.Request, partID uuid.UUID) (any, error) {
 		auth := services.NewContext(r.Context())
 		return nil, ctrl.repo.Setups.DeletePart(auth, auth.GID, partID)
 	}
 
-	return adapters.ActionID("part_id", fn, http.StatusNoContent)
+	return adapters.CommandID("part_id", fn, http.StatusNoContent)
 }
 
 // HandleSetupSessionsGet godoc
@@ -274,12 +274,12 @@ func (ctrl *V1Controller) HandleSetupSessionUpdate() errchain.HandlerFunc {
 //	@Router		/v1/setups/{id}/sessions/{session_id} [DELETE]
 //	@Security	Bearer
 func (ctrl *V1Controller) HandleSetupSessionDelete() errchain.HandlerFunc {
-	fn := func(r *http.Request, sessionID uuid.UUID, _ struct{}) (any, error) {
+	fn := func(r *http.Request, sessionID uuid.UUID) (any, error) {
 		auth := services.NewContext(r.Context())
 		return nil, ctrl.repo.Setups.DeleteSession(auth, auth.GID, sessionID)
 	}
 
-	return adapters.ActionID("session_id", fn, http.StatusNoContent)
+	return adapters.CommandID("session_id", fn, http.StatusNoContent)
 }
 
 // HandleEntitySetupHistoryGet godoc
