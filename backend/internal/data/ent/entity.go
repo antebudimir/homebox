@@ -98,11 +98,13 @@ type EntityEdges struct {
 	Fields []*EntityField `json:"fields,omitempty"`
 	// MaintenanceEntries holds the value of the maintenance_entries edge.
 	MaintenanceEntries []*MaintenanceEntry `json:"maintenance_entries,omitempty"`
+	// SetupParts holds the value of the setup_parts edge.
+	SetupParts []*SetupPart `json:"setup_parts,omitempty"`
 	// Attachments holds the value of the attachments edge.
 	Attachments []*Attachment `json:"attachments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [10]bool
+	loadedTypes [11]bool
 }
 
 // GroupOrErr returns the Group value or an error if the edge
@@ -194,10 +196,19 @@ func (e EntityEdges) MaintenanceEntriesOrErr() ([]*MaintenanceEntry, error) {
 	return nil, &NotLoadedError{edge: "maintenance_entries"}
 }
 
+// SetupPartsOrErr returns the SetupParts value or an error if the edge
+// was not loaded in eager-loading.
+func (e EntityEdges) SetupPartsOrErr() ([]*SetupPart, error) {
+	if e.loadedTypes[9] {
+		return e.SetupParts, nil
+	}
+	return nil, &NotLoadedError{edge: "setup_parts"}
+}
+
 // AttachmentsOrErr returns the Attachments value or an error if the edge
 // was not loaded in eager-loading.
 func (e EntityEdges) AttachmentsOrErr() ([]*Attachment, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.Attachments, nil
 	}
 	return nil, &NotLoadedError{edge: "attachments"}
@@ -477,6 +488,11 @@ func (_m *Entity) QueryFields() *EntityFieldQuery {
 // QueryMaintenanceEntries queries the "maintenance_entries" edge of the Entity entity.
 func (_m *Entity) QueryMaintenanceEntries() *MaintenanceEntryQuery {
 	return NewEntityClient(_m.config).QueryMaintenanceEntries(_m)
+}
+
+// QuerySetupParts queries the "setup_parts" edge of the Entity entity.
+func (_m *Entity) QuerySetupParts() *SetupPartQuery {
+	return NewEntityClient(_m.config).QuerySetupParts(_m)
 }
 
 // QueryAttachments queries the "attachments" edge of the Entity entity.

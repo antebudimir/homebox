@@ -40,10 +40,16 @@ type Tx struct {
 	Notifier *NotifierClient
 	// PasswordResetTokens is the client for interacting with the PasswordResetTokens builders.
 	PasswordResetTokens *PasswordResetTokensClient
+	// Setup is the client for interacting with the Setup builders.
+	Setup *SetupClient
+	// SetupPart is the client for interacting with the SetupPart builders.
+	SetupPart *SetupPartClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// TemplateField is the client for interacting with the TemplateField builders.
 	TemplateField *TemplateFieldClient
+	// UsageSession is the client for interacting with the UsageSession builders.
+	UsageSession *UsageSessionClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 	// UserGroup is the client for interacting with the UserGroup builders.
@@ -193,8 +199,11 @@ func (tx *Tx) init() {
 	tx.MaintenanceEntry = NewMaintenanceEntryClient(tx.config)
 	tx.Notifier = NewNotifierClient(tx.config)
 	tx.PasswordResetTokens = NewPasswordResetTokensClient(tx.config)
+	tx.Setup = NewSetupClient(tx.config)
+	tx.SetupPart = NewSetupPartClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.TemplateField = NewTemplateFieldClient(tx.config)
+	tx.UsageSession = NewUsageSessionClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 	tx.UserGroup = NewUserGroupClient(tx.config)
 }

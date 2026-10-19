@@ -21,6 +21,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usergroup"
@@ -37,6 +38,7 @@ type GroupQuery struct {
 	withEntityTypes      *EntityTypeQuery
 	withEntities         *EntityQuery
 	withTags             *TagQuery
+	withSetups           *SetupQuery
 	withInvitationTokens *GroupInvitationTokenQuery
 	withNotifiers        *NotifierQuery
 	withEntityTemplates  *EntityTemplateQuery
@@ -159,6 +161,28 @@ func (_q *GroupQuery) QueryTags() *TagQuery {
 			sqlgraph.From(group.Table, group.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, group.TagsTable, group.TagsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySetups chains the current query on the "setups" edge.
+func (_q *GroupQuery) QuerySetups() *SetupQuery {
+	query := (&SetupClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(group.Table, group.FieldID, selector),
+			sqlgraph.To(setup.Table, setup.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.SetupsTable, group.SetupsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -472,6 +496,7 @@ func (_q *GroupQuery) Clone() *GroupQuery {
 		withEntityTypes:      _q.withEntityTypes.Clone(),
 		withEntities:         _q.withEntities.Clone(),
 		withTags:             _q.withTags.Clone(),
+		withSetups:           _q.withSetups.Clone(),
 		withInvitationTokens: _q.withInvitationTokens.Clone(),
 		withNotifiers:        _q.withNotifiers.Clone(),
 		withEntityTemplates:  _q.withEntityTemplates.Clone(),
@@ -524,6 +549,17 @@ func (_q *GroupQuery) WithTags(opts ...func(*TagQuery)) *GroupQuery {
 		opt(query)
 	}
 	_q.withTags = query
+	return _q
+}
+
+// WithSetups tells the query-builder to eager-load the nodes that are connected to
+// the "setups" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithSetups(opts ...func(*SetupQuery)) *GroupQuery {
+	query := (&SetupClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSetups = query
 	return _q
 }
 
@@ -660,11 +696,12 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 	var (
 		nodes       = []*Group{}
 		_spec       = _q.querySpec()
-		loadedTypes = [9]bool{
+		loadedTypes = [10]bool{
 			_q.withUsers != nil,
 			_q.withEntityTypes != nil,
 			_q.withEntities != nil,
 			_q.withTags != nil,
+			_q.withSetups != nil,
 			_q.withInvitationTokens != nil,
 			_q.withNotifiers != nil,
 			_q.withEntityTemplates != nil,
@@ -715,6 +752,13 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 		if err := _q.loadTags(ctx, query, nodes,
 			func(n *Group) { n.Edges.Tags = []*Tag{} },
 			func(n *Group, e *Tag) { n.Edges.Tags = append(n.Edges.Tags, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSetups; query != nil {
+		if err := _q.loadSetups(ctx, query, nodes,
+			func(n *Group) { n.Edges.Setups = []*Setup{} },
+			func(n *Group, e *Setup) { n.Edges.Setups = append(n.Edges.Setups, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -907,6 +951,37 @@ func (_q *GroupQuery) loadTags(ctx context.Context, query *TagQuery, nodes []*Gr
 		node, ok := nodeids[*fk]
 		if !ok {
 			return fmt.Errorf(`unexpected referenced foreign-key "group_tags" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *GroupQuery) loadSetups(ctx context.Context, query *SetupQuery, nodes []*Group, init func(*Group), assign func(*Group, *Setup)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Group)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Setup(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.SetupsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.group_setups
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "group_setups" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "group_setups" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

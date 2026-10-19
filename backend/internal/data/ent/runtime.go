@@ -20,8 +20,11 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/passwordresettokens"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/schema"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/templatefield"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 )
 
@@ -652,6 +655,84 @@ func init() {
 	passwordresettokensDescID := passwordresettokensMixinFields0[0].Descriptor()
 	// passwordresettokens.DefaultID holds the default value on creation for the id field.
 	passwordresettokens.DefaultID = passwordresettokensDescID.Default.(func() uuid.UUID)
+	setupMixin := schema.Setup{}.Mixin()
+	setupMixinFields0 := setupMixin[0].Fields()
+	_ = setupMixinFields0
+	setupMixinFields1 := setupMixin[1].Fields()
+	_ = setupMixinFields1
+	setupFields := schema.Setup{}.Fields()
+	_ = setupFields
+	// setupDescCreatedAt is the schema descriptor for created_at field.
+	setupDescCreatedAt := setupMixinFields0[1].Descriptor()
+	// setup.DefaultCreatedAt holds the default value on creation for the created_at field.
+	setup.DefaultCreatedAt = setupDescCreatedAt.Default.(func() time.Time)
+	// setupDescUpdatedAt is the schema descriptor for updated_at field.
+	setupDescUpdatedAt := setupMixinFields0[2].Descriptor()
+	// setup.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	setup.DefaultUpdatedAt = setupDescUpdatedAt.Default.(func() time.Time)
+	// setup.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	setup.UpdateDefaultUpdatedAt = setupDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// setupDescName is the schema descriptor for name field.
+	setupDescName := setupMixinFields1[0].Descriptor()
+	// setup.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	setup.NameValidator = func() func(string) error {
+		validators := setupDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
+	// setupDescDescription is the schema descriptor for description field.
+	setupDescDescription := setupMixinFields1[1].Descriptor()
+	// setup.DescriptionValidator is a validator for the "description" field. It is called by the builders before save.
+	setup.DescriptionValidator = setupDescDescription.Validators[0].(func(string) error)
+	// setupDescIsActive is the schema descriptor for is_active field.
+	setupDescIsActive := setupFields[0].Descriptor()
+	// setup.DefaultIsActive holds the default value on creation for the is_active field.
+	setup.DefaultIsActive = setupDescIsActive.Default.(bool)
+	// setupDescSport is the schema descriptor for sport field.
+	setupDescSport := setupFields[1].Descriptor()
+	// setup.SportValidator is a validator for the "sport" field. It is called by the builders before save.
+	setup.SportValidator = setupDescSport.Validators[0].(func(string) error)
+	// setupDescID is the schema descriptor for id field.
+	setupDescID := setupMixinFields0[0].Descriptor()
+	// setup.DefaultID holds the default value on creation for the id field.
+	setup.DefaultID = setupDescID.Default.(func() uuid.UUID)
+	setuppartMixin := schema.SetupPart{}.Mixin()
+	setuppartMixinFields0 := setuppartMixin[0].Fields()
+	_ = setuppartMixinFields0
+	setuppartFields := schema.SetupPart{}.Fields()
+	_ = setuppartFields
+	// setuppartDescCreatedAt is the schema descriptor for created_at field.
+	setuppartDescCreatedAt := setuppartMixinFields0[1].Descriptor()
+	// setuppart.DefaultCreatedAt holds the default value on creation for the created_at field.
+	setuppart.DefaultCreatedAt = setuppartDescCreatedAt.Default.(func() time.Time)
+	// setuppartDescUpdatedAt is the schema descriptor for updated_at field.
+	setuppartDescUpdatedAt := setuppartMixinFields0[2].Descriptor()
+	// setuppart.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	setuppart.DefaultUpdatedAt = setuppartDescUpdatedAt.Default.(func() time.Time)
+	// setuppart.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	setuppart.UpdateDefaultUpdatedAt = setuppartDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// setuppartDescAddedDate is the schema descriptor for added_date field.
+	setuppartDescAddedDate := setuppartFields[2].Descriptor()
+	// setuppart.DefaultAddedDate holds the default value on creation for the added_date field.
+	setuppart.DefaultAddedDate = setuppartDescAddedDate.Default.(func() time.Time)
+	// setuppartDescPosition is the schema descriptor for position field.
+	setuppartDescPosition := setuppartFields[4].Descriptor()
+	// setuppart.PositionValidator is a validator for the "position" field. It is called by the builders before save.
+	setuppart.PositionValidator = setuppartDescPosition.Validators[0].(func(string) error)
+	// setuppartDescID is the schema descriptor for id field.
+	setuppartDescID := setuppartMixinFields0[0].Descriptor()
+	// setuppart.DefaultID holds the default value on creation for the id field.
+	setuppart.DefaultID = setuppartDescID.Default.(func() uuid.UUID)
 	tagMixin := schema.Tag{}.Mixin()
 	tagMixinFields0 := tagMixin[0].Fields()
 	_ = tagMixinFields0
@@ -758,6 +839,41 @@ func init() {
 	templatefieldDescID := templatefieldMixinFields0[0].Descriptor()
 	// templatefield.DefaultID holds the default value on creation for the id field.
 	templatefield.DefaultID = templatefieldDescID.Default.(func() uuid.UUID)
+	usagesessionMixin := schema.UsageSession{}.Mixin()
+	usagesessionMixinFields0 := usagesessionMixin[0].Fields()
+	_ = usagesessionMixinFields0
+	usagesessionFields := schema.UsageSession{}.Fields()
+	_ = usagesessionFields
+	// usagesessionDescCreatedAt is the schema descriptor for created_at field.
+	usagesessionDescCreatedAt := usagesessionMixinFields0[1].Descriptor()
+	// usagesession.DefaultCreatedAt holds the default value on creation for the created_at field.
+	usagesession.DefaultCreatedAt = usagesessionDescCreatedAt.Default.(func() time.Time)
+	// usagesessionDescUpdatedAt is the schema descriptor for updated_at field.
+	usagesessionDescUpdatedAt := usagesessionMixinFields0[2].Descriptor()
+	// usagesession.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	usagesession.DefaultUpdatedAt = usagesessionDescUpdatedAt.Default.(func() time.Time)
+	// usagesession.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	usagesession.UpdateDefaultUpdatedAt = usagesessionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// usagesessionDescDurationMinutes is the schema descriptor for duration_minutes field.
+	usagesessionDescDurationMinutes := usagesessionFields[2].Descriptor()
+	// usagesession.DefaultDurationMinutes holds the default value on creation for the duration_minutes field.
+	usagesession.DefaultDurationMinutes = usagesessionDescDurationMinutes.Default.(int)
+	// usagesessionDescLocation is the schema descriptor for location field.
+	usagesessionDescLocation := usagesessionFields[3].Descriptor()
+	// usagesession.LocationValidator is a validator for the "location" field. It is called by the builders before save.
+	usagesession.LocationValidator = usagesessionDescLocation.Validators[0].(func(string) error)
+	// usagesessionDescConditions is the schema descriptor for conditions field.
+	usagesessionDescConditions := usagesessionFields[4].Descriptor()
+	// usagesession.ConditionsValidator is a validator for the "conditions" field. It is called by the builders before save.
+	usagesession.ConditionsValidator = usagesessionDescConditions.Validators[0].(func(string) error)
+	// usagesessionDescNotes is the schema descriptor for notes field.
+	usagesessionDescNotes := usagesessionFields[5].Descriptor()
+	// usagesession.NotesValidator is a validator for the "notes" field. It is called by the builders before save.
+	usagesession.NotesValidator = usagesessionDescNotes.Validators[0].(func(string) error)
+	// usagesessionDescID is the schema descriptor for id field.
+	usagesessionDescID := usagesessionMixinFields0[0].Descriptor()
+	// usagesession.DefaultID holds the default value on creation for the id field.
+	usagesession.DefaultID = usagesessionDescID.Default.(func() uuid.UUID)
 	userMixin := schema.User{}.Mixin()
 	userMixinFields0 := userMixin[0].Fields()
 	_ = userMixinFields0

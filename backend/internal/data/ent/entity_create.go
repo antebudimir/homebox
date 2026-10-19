@@ -17,6 +17,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 )
 
@@ -504,6 +505,21 @@ func (_c *EntityCreate) AddMaintenanceEntries(v ...*MaintenanceEntry) *EntityCre
 	return _c.AddMaintenanceEntryIDs(ids...)
 }
 
+// AddSetupPartIDs adds the "setup_parts" edge to the SetupPart entity by IDs.
+func (_c *EntityCreate) AddSetupPartIDs(ids ...uuid.UUID) *EntityCreate {
+	_c.mutation.AddSetupPartIDs(ids...)
+	return _c
+}
+
+// AddSetupParts adds the "setup_parts" edges to the SetupPart entity.
+func (_c *EntityCreate) AddSetupParts(v ...*SetupPart) *EntityCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSetupPartIDs(ids...)
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
 func (_c *EntityCreate) AddAttachmentIDs(ids ...uuid.UUID) *EntityCreate {
 	_c.mutation.AddAttachmentIDs(ids...)
@@ -958,6 +974,22 @@ func (_c *EntityCreate) createSpec() (*Entity, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(maintenanceentry.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SetupPartsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.SetupPartsTable,
+			Columns: []string{entity.SetupPartsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

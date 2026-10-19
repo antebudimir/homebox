@@ -49,6 +49,7 @@ func (Group) Edges() []ent.Edge {
 		owned("entity_types", EntityType.Type),
 		owned("entities", Entity.Type),
 		owned("tags", Tag.Type),
+		owned("setups", Setup.Type),
 		owned("invitation_tokens", GroupInvitationToken.Type),
 		owned("notifiers", Notifier.Type),
 		owned("entity_templates", EntityTemplate.Type),

@@ -20,6 +20,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 )
@@ -129,6 +130,21 @@ func (_u *GroupUpdate) AddTags(v ...*Tag) *GroupUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.AddTagIDs(ids...)
+}
+
+// AddSetupIDs adds the "setups" edge to the Setup entity by IDs.
+func (_u *GroupUpdate) AddSetupIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.AddSetupIDs(ids...)
+	return _u
+}
+
+// AddSetups adds the "setups" edges to the Setup entity.
+func (_u *GroupUpdate) AddSetups(v ...*Setup) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSetupIDs(ids...)
 }
 
 // AddInvitationTokenIDs adds the "invitation_tokens" edge to the GroupInvitationToken entity by IDs.
@@ -278,6 +294,27 @@ func (_u *GroupUpdate) RemoveTags(v ...*Tag) *GroupUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTagIDs(ids...)
+}
+
+// ClearSetups clears all "setups" edges to the Setup entity.
+func (_u *GroupUpdate) ClearSetups() *GroupUpdate {
+	_u.mutation.ClearSetups()
+	return _u
+}
+
+// RemoveSetupIDs removes the "setups" edge to Setup entities by IDs.
+func (_u *GroupUpdate) RemoveSetupIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.RemoveSetupIDs(ids...)
+	return _u
+}
+
+// RemoveSetups removes "setups" edges to Setup entities.
+func (_u *GroupUpdate) RemoveSetups(v ...*Setup) *GroupUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSetupIDs(ids...)
 }
 
 // ClearInvitationTokens clears all "invitation_tokens" edges to the GroupInvitationToken entity.
@@ -623,6 +660,51 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.SetupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.SetupsTable,
+			Columns: []string{group.SetupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSetupsIDs(); len(nodes) > 0 && !_u.mutation.SetupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.SetupsTable,
+			Columns: []string{group.SetupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SetupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.SetupsTable,
+			Columns: []string{group.SetupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.InvitationTokensCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -917,6 +999,21 @@ func (_u *GroupUpdateOne) AddTags(v ...*Tag) *GroupUpdateOne {
 	return _u.AddTagIDs(ids...)
 }
 
+// AddSetupIDs adds the "setups" edge to the Setup entity by IDs.
+func (_u *GroupUpdateOne) AddSetupIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.AddSetupIDs(ids...)
+	return _u
+}
+
+// AddSetups adds the "setups" edges to the Setup entity.
+func (_u *GroupUpdateOne) AddSetups(v ...*Setup) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSetupIDs(ids...)
+}
+
 // AddInvitationTokenIDs adds the "invitation_tokens" edge to the GroupInvitationToken entity by IDs.
 func (_u *GroupUpdateOne) AddInvitationTokenIDs(ids ...uuid.UUID) *GroupUpdateOne {
 	_u.mutation.AddInvitationTokenIDs(ids...)
@@ -1064,6 +1161,27 @@ func (_u *GroupUpdateOne) RemoveTags(v ...*Tag) *GroupUpdateOne {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTagIDs(ids...)
+}
+
+// ClearSetups clears all "setups" edges to the Setup entity.
+func (_u *GroupUpdateOne) ClearSetups() *GroupUpdateOne {
+	_u.mutation.ClearSetups()
+	return _u
+}
+
+// RemoveSetupIDs removes the "setups" edge to Setup entities by IDs.
+func (_u *GroupUpdateOne) RemoveSetupIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.RemoveSetupIDs(ids...)
+	return _u
+}
+
+// RemoveSetups removes "setups" edges to Setup entities.
+func (_u *GroupUpdateOne) RemoveSetups(v ...*Setup) *GroupUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSetupIDs(ids...)
 }
 
 // ClearInvitationTokens clears all "invitation_tokens" edges to the GroupInvitationToken entity.
@@ -1432,6 +1550,51 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SetupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.SetupsTable,
+			Columns: []string{group.SetupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSetupsIDs(); len(nodes) > 0 && !_u.mutation.SetupsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.SetupsTable,
+			Columns: []string{group.SetupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SetupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.SetupsTable,
+			Columns: []string{group.SetupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

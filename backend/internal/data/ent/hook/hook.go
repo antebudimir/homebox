@@ -177,6 +177,30 @@ func (f PasswordResetTokensFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PasswordResetTokensMutation", m)
 }
 
+// The SetupFunc type is an adapter to allow the use of ordinary
+// function as Setup mutator.
+type SetupFunc func(context.Context, *ent.SetupMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SetupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SetupMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SetupMutation", m)
+}
+
+// The SetupPartFunc type is an adapter to allow the use of ordinary
+// function as SetupPart mutator.
+type SetupPartFunc func(context.Context, *ent.SetupPartMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f SetupPartFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.SetupPartMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SetupPartMutation", m)
+}
+
 // The TagFunc type is an adapter to allow the use of ordinary
 // function as Tag mutator.
 type TagFunc func(context.Context, *ent.TagMutation) (ent.Value, error)
@@ -199,6 +223,18 @@ func (f TemplateFieldFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.TemplateFieldMutation", m)
+}
+
+// The UsageSessionFunc type is an adapter to allow the use of ordinary
+// function as UsageSession mutator.
+type UsageSessionFunc func(context.Context, *ent.UsageSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UsageSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UsageSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UsageSessionMutation", m)
 }
 
 // The UserFunc type is an adapter to allow the use of ordinary

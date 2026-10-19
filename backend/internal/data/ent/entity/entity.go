@@ -81,6 +81,8 @@ const (
 	EdgeFields = "fields"
 	// EdgeMaintenanceEntries holds the string denoting the maintenance_entries edge name in mutations.
 	EdgeMaintenanceEntries = "maintenance_entries"
+	// EdgeSetupParts holds the string denoting the setup_parts edge name in mutations.
+	EdgeSetupParts = "setup_parts"
 	// EdgeAttachments holds the string denoting the attachments edge name in mutations.
 	EdgeAttachments = "attachments"
 	// Table holds the table name of the entity in the database.
@@ -134,6 +136,13 @@ const (
 	MaintenanceEntriesInverseTable = "maintenance_entries"
 	// MaintenanceEntriesColumn is the table column denoting the maintenance_entries relation/edge.
 	MaintenanceEntriesColumn = "entity_id"
+	// SetupPartsTable is the table that holds the setup_parts relation/edge.
+	SetupPartsTable = "setup_parts"
+	// SetupPartsInverseTable is the table name for the SetupPart entity.
+	// It exists in this package in order to avoid circular dependency with the "setuppart" package.
+	SetupPartsInverseTable = "setup_parts"
+	// SetupPartsColumn is the table column denoting the setup_parts relation/edge.
+	SetupPartsColumn = "entity_id"
 	// AttachmentsTable is the table that holds the attachments relation/edge.
 	AttachmentsTable = "attachments"
 	// AttachmentsInverseTable is the table name for the Attachment entity.
@@ -473,6 +482,20 @@ func ByMaintenanceEntries(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOptio
 	}
 }
 
+// BySetupPartsCount orders the results by setup_parts count.
+func BySetupPartsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSetupPartsStep(), opts...)
+	}
+}
+
+// BySetupParts orders the results by setup_parts terms.
+func BySetupParts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSetupPartsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByAttachmentsCount orders the results by attachments count.
 func ByAttachmentsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -547,6 +570,13 @@ func newMaintenanceEntriesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(MaintenanceEntriesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, MaintenanceEntriesTable, MaintenanceEntriesColumn),
+	)
+}
+func newSetupPartsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SetupPartsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, SetupPartsTable, SetupPartsColumn),
 	)
 }
 func newAttachmentsStep() *sqlgraph.Step {

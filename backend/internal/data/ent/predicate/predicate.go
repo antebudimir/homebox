@@ -48,11 +48,20 @@ type Notifier func(*sql.Selector)
 // PasswordResetTokens is the predicate function for passwordresettokens builders.
 type PasswordResetTokens func(*sql.Selector)
 
+// Setup is the predicate function for setup builders.
+type Setup func(*sql.Selector)
+
+// SetupPart is the predicate function for setuppart builders.
+type SetupPart func(*sql.Selector)
+
 // Tag is the predicate function for tag builders.
 type Tag func(*sql.Selector)
 
 // TemplateField is the predicate function for templatefield builders.
 type TemplateField func(*sql.Selector)
+
+// UsageSession is the predicate function for usagesession builders.
+type UsageSession func(*sql.Selector)
 
 // User is the predicate function for user builders.
 type User func(*sql.Selector)

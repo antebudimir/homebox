@@ -125,6 +125,7 @@ func (Entity) Edges() []ent.Edge {
 			Required(),
 		owned("fields", EntityField.Type),
 		owned("maintenance_entries", MaintenanceEntry.Type),
+		owned("setup_parts", SetupPart.Type),
 		owned("attachments", Attachment.Type),
 	}
 }

@@ -26,8 +26,11 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/passwordresettokens"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/templatefield"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usergroup"
 )
@@ -104,8 +107,11 @@ func checkColumn(t, c string) error {
 			maintenanceentry.Table:     maintenanceentry.ValidColumn,
 			notifier.Table:             notifier.ValidColumn,
 			passwordresettokens.Table:  passwordresettokens.ValidColumn,
+			setup.Table:                setup.ValidColumn,
+			setuppart.Table:            setuppart.ValidColumn,
 			tag.Table:                  tag.ValidColumn,
 			templatefield.Table:        templatefield.ValidColumn,
+			usagesession.Table:         usagesession.ValidColumn,
 			user.Table:                 user.ValidColumn,
 			usergroup.Table:            usergroup.ValidColumn,
 		})

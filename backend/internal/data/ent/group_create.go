@@ -18,6 +18,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 )
@@ -149,6 +150,21 @@ func (_c *GroupCreate) AddTags(v ...*Tag) *GroupCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddTagIDs(ids...)
+}
+
+// AddSetupIDs adds the "setups" edge to the Setup entity by IDs.
+func (_c *GroupCreate) AddSetupIDs(ids ...uuid.UUID) *GroupCreate {
+	_c.mutation.AddSetupIDs(ids...)
+	return _c
+}
+
+// AddSetups adds the "setups" edges to the Setup entity.
+func (_c *GroupCreate) AddSetups(v ...*Setup) *GroupCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSetupIDs(ids...)
 }
 
 // AddInvitationTokenIDs adds the "invitation_tokens" edge to the GroupInvitationToken entity by IDs.
@@ -395,6 +411,22 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SetupsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   group.SetupsTable,
+			Columns: []string{group.SetupsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

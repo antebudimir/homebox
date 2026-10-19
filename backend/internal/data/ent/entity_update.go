@@ -19,6 +19,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 )
 
@@ -590,6 +591,21 @@ func (_u *EntityUpdate) AddMaintenanceEntries(v ...*MaintenanceEntry) *EntityUpd
 	return _u.AddMaintenanceEntryIDs(ids...)
 }
 
+// AddSetupPartIDs adds the "setup_parts" edge to the SetupPart entity by IDs.
+func (_u *EntityUpdate) AddSetupPartIDs(ids ...uuid.UUID) *EntityUpdate {
+	_u.mutation.AddSetupPartIDs(ids...)
+	return _u
+}
+
+// AddSetupParts adds the "setup_parts" edges to the SetupPart entity.
+func (_u *EntityUpdate) AddSetupParts(v ...*SetupPart) *EntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSetupPartIDs(ids...)
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
 func (_u *EntityUpdate) AddAttachmentIDs(ids ...uuid.UUID) *EntityUpdate {
 	_u.mutation.AddAttachmentIDs(ids...)
@@ -737,6 +753,27 @@ func (_u *EntityUpdate) RemoveMaintenanceEntries(v ...*MaintenanceEntry) *Entity
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMaintenanceEntryIDs(ids...)
+}
+
+// ClearSetupParts clears all "setup_parts" edges to the SetupPart entity.
+func (_u *EntityUpdate) ClearSetupParts() *EntityUpdate {
+	_u.mutation.ClearSetupParts()
+	return _u
+}
+
+// RemoveSetupPartIDs removes the "setup_parts" edge to SetupPart entities by IDs.
+func (_u *EntityUpdate) RemoveSetupPartIDs(ids ...uuid.UUID) *EntityUpdate {
+	_u.mutation.RemoveSetupPartIDs(ids...)
+	return _u
+}
+
+// RemoveSetupParts removes "setup_parts" edges to SetupPart entities.
+func (_u *EntityUpdate) RemoveSetupParts(v ...*SetupPart) *EntityUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSetupPartIDs(ids...)
 }
 
 // ClearAttachments clears all "attachments" edges to the Attachment entity.
@@ -1318,6 +1355,51 @@ func (_u *EntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(maintenanceentry.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SetupPartsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.SetupPartsTable,
+			Columns: []string{entity.SetupPartsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSetupPartsIDs(); len(nodes) > 0 && !_u.mutation.SetupPartsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.SetupPartsTable,
+			Columns: []string{entity.SetupPartsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SetupPartsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.SetupPartsTable,
+			Columns: []string{entity.SetupPartsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1945,6 +2027,21 @@ func (_u *EntityUpdateOne) AddMaintenanceEntries(v ...*MaintenanceEntry) *Entity
 	return _u.AddMaintenanceEntryIDs(ids...)
 }
 
+// AddSetupPartIDs adds the "setup_parts" edge to the SetupPart entity by IDs.
+func (_u *EntityUpdateOne) AddSetupPartIDs(ids ...uuid.UUID) *EntityUpdateOne {
+	_u.mutation.AddSetupPartIDs(ids...)
+	return _u
+}
+
+// AddSetupParts adds the "setup_parts" edges to the SetupPart entity.
+func (_u *EntityUpdateOne) AddSetupParts(v ...*SetupPart) *EntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSetupPartIDs(ids...)
+}
+
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
 func (_u *EntityUpdateOne) AddAttachmentIDs(ids ...uuid.UUID) *EntityUpdateOne {
 	_u.mutation.AddAttachmentIDs(ids...)
@@ -2092,6 +2189,27 @@ func (_u *EntityUpdateOne) RemoveMaintenanceEntries(v ...*MaintenanceEntry) *Ent
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveMaintenanceEntryIDs(ids...)
+}
+
+// ClearSetupParts clears all "setup_parts" edges to the SetupPart entity.
+func (_u *EntityUpdateOne) ClearSetupParts() *EntityUpdateOne {
+	_u.mutation.ClearSetupParts()
+	return _u
+}
+
+// RemoveSetupPartIDs removes the "setup_parts" edge to SetupPart entities by IDs.
+func (_u *EntityUpdateOne) RemoveSetupPartIDs(ids ...uuid.UUID) *EntityUpdateOne {
+	_u.mutation.RemoveSetupPartIDs(ids...)
+	return _u
+}
+
+// RemoveSetupParts removes "setup_parts" edges to SetupPart entities.
+func (_u *EntityUpdateOne) RemoveSetupParts(v ...*SetupPart) *EntityUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSetupPartIDs(ids...)
 }
 
 // ClearAttachments clears all "attachments" edges to the Attachment entity.
@@ -2703,6 +2821,51 @@ func (_u *EntityUpdateOne) sqlSave(ctx context.Context) (_node *Entity, err erro
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(maintenanceentry.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SetupPartsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.SetupPartsTable,
+			Columns: []string{entity.SetupPartsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSetupPartsIDs(); len(nodes) > 0 && !_u.mutation.SetupPartsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.SetupPartsTable,
+			Columns: []string{entity.SetupPartsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SetupPartsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   entity.SetupPartsTable,
+			Columns: []string{entity.SetupPartsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

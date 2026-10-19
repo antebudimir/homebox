@@ -60,11 +60,23 @@ func (_m *PasswordResetTokens) GetID() uuid.UUID {
 	return _m.ID
 }
 
+func (_m *Setup) GetID() uuid.UUID {
+	return _m.ID
+}
+
+func (_m *SetupPart) GetID() uuid.UUID {
+	return _m.ID
+}
+
 func (_m *Tag) GetID() uuid.UUID {
 	return _m.ID
 }
 
 func (_m *TemplateField) GetID() uuid.UUID {
+	return _m.ID
+}
+
+func (_m *UsageSession) GetID() uuid.UUID {
 	return _m.ID
 }
 
