@@ -133,7 +133,7 @@
       toast.error(t("setups.toast.part_failed_add"));
       return;
     }
-    if (data && data.warnings.length > 0) {
+    if (data && data.warnings && data.warnings.length > 0) {
       toast.warning(data.warnings.map(code => t(`setups.warning.${code}`)).join(" "));
     }
     toast.success(t("setups.toast.part_added"));

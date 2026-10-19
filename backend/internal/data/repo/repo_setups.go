@@ -244,7 +244,7 @@ func (r *SetupRepository) AddPart(ctx context.Context, gid, setupID uuid.UUID, i
 		return SetupPartAddOut{}, err
 	}
 
-	var warnings []string
+	warnings := []string{}
 	if et := e.Edges.EntityType; et != nil && et.IsLocation {
 		warnings = append(warnings, "entity_is_location")
 	}
