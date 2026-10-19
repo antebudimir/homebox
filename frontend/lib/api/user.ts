@@ -10,6 +10,7 @@ import { AssetsApi } from "./classes/assets";
 import { ReportsAPI } from "./classes/reports";
 import { NotifiersAPI } from "./classes/notifiers";
 import { MaintenanceAPI } from "./classes/maintenance";
+import { SetupsAPI } from "./classes/setups";
 import { ProductAPI } from "./classes/product";
 import { TemplatesApi } from "./classes/templates";
 import { BackupsAPI } from "./classes/backups";
@@ -21,6 +22,7 @@ export class UserClient extends BaseAPI {
   templates: TemplatesApi;
   entityTypes: EntityTypesApi;
   maintenance: MaintenanceAPI;
+  setups: SetupsAPI;
   group: GroupApi;
   user: UserApi;
   actions: ActionsAPI;
@@ -49,6 +51,7 @@ export class UserClient extends BaseAPI {
     this.templates = new TemplatesApi(requests);
     this.entityTypes = new EntityTypesApi(requests);
     this.maintenance = new MaintenanceAPI(requests);
+    this.setups = new SetupsAPI(requests);
     this.group = new GroupApi(requests);
     this.user = new UserApi(requests);
     this.actions = new ActionsAPI(requests);

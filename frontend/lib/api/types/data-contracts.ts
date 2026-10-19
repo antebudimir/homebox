@@ -1474,3 +1474,71 @@ export interface ValidateErrorResponse {
   error: string;
   fields: string;
 }
+
+export interface SetupCreate {
+  /** @minLength 1 */
+  name: string;
+  description: string;
+  sport: string;
+  isActive: boolean;
+}
+
+export interface SetupUpdate {
+  /** @minLength 1 */
+  name: string;
+  description: string;
+  sport: string;
+  isActive: boolean;
+}
+
+export interface SetupOut {
+  id: string;
+  name: string;
+  description: string;
+  sport: string;
+  isActive: boolean;
+}
+
+export interface SetupPartCreate {
+  entityId: string;
+  position: string;
+}
+
+export interface SetupPartOut {
+  id: string;
+  setupId: string;
+  entityId: string;
+  entityName: string;
+  position: string;
+  addedDate: Date | string;
+  removedDate?: Date | string | null;
+}
+
+export interface UsageSessionCreate {
+  date: Date | string;
+  durationMinutes: number;
+  location: string;
+  conditions: string;
+  notes: string;
+  rating: number;
+}
+
+export interface UsageSessionUpdate {
+  date: Date | string;
+  durationMinutes: number;
+  location: string;
+  conditions: string;
+  notes: string;
+  rating: number;
+}
+
+export interface UsageSessionOut {
+  id: string;
+  setupId: string;
+  date: Date | string;
+  durationMinutes: number;
+  location: string;
+  conditions: string;
+  notes: string;
+  rating: number;
+}
