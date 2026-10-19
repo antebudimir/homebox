@@ -42,7 +42,8 @@
             "settings": "Settings",
             "tools": "Tools"
         },
-        "uses": "Uses"
+        "uses": "Uses",
+        "show_builds": "Show Builds section in the sidebar"
     },
     "components": {
         "app": {

@@ -78,7 +78,7 @@
           <SidebarGroup>
             <SidebarMenu>
               <template v-for="n in nav" :key="n.id">
-                <SidebarMenuItem v-if="!n.collapsible" :key="n.id">
+                <SidebarMenuItem v-if="!n.collapsible && n.visible?.value !== false" :key="n.id">
                   <SidebarMenuLink
                     :href="n.to"
                     :class="{
@@ -395,6 +395,7 @@
     id: number;
     name: ComputedRef<string>;
     to: string;
+    visible?: ComputedRef<boolean>;
     collapsible?: {
       active: ComputedRef<boolean>;
       id: number;
@@ -447,6 +448,7 @@
     {
       icon: MdiSkateboard,
       id: 70,
+      visible: computed(() => sidebarGroup.value?.showBuilds !== false),
       active: computed(() => route.path.startsWith("/builds")),
       name: computed(() => t("menu.builds")),
       to: "/builds",
@@ -563,6 +565,22 @@
 
   const authCtx = useAuthContext();
   const api = useUserApi();
+
+  // The Builds sidebar entry can be hidden per group; direct /builds URLs
+  // keep working regardless.
+  const { selectedCollection } = useCollections();
+  const { data: sidebarGroup } = useAsyncData(
+    "sidebar-group",
+    async () => {
+      const cid = selectedCollection.value?.id;
+      if (!cid) {
+        return null;
+      }
+      const { data } = await api.group.get(cid);
+      return data ?? null;
+    },
+    { watch: [selectedCollection] }
+  );
 
   async function logout() {
     await authCtx.logout(api);

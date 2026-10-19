@@ -26,6 +26,8 @@ type Group struct {
 	Name string `json:"name,omitempty"`
 	// Currency holds the value of the "currency" field.
 	Currency string `json:"currency,omitempty"`
+	// ShowBuilds holds the value of the "show_builds" field.
+	ShowBuilds bool `json:"show_builds,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the GroupQuery when eager-loading is set.
 	Edges        GroupEdges `json:"edges"`
@@ -154,6 +156,8 @@ func (*Group) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case group.FieldShowBuilds:
+			values[i] = new(sql.NullBool)
 		case group.FieldName, group.FieldCurrency:
 			values[i] = new(sql.NullString)
 		case group.FieldCreatedAt, group.FieldUpdatedAt:
@@ -204,6 +208,12 @@ func (_m *Group) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field currency", values[i])
 			} else if value.Valid {
 				_m.Currency = value.String
+			}
+		case group.FieldShowBuilds:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field show_builds", values[i])
+			} else if value.Valid {
+				_m.ShowBuilds = value.Bool
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -302,6 +312,9 @@ func (_m *Group) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("currency=")
 	builder.WriteString(_m.Currency)
+	builder.WriteString(", ")
+	builder.WriteString("show_builds=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ShowBuilds))
 	builder.WriteByte(')')
 	return builder.String()
 }

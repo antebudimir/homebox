@@ -571,6 +571,10 @@ func init() {
 	groupDescCurrency := groupFields[1].Descriptor()
 	// group.DefaultCurrency holds the default value on creation for the currency field.
 	group.DefaultCurrency = groupDescCurrency.Default.(string)
+	// groupDescShowBuilds is the schema descriptor for show_builds field.
+	groupDescShowBuilds := groupFields[2].Descriptor()
+	// group.DefaultShowBuilds holds the default value on creation for the show_builds field.
+	group.DefaultShowBuilds = groupDescShowBuilds.Default.(bool)
 	// groupDescID is the schema descriptor for id field.
 	groupDescID := groupMixinFields0[0].Descriptor()
 	// group.DefaultID holds the default value on creation for the id field.

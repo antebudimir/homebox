@@ -76,6 +76,11 @@ func Currency(v string) predicate.Group {
 	return predicate.Group(sql.FieldEQ(FieldCurrency, v))
 }
 
+// ShowBuilds applies equality check predicate on the "show_builds" field. It's identical to ShowBuildsEQ.
+func ShowBuilds(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldShowBuilds, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Group {
 	return predicate.Group(sql.FieldEQ(FieldCreatedAt, v))
@@ -284,6 +289,16 @@ func CurrencyEqualFold(v string) predicate.Group {
 // CurrencyContainsFold applies the ContainsFold predicate on the "currency" field.
 func CurrencyContainsFold(v string) predicate.Group {
 	return predicate.Group(sql.FieldContainsFold(FieldCurrency, v))
+}
+
+// ShowBuildsEQ applies the EQ predicate on the "show_builds" field.
+func ShowBuildsEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldEQ(FieldShowBuilds, v))
+}
+
+// ShowBuildsNEQ applies the NEQ predicate on the "show_builds" field.
+func ShowBuildsNEQ(v bool) predicate.Group {
+	return predicate.Group(sql.FieldNEQ(FieldShowBuilds, v))
 }
 
 // HasUsers applies the HasEdge predicate on the "users" edge.

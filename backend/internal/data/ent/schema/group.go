@@ -29,6 +29,10 @@ func (Group) Fields() []ent.Field {
 			NotEmpty(),
 		field.String("currency").
 			Default("usd"),
+		// show_builds controls whether the Builds sidebar entry is shown.
+		// Hiding it never breaks direct /builds URLs.
+		field.Bool("show_builds").
+			Default(true),
 	}
 }
 

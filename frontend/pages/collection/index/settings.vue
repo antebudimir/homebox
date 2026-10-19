@@ -28,6 +28,7 @@
   const currencies = ref<CurrenciesCurrency[]>([]);
   const name = ref("");
   const currencyCode = ref("USD");
+  const showBuilds = ref(true);
   const currencyExample = ref("$1,000.00");
 
   const loadSettings = async () => {
@@ -60,6 +61,7 @@
       group.value = res.data;
       name.value = res.data.name;
       currencyCode.value = res.data.currency;
+      showBuilds.value = res.data.showBuilds;
     } catch (e) {
       const msg = (e as Error).message ?? String(e);
       error.value = msg;
@@ -101,6 +103,7 @@
         {
           name: name.value,
           currency: currencyCode.value,
+          showBuilds: showBuilds.value,
         },
         selectedCollection.value.id
       );
@@ -159,6 +162,11 @@
           </Select>
           <p class="m-2 text-sm">{{ $t("profile.example") }}: {{ currencyExample }}</p>
         </div>
+
+        <Label class="flex cursor-pointer items-center gap-2">
+          <input v-model="showBuilds" type="checkbox" class="size-4 accent-primary" />
+          {{ $t("collection.settings.show_builds") }}
+        </Label>
 
         <div class="mt-4">
           <Button variant="secondary" size="sm" :disabled="saving" @click="save">

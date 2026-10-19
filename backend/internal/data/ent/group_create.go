@@ -78,6 +78,20 @@ func (_c *GroupCreate) SetNillableCurrency(v *string) *GroupCreate {
 	return _c
 }
 
+// SetShowBuilds sets the "show_builds" field.
+func (_c *GroupCreate) SetShowBuilds(v bool) *GroupCreate {
+	_c.mutation.SetShowBuilds(v)
+	return _c
+}
+
+// SetNillableShowBuilds sets the "show_builds" field if the given value is not nil.
+func (_c *GroupCreate) SetNillableShowBuilds(v *bool) *GroupCreate {
+	if v != nil {
+		_c.SetShowBuilds(*v)
+	}
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *GroupCreate) SetID(v uuid.UUID) *GroupCreate {
 	_c.mutation.SetID(v)
@@ -274,6 +288,10 @@ func (_c *GroupCreate) defaults() {
 		v := group.DefaultCurrency
 		_c.mutation.SetCurrency(v)
 	}
+	if _, ok := _c.mutation.ShowBuilds(); !ok {
+		v := group.DefaultShowBuilds
+		_c.mutation.SetShowBuilds(v)
+	}
 	if _, ok := _c.mutation.ID(); !ok {
 		v := group.DefaultID()
 		_c.mutation.SetID(v)
@@ -298,6 +316,9 @@ func (_c *GroupCreate) check() error {
 	}
 	if _, ok := _c.mutation.Currency(); !ok {
 		return &ValidationError{Name: "currency", err: errors.New(`ent: missing required field "Group.currency"`)}
+	}
+	if _, ok := _c.mutation.ShowBuilds(); !ok {
+		return &ValidationError{Name: "show_builds", err: errors.New(`ent: missing required field "Group.show_builds"`)}
 	}
 	return nil
 }
@@ -349,6 +370,10 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Currency(); ok {
 		_spec.SetField(group.FieldCurrency, field.TypeString, value)
 		_node.Currency = value
+	}
+	if value, ok := _c.mutation.ShowBuilds(); ok {
+		_spec.SetField(group.FieldShowBuilds, field.TypeBool, value)
+		_node.ShowBuilds = value
 	}
 	if nodes := _c.mutation.UsersIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

@@ -4775,6 +4775,10 @@ const docTemplate = `{
                     "description": "Name holds the value of the \"name\" field.",
                     "type": "string"
                 },
+                "show_builds": {
+                    "description": "ShowBuilds holds the value of the \"show_builds\" field.",
+                    "type": "boolean"
+                },
                 "updated_at": {
                     "description": "UpdatedAt holds the value of the \"updated_at\" field.",
                     "type": "string"
@@ -6669,6 +6673,9 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                },
+                "showBuilds": {
+                    "type": "boolean"
                 },
                 "updatedAt": {
                     "type": "string"

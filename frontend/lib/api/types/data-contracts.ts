@@ -1085,6 +1085,7 @@ export interface Group {
   currency: string;
   id: string;
   name: string;
+  showBuilds: boolean;
   updatedAt: Date | string;
 }
 
@@ -1107,6 +1108,7 @@ export interface GroupStatistics {
 export interface GroupUpdate {
   currency: string;
   name: string;
+  showBuilds?: boolean;
 }
 
 export interface ItemAttachment {
