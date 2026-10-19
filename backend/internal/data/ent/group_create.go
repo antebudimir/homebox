@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
@@ -18,7 +19,6 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 )
@@ -152,19 +152,19 @@ func (_c *GroupCreate) AddTags(v ...*Tag) *GroupCreate {
 	return _c.AddTagIDs(ids...)
 }
 
-// AddSetupIDs adds the "setups" edge to the Setup entity by IDs.
-func (_c *GroupCreate) AddSetupIDs(ids ...uuid.UUID) *GroupCreate {
-	_c.mutation.AddSetupIDs(ids...)
+// AddBuildIDs adds the "builds" edge to the Build entity by IDs.
+func (_c *GroupCreate) AddBuildIDs(ids ...uuid.UUID) *GroupCreate {
+	_c.mutation.AddBuildIDs(ids...)
 	return _c
 }
 
-// AddSetups adds the "setups" edges to the Setup entity.
-func (_c *GroupCreate) AddSetups(v ...*Setup) *GroupCreate {
+// AddBuilds adds the "builds" edges to the Build entity.
+func (_c *GroupCreate) AddBuilds(v ...*Build) *GroupCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddSetupIDs(ids...)
+	return _c.AddBuildIDs(ids...)
 }
 
 // AddInvitationTokenIDs adds the "invitation_tokens" edge to the GroupInvitationToken entity by IDs.
@@ -418,15 +418,15 @@ func (_c *GroupCreate) createSpec() (*Group, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SetupsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.BuildsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.SetupsTable,
-			Columns: []string{group.SetupsColumn},
+			Table:   group.BuildsTable,
+			Columns: []string{group.BuildsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

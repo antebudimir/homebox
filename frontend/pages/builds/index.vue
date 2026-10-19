@@ -18,21 +18,21 @@
   const { t } = useI18n();
 
   useHead({
-    title: "HomeBox | " + t("menu.setups"),
+    title: "HomeBox | " + t("menu.builds"),
   });
 
   const api = useUserApi();
 
-  const { data: setups, refresh } = useAsyncData("setups", async () => {
-    const { data, error } = await api.setups.getAll();
+  const { data: builds, refresh } = useAsyncData("builds", async () => {
+    const { data, error } = await api.builds.getAll();
     if (error) {
-      toast.error(t("setups.toast.failed_load"));
+      toast.error(t("builds.toast.failed_load"));
       return [];
     }
     return data;
   });
 
-  const setupList = computed(() => setups.value ?? []);
+  const buildList = computed(() => builds.value ?? []);
 
   const showCreate = ref(false);
   const creating = ref(false);
@@ -44,28 +44,28 @@
     isActive: true,
   });
 
-  async function createSetup() {
+  async function createBuild() {
     if (!createForm.name) {
       return;
     }
 
     creating.value = true;
-    const { error, data } = await api.setups.create({ ...createForm });
+    const { error, data } = await api.builds.create({ ...createForm });
     creating.value = false;
 
     if (error) {
-      toast.error(t("setups.toast.failed_create"));
+      toast.error(t("builds.toast.failed_create"));
       return;
     }
 
-    toast.success(t("setups.toast.created"));
+    toast.success(t("builds.toast.created"));
     showCreate.value = false;
     createForm.name = "";
     createForm.description = "";
     createForm.sport = "";
     createForm.isActive = true;
     await refresh();
-    await navigateTo(`/setup/${data.id}`);
+    await navigateTo(`/builds/${data.id}`);
   }
 </script>
 
@@ -73,28 +73,28 @@
   <div>
     <BaseContainer class="flex flex-col gap-4">
       <div class="flex items-center justify-between gap-4">
-        <BaseSectionHeader> {{ $t("menu.setups") }} </BaseSectionHeader>
+        <BaseSectionHeader> {{ $t("menu.builds") }} </BaseSectionHeader>
         <Button @click="showCreate = true">
-          {{ $t("setups.create") }}
+          {{ $t("builds.create") }}
         </Button>
       </div>
 
-      <p v-if="setupList.length === 0" class="text-foreground/70">
-        {{ $t("setups.empty") }}
+      <p v-if="buildList.length === 0" class="text-foreground/70">
+        {{ $t("builds.empty") }}
       </p>
 
-      <BaseCard v-for="setupItem in setupList" :key="setupItem.id">
-        <NuxtLink :to="`/setup/${setupItem.id}`" class="flex items-center justify-between gap-4 p-4">
+      <BaseCard v-for="buildItem in buildList" :key="buildItem.id">
+        <NuxtLink :to="`/builds/${buildItem.id}`" class="flex items-center justify-between gap-4 p-4">
           <div class="flex flex-col gap-1">
-            <span class="font-medium">{{ setupItem.name }}</span>
-            <span v-if="setupItem.description" class="text-sm text-foreground/70">{{ setupItem.description }}</span>
-            <span v-if="setupItem.sport" class="text-sm text-foreground/70">{{ setupItem.sport }}</span>
+            <span class="font-medium">{{ buildItem.name }}</span>
+            <span v-if="buildItem.description" class="text-sm text-foreground/70">{{ buildItem.description }}</span>
+            <span v-if="buildItem.sport" class="text-sm text-foreground/70">{{ buildItem.sport }}</span>
           </div>
           <span
             class="rounded-full px-2 py-1 text-xs"
-            :class="setupItem.isActive ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
+            :class="buildItem.isActive ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
           >
-            {{ setupItem.isActive ? $t("setups.active") : $t("setups.inactive") }}
+            {{ buildItem.isActive ? $t("builds.active") : $t("builds.inactive") }}
           </span>
         </NuxtLink>
       </BaseCard>
@@ -102,24 +102,24 @@
       <DialogRoot v-model:open="showCreate">
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{{ $t("setups.create") }}</DialogTitle>
+            <DialogTitle>{{ $t("builds.create") }}</DialogTitle>
           </DialogHeader>
-          <form class="flex flex-col gap-4" @submit.prevent="createSetup">
+          <form class="flex flex-col gap-4" @submit.prevent="createBuild">
             <div class="flex flex-col gap-2">
-              <Label for="setup-name">{{ $t("global.name") }}</Label>
-              <Input id="setup-name" v-model="createForm.name" required />
+              <Label for="build-name">{{ $t("global.name") }}</Label>
+              <Input id="build-name" v-model="createForm.name" required />
             </div>
             <div class="flex flex-col gap-2">
-              <Label for="setup-description">{{ $t("global.description") }}</Label>
-              <Input id="setup-description" v-model="createForm.description" />
+              <Label for="build-description">{{ $t("global.description") }}</Label>
+              <Input id="build-description" v-model="createForm.description" />
             </div>
             <div class="flex flex-col gap-2">
-              <Label for="setup-sport">{{ $t("setups.sport") }}</Label>
-              <Input id="setup-sport" v-model="createForm.sport" />
+              <Label for="build-sport">{{ $t("builds.sport") }}</Label>
+              <Input id="build-sport" v-model="createForm.sport" />
             </div>
             <Label class="flex cursor-pointer items-center gap-2">
               <Switch v-model="createForm.isActive" />
-              {{ $t("setups.active") }}
+              {{ $t("builds.active") }}
             </Label>
             <DialogFooter>
               <Button type="button" variant="outline" @click="showCreate = false">

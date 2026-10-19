@@ -185,6 +185,97 @@ definitions:
         - $ref: '#/definitions/ent.User'
         description: User holds the value of the user edge.
     type: object
+  ent.Build:
+    properties:
+      created_at:
+        description: CreatedAt holds the value of the "created_at" field.
+        type: string
+      description:
+        description: Description holds the value of the "description" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.BuildEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the BuildQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: string
+      is_active:
+        description: IsActive holds the value of the "is_active" field.
+        type: boolean
+      name:
+        description: Name holds the value of the "name" field.
+        type: string
+      sport:
+        description: Sport holds the value of the "sport" field.
+        type: string
+      updated_at:
+        description: UpdatedAt holds the value of the "updated_at" field.
+        type: string
+    type: object
+  ent.BuildEdges:
+    properties:
+      group:
+        allOf:
+        - $ref: '#/definitions/ent.Group'
+        description: Group holds the value of the group edge.
+      parts:
+        description: Parts holds the value of the parts edge.
+        items:
+          $ref: '#/definitions/ent.BuildPart'
+        type: array
+      usage_sessions:
+        description: UsageSessions holds the value of the usage_sessions edge.
+        items:
+          $ref: '#/definitions/ent.UsageSession'
+        type: array
+    type: object
+  ent.BuildPart:
+    properties:
+      added_date:
+        description: AddedDate holds the value of the "added_date" field.
+        type: string
+      build_id:
+        description: BuildID holds the value of the "build_id" field.
+        type: string
+      created_at:
+        description: CreatedAt holds the value of the "created_at" field.
+        type: string
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.BuildPartEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the BuildPartQuery when eager-loading is set.
+      entity_id:
+        description: EntityID holds the value of the "entity_id" field.
+        type: string
+      id:
+        description: ID of the ent.
+        type: string
+      position:
+        description: Position holds the value of the "position" field.
+        type: string
+      removed_date:
+        description: RemovedDate holds the value of the "removed_date" field.
+        type: string
+      updated_at:
+        description: UpdatedAt holds the value of the "updated_at" field.
+        type: string
+    type: object
+  ent.BuildPartEdges:
+    properties:
+      build:
+        allOf:
+        - $ref: '#/definitions/ent.Build'
+        description: Build holds the value of the build edge.
+      entity:
+        allOf:
+        - $ref: '#/definitions/ent.Entity'
+        description: Entity holds the value of the entity edge.
+    type: object
   ent.Entity:
     properties:
       archived:
@@ -276,6 +367,11 @@ definitions:
         description: Attachments holds the value of the attachments edge.
         items:
           $ref: '#/definitions/ent.Attachment'
+        type: array
+      build_parts:
+        description: BuildParts holds the value of the build_parts edge.
+        items:
+          $ref: '#/definitions/ent.BuildPart'
         type: array
       children:
         description: Children holds the value of the children edge.
@@ -573,6 +669,11 @@ definitions:
     type: object
   ent.GroupEdges:
     properties:
+      builds:
+        description: Builds holds the value of the builds edge.
+        items:
+          $ref: '#/definitions/ent.Build'
+        type: array
       entities:
         description: Entities holds the value of the entities edge.
         items:
@@ -876,6 +977,52 @@ definitions:
         - $ref: '#/definitions/ent.EntityTemplate'
         description: EntityTemplate holds the value of the entity_template edge.
     type: object
+  ent.UsageSession:
+    properties:
+      build_id:
+        description: BuildID holds the value of the "build_id" field.
+        type: string
+      conditions:
+        description: Conditions holds the value of the "conditions" field.
+        type: string
+      created_at:
+        description: CreatedAt holds the value of the "created_at" field.
+        type: string
+      date:
+        description: Date holds the value of the "date" field.
+        type: string
+      duration_minutes:
+        description: DurationMinutes holds the value of the "duration_minutes" field.
+        type: integer
+      edges:
+        allOf:
+        - $ref: '#/definitions/ent.UsageSessionEdges'
+        description: |-
+          Edges holds the relations/edges for other nodes in the graph.
+          The values are being populated by the UsageSessionQuery when eager-loading is set.
+      id:
+        description: ID of the ent.
+        type: string
+      location:
+        description: Location holds the value of the "location" field.
+        type: string
+      notes:
+        description: Notes holds the value of the "notes" field.
+        type: string
+      rating:
+        description: Rating holds the value of the "rating" field.
+        type: integer
+      updated_at:
+        description: UpdatedAt holds the value of the "updated_at" field.
+        type: string
+    type: object
+  ent.UsageSessionEdges:
+    properties:
+      build:
+        allOf:
+        - $ref: '#/definitions/ent.Build'
+        description: Build holds the value of the build edge.
+    type: object
   ent.User:
     properties:
       activated_on:
@@ -1090,6 +1237,90 @@ definitions:
         type: string
       search_engine_name:
         type: string
+    type: object
+  repo.BuildCreate:
+    properties:
+      description:
+        type: string
+      isActive:
+        type: boolean
+      name:
+        type: string
+      sport:
+        type: string
+    required:
+    - name
+    type: object
+  repo.BuildOut:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      isActive:
+        type: boolean
+      name:
+        type: string
+      sport:
+        type: string
+    type: object
+  repo.BuildPartAddOut:
+    properties:
+      part:
+        $ref: '#/definitions/repo.BuildPartOut'
+      warnings:
+        items:
+          type: string
+        type: array
+    type: object
+  repo.BuildPartCreate:
+    properties:
+      entityId:
+        description: EntityID is the part (an Entity) being mounted.
+        type: string
+      position:
+        type: string
+    required:
+    - entityId
+    type: object
+  repo.BuildPartOut:
+    properties:
+      addedDate:
+        type: string
+      buildId:
+        type: string
+      entityId:
+        type: string
+      entityName:
+        type: string
+      id:
+        type: string
+      position:
+        type: string
+      removedDate:
+        type: string
+    type: object
+  repo.BuildUpdate:
+    properties:
+      description:
+        type: string
+      isActive:
+        type: boolean
+      name:
+        type: string
+      sport:
+        type: string
+    required:
+    - name
+    type: object
+  repo.BuildsStatsOut:
+    properties:
+      costPerSession:
+        type: number
+      sessionCount:
+        type: integer
+      totalInvestment:
+        type: number
     type: object
   repo.DuplicateOptions:
     properties:
@@ -2093,6 +2324,55 @@ definitions:
       type:
         type: string
     type: object
+  repo.UsageSessionCreate:
+    properties:
+      conditions:
+        type: string
+      date:
+        type: string
+      durationMinutes:
+        type: integer
+      location:
+        type: string
+      notes:
+        type: string
+      rating:
+        type: integer
+    type: object
+  repo.UsageSessionOut:
+    properties:
+      buildId:
+        type: string
+      conditions:
+        type: string
+      date:
+        type: string
+      durationMinutes:
+        type: integer
+      id:
+        type: string
+      location:
+        type: string
+      notes:
+        type: string
+      rating:
+        type: integer
+    type: object
+  repo.UsageSessionUpdate:
+    properties:
+      conditions:
+        type: string
+      date:
+        type: string
+      durationMinutes:
+        type: integer
+      location:
+        type: string
+      notes:
+        type: string
+      rating:
+        type: integer
+    type: object
   repo.UserOut:
     properties:
       defaultGroupId:
@@ -2350,11 +2630,32 @@ definitions:
     - password
     - token
     type: object
+  v1.Results-repo_BuildOut:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/repo.BuildOut'
+        type: array
+    type: object
+  v1.Results-repo_BuildPartOut:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/repo.BuildPartOut'
+        type: array
+    type: object
   v1.Results-repo_ExportOut:
     properties:
       items:
         items:
           $ref: '#/definitions/repo.ExportOut'
+        type: array
+    type: object
+  v1.Results-repo_UsageSessionOut:
+    properties:
+      items:
+        items:
+          $ref: '#/definitions/repo.UsageSessionOut'
         type: array
     type: object
   v1.TelemetryStatus:
@@ -2526,6 +2827,317 @@ paths:
       summary: Get Item by Asset ID
       tags:
       - Items
+  /v1/builds:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.Results-repo_BuildOut'
+      security:
+      - Bearer: []
+      summary: Get All Builds
+      tags:
+      - Builds
+    post:
+      parameters:
+      - description: Build Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.BuildCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/repo.BuildOut'
+      security:
+      - Bearer: []
+      summary: Create Build
+      tags:
+      - Builds
+  /v1/builds/{id}:
+    delete:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Delete Build
+      tags:
+      - Builds
+    get:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.BuildOut'
+      security:
+      - Bearer: []
+      summary: Get Build
+      tags:
+      - Builds
+    put:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Build Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.BuildUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.BuildOut'
+      security:
+      - Bearer: []
+      summary: Update Build
+      tags:
+      - Builds
+  /v1/builds/{id}/parts:
+    get:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.Results-repo_BuildPartOut'
+      security:
+      - Bearer: []
+      summary: Get Build Parts (mounting history)
+      tags:
+      - Builds
+    post:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Part Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.BuildPartCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/repo.BuildPartAddOut'
+      security:
+      - Bearer: []
+      summary: Mount a Part on a Build
+      tags:
+      - Builds
+  /v1/builds/{id}/parts/{part_id}:
+    delete:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Build Part ID
+        in: path
+        name: part_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Remove a Part from a Build (stamps removedDate)
+      tags:
+      - Builds
+  /v1/builds/{id}/parts/{part_id}/purge:
+    delete:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Build Part ID
+        in: path
+        name: part_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Permanently delete a Build Part assignment
+      tags:
+      - Builds
+  /v1/builds/{id}/parts/current:
+    get:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.Results-repo_BuildPartOut'
+      security:
+      - Bearer: []
+      summary: Get Currently Mounted Parts
+      tags:
+      - Builds
+  /v1/builds/{id}/sessions:
+    get:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.Results-repo_UsageSessionOut'
+      security:
+      - Bearer: []
+      summary: Get Usage Sessions for a Build
+      tags:
+      - Builds
+    post:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Session Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.UsageSessionCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/repo.UsageSessionOut'
+      security:
+      - Bearer: []
+      summary: Log a Usage Session
+      tags:
+      - Builds
+  /v1/builds/{id}/sessions/{session_id}:
+    delete:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Session ID
+        in: path
+        name: session_id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      security:
+      - Bearer: []
+      summary: Delete a Usage Session
+      tags:
+      - Builds
+    put:
+      parameters:
+      - description: Build ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Session ID
+        in: path
+        name: session_id
+        required: true
+        type: string
+      - description: Session Data
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/repo.UsageSessionUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.UsageSessionOut'
+      security:
+      - Bearer: []
+      summary: Update a Usage Session
+      tags:
+      - Builds
+  /v1/builds/statistics:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/repo.BuildsStatsOut'
+      security:
+      - Bearer: []
+      summary: Get Build Statistics
+      tags:
+      - Builds
   /v1/currencies:
     get:
       produces:
@@ -2861,6 +3473,26 @@ paths:
       summary: Create External Link Attachment
       tags:
       - Entities Attachments
+  /v1/entities/{id}/build-history:
+    get:
+      parameters:
+      - description: Entity (Part) ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/v1.Results-repo_BuildPartOut'
+      security:
+      - Bearer: []
+      summary: Get the mounting history of a part across all builds
+      tags:
+      - Builds
   /v1/entities/{id}/duplicate:
     post:
       parameters:

@@ -14,13 +14,13 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/attachment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 )
 
@@ -40,7 +40,7 @@ type EntityQuery struct {
 	withEntityType         *EntityTypeQuery
 	withFields             *EntityFieldQuery
 	withMaintenanceEntries *MaintenanceEntryQuery
-	withSetupParts         *SetupPartQuery
+	withBuildParts         *BuildPartQuery
 	withAttachments        *AttachmentQuery
 	withFKs                bool
 	// intermediate query (i.e. traversal path).
@@ -277,9 +277,9 @@ func (_q *EntityQuery) QueryMaintenanceEntries() *MaintenanceEntryQuery {
 	return query
 }
 
-// QuerySetupParts chains the current query on the "setup_parts" edge.
-func (_q *EntityQuery) QuerySetupParts() *SetupPartQuery {
-	query := (&SetupPartClient{config: _q.config}).Query()
+// QueryBuildParts chains the current query on the "build_parts" edge.
+func (_q *EntityQuery) QueryBuildParts() *BuildPartQuery {
+	query := (&BuildPartClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -290,8 +290,8 @@ func (_q *EntityQuery) QuerySetupParts() *SetupPartQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(entity.Table, entity.FieldID, selector),
-			sqlgraph.To(setuppart.Table, setuppart.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, entity.SetupPartsTable, entity.SetupPartsColumn),
+			sqlgraph.To(buildpart.Table, buildpart.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, entity.BuildPartsTable, entity.BuildPartsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -522,7 +522,7 @@ func (_q *EntityQuery) Clone() *EntityQuery {
 		withEntityType:         _q.withEntityType.Clone(),
 		withFields:             _q.withFields.Clone(),
 		withMaintenanceEntries: _q.withMaintenanceEntries.Clone(),
-		withSetupParts:         _q.withSetupParts.Clone(),
+		withBuildParts:         _q.withBuildParts.Clone(),
 		withAttachments:        _q.withAttachments.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
@@ -629,14 +629,14 @@ func (_q *EntityQuery) WithMaintenanceEntries(opts ...func(*MaintenanceEntryQuer
 	return _q
 }
 
-// WithSetupParts tells the query-builder to eager-load the nodes that are connected to
-// the "setup_parts" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *EntityQuery) WithSetupParts(opts ...func(*SetupPartQuery)) *EntityQuery {
-	query := (&SetupPartClient{config: _q.config}).Query()
+// WithBuildParts tells the query-builder to eager-load the nodes that are connected to
+// the "build_parts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *EntityQuery) WithBuildParts(opts ...func(*BuildPartQuery)) *EntityQuery {
+	query := (&BuildPartClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSetupParts = query
+	_q.withBuildParts = query
 	return _q
 }
 
@@ -740,7 +740,7 @@ func (_q *EntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Entit
 			_q.withEntityType != nil,
 			_q.withFields != nil,
 			_q.withMaintenanceEntries != nil,
-			_q.withSetupParts != nil,
+			_q.withBuildParts != nil,
 			_q.withAttachments != nil,
 		}
 	)
@@ -829,10 +829,10 @@ func (_q *EntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Entit
 			return nil, err
 		}
 	}
-	if query := _q.withSetupParts; query != nil {
-		if err := _q.loadSetupParts(ctx, query, nodes,
-			func(n *Entity) { n.Edges.SetupParts = []*SetupPart{} },
-			func(n *Entity, e *SetupPart) { n.Edges.SetupParts = append(n.Edges.SetupParts, e) }); err != nil {
+	if query := _q.withBuildParts; query != nil {
+		if err := _q.loadBuildParts(ctx, query, nodes,
+			func(n *Entity) { n.Edges.BuildParts = []*BuildPart{} },
+			func(n *Entity, e *BuildPart) { n.Edges.BuildParts = append(n.Edges.BuildParts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1158,7 +1158,7 @@ func (_q *EntityQuery) loadMaintenanceEntries(ctx context.Context, query *Mainte
 	}
 	return nil
 }
-func (_q *EntityQuery) loadSetupParts(ctx context.Context, query *SetupPartQuery, nodes []*Entity, init func(*Entity), assign func(*Entity, *SetupPart)) error {
+func (_q *EntityQuery) loadBuildParts(ctx context.Context, query *BuildPartQuery, nodes []*Entity, init func(*Entity), assign func(*Entity, *BuildPart)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Entity)
 	for i := range nodes {
@@ -1169,10 +1169,10 @@ func (_q *EntityQuery) loadSetupParts(ctx context.Context, query *SetupPartQuery
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(setuppart.FieldEntityID)
+		query.ctx.AppendFieldOnce(buildpart.FieldEntityID)
 	}
-	query.Where(predicate.SetupPart(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(entity.SetupPartsColumn), fks...))
+	query.Where(predicate.BuildPart(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(entity.BuildPartsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

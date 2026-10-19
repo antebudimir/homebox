@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
@@ -21,7 +22,6 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usergroup"
@@ -38,7 +38,7 @@ type GroupQuery struct {
 	withEntityTypes      *EntityTypeQuery
 	withEntities         *EntityQuery
 	withTags             *TagQuery
-	withSetups           *SetupQuery
+	withBuilds           *BuildQuery
 	withInvitationTokens *GroupInvitationTokenQuery
 	withNotifiers        *NotifierQuery
 	withEntityTemplates  *EntityTemplateQuery
@@ -168,9 +168,9 @@ func (_q *GroupQuery) QueryTags() *TagQuery {
 	return query
 }
 
-// QuerySetups chains the current query on the "setups" edge.
-func (_q *GroupQuery) QuerySetups() *SetupQuery {
-	query := (&SetupClient{config: _q.config}).Query()
+// QueryBuilds chains the current query on the "builds" edge.
+func (_q *GroupQuery) QueryBuilds() *BuildQuery {
+	query := (&BuildClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -181,8 +181,8 @@ func (_q *GroupQuery) QuerySetups() *SetupQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(group.Table, group.FieldID, selector),
-			sqlgraph.To(setup.Table, setup.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, group.SetupsTable, group.SetupsColumn),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.BuildsTable, group.BuildsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -496,7 +496,7 @@ func (_q *GroupQuery) Clone() *GroupQuery {
 		withEntityTypes:      _q.withEntityTypes.Clone(),
 		withEntities:         _q.withEntities.Clone(),
 		withTags:             _q.withTags.Clone(),
-		withSetups:           _q.withSetups.Clone(),
+		withBuilds:           _q.withBuilds.Clone(),
 		withInvitationTokens: _q.withInvitationTokens.Clone(),
 		withNotifiers:        _q.withNotifiers.Clone(),
 		withEntityTemplates:  _q.withEntityTemplates.Clone(),
@@ -552,14 +552,14 @@ func (_q *GroupQuery) WithTags(opts ...func(*TagQuery)) *GroupQuery {
 	return _q
 }
 
-// WithSetups tells the query-builder to eager-load the nodes that are connected to
-// the "setups" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *GroupQuery) WithSetups(opts ...func(*SetupQuery)) *GroupQuery {
-	query := (&SetupClient{config: _q.config}).Query()
+// WithBuilds tells the query-builder to eager-load the nodes that are connected to
+// the "builds" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *GroupQuery) WithBuilds(opts ...func(*BuildQuery)) *GroupQuery {
+	query := (&BuildClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSetups = query
+	_q.withBuilds = query
 	return _q
 }
 
@@ -701,7 +701,7 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 			_q.withEntityTypes != nil,
 			_q.withEntities != nil,
 			_q.withTags != nil,
-			_q.withSetups != nil,
+			_q.withBuilds != nil,
 			_q.withInvitationTokens != nil,
 			_q.withNotifiers != nil,
 			_q.withEntityTemplates != nil,
@@ -755,10 +755,10 @@ func (_q *GroupQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Group,
 			return nil, err
 		}
 	}
-	if query := _q.withSetups; query != nil {
-		if err := _q.loadSetups(ctx, query, nodes,
-			func(n *Group) { n.Edges.Setups = []*Setup{} },
-			func(n *Group, e *Setup) { n.Edges.Setups = append(n.Edges.Setups, e) }); err != nil {
+	if query := _q.withBuilds; query != nil {
+		if err := _q.loadBuilds(ctx, query, nodes,
+			func(n *Group) { n.Edges.Builds = []*Build{} },
+			func(n *Group, e *Build) { n.Edges.Builds = append(n.Edges.Builds, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -956,7 +956,7 @@ func (_q *GroupQuery) loadTags(ctx context.Context, query *TagQuery, nodes []*Gr
 	}
 	return nil
 }
-func (_q *GroupQuery) loadSetups(ctx context.Context, query *SetupQuery, nodes []*Group, init func(*Group), assign func(*Group, *Setup)) error {
+func (_q *GroupQuery) loadBuilds(ctx context.Context, query *BuildQuery, nodes []*Group, init func(*Group), assign func(*Group, *Build)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Group)
 	for i := range nodes {
@@ -967,21 +967,21 @@ func (_q *GroupQuery) loadSetups(ctx context.Context, query *SetupQuery, nodes [
 		}
 	}
 	query.withFKs = true
-	query.Where(predicate.Setup(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(group.SetupsColumn), fks...))
+	query.Where(predicate.Build(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(group.BuildsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.group_setups
+		fk := n.group_builds
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "group_setups" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "group_builds" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "group_setups" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "group_builds" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -447,9 +447,9 @@
     {
       icon: MdiSkateboard,
       id: 70,
-      active: computed(() => route.path.startsWith("/setups") || route.path.startsWith("/setup/")),
-      name: computed(() => t("menu.setups")),
-      to: "/setups",
+      active: computed(() => route.path.startsWith("/builds")),
+      name: computed(() => t("menu.builds")),
+      to: "/builds",
     },
     {
       icon: MdiAccount,

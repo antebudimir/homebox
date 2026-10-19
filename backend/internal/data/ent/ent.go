@@ -16,6 +16,8 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/attachment"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authroles"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytemplate"
@@ -26,8 +28,6 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/passwordresettokens"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/templatefield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
@@ -97,6 +97,8 @@ func checkColumn(t, c string) error {
 			attachment.Table:           attachment.ValidColumn,
 			authroles.Table:            authroles.ValidColumn,
 			authtokens.Table:           authtokens.ValidColumn,
+			build.Table:                build.ValidColumn,
+			buildpart.Table:            buildpart.ValidColumn,
 			entity.Table:               entity.ValidColumn,
 			entityfield.Table:          entityfield.ValidColumn,
 			entitytemplate.Table:       entitytemplate.ValidColumn,
@@ -107,8 +109,6 @@ func checkColumn(t, c string) error {
 			maintenanceentry.Table:     maintenanceentry.ValidColumn,
 			notifier.Table:             notifier.ValidColumn,
 			passwordresettokens.Table:  passwordresettokens.ValidColumn,
-			setup.Table:                setup.ValidColumn,
-			setuppart.Table:            setuppart.ValidColumn,
 			tag.Table:                  tag.ValidColumn,
 			templatefield.Table:        templatefield.ValidColumn,
 			usagesession.Table:         usagesession.ValidColumn,

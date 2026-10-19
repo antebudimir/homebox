@@ -1628,21 +1628,21 @@ func HasMaintenanceEntriesWith(preds ...predicate.MaintenanceEntry) predicate.En
 	})
 }
 
-// HasSetupParts applies the HasEdge predicate on the "setup_parts" edge.
-func HasSetupParts() predicate.Entity {
+// HasBuildParts applies the HasEdge predicate on the "build_parts" edge.
+func HasBuildParts() predicate.Entity {
 	return predicate.Entity(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SetupPartsTable, SetupPartsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, BuildPartsTable, BuildPartsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSetupPartsWith applies the HasEdge predicate on the "setup_parts" edge with a given conditions (other predicates).
-func HasSetupPartsWith(preds ...predicate.SetupPart) predicate.Entity {
+// HasBuildPartsWith applies the HasEdge predicate on the "build_parts" edge with a given conditions (other predicates).
+func HasBuildPartsWith(preds ...predicate.BuildPart) predicate.Entity {
 	return predicate.Entity(func(s *sql.Selector) {
-		step := newSetupPartsStep()
+		step := newBuildPartsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -16,6 +16,8 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/attachment"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authroles"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytemplate"
@@ -27,8 +29,6 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/passwordresettokens"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/templatefield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
@@ -49,6 +49,8 @@ const (
 	TypeAttachment           = "Attachment"
 	TypeAuthRoles            = "AuthRoles"
 	TypeAuthTokens           = "AuthTokens"
+	TypeBuild                = "Build"
+	TypeBuildPart            = "BuildPart"
 	TypeEntity               = "Entity"
 	TypeEntityField          = "EntityField"
 	TypeEntityTemplate       = "EntityTemplate"
@@ -59,8 +61,6 @@ const (
 	TypeMaintenanceEntry     = "MaintenanceEntry"
 	TypeNotifier             = "Notifier"
 	TypePasswordResetTokens  = "PasswordResetTokens"
-	TypeSetup                = "Setup"
-	TypeSetupPart            = "SetupPart"
 	TypeTag                  = "Tag"
 	TypeTemplateField        = "TemplateField"
 	TypeUsageSession         = "UsageSession"
@@ -2614,6 +2614,1681 @@ func (m *AuthTokensMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown AuthTokens edge %s", name)
 }
 
+// BuildMutation represents an operation that mutates the Build nodes in the graph.
+type BuildMutation struct {
+	config
+	op                    Op
+	typ                   string
+	id                    *uuid.UUID
+	created_at            *time.Time
+	updated_at            *time.Time
+	name                  *string
+	description           *string
+	is_active             *bool
+	sport                 *string
+	clearedFields         map[string]struct{}
+	group                 *uuid.UUID
+	clearedgroup          bool
+	parts                 map[uuid.UUID]struct{}
+	removedparts          map[uuid.UUID]struct{}
+	clearedparts          bool
+	usage_sessions        map[uuid.UUID]struct{}
+	removedusage_sessions map[uuid.UUID]struct{}
+	clearedusage_sessions bool
+	done                  bool
+	oldValue              func(context.Context) (*Build, error)
+	predicates            []predicate.Build
+}
+
+var _ ent.Mutation = (*BuildMutation)(nil)
+
+// buildOption allows management of the mutation configuration using functional options.
+type buildOption func(*BuildMutation)
+
+// newBuildMutation creates new mutation for the Build entity.
+func newBuildMutation(c config, op Op, opts ...buildOption) *BuildMutation {
+	m := &BuildMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBuild,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBuildID sets the ID field of the mutation.
+func withBuildID(id uuid.UUID) buildOption {
+	return func(m *BuildMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Build
+		)
+		m.oldValue = func(ctx context.Context) (*Build, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Build.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBuild sets the old Build of the mutation.
+func withBuild(node *Build) buildOption {
+	return func(m *BuildMutation) {
+		m.oldValue = func(context.Context) (*Build, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BuildMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BuildMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Build entities.
+func (m *BuildMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *BuildMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *BuildMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Build.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *BuildMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *BuildMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Build entity.
+// If the Build object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *BuildMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *BuildMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *BuildMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Build entity.
+// If the Build object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *BuildMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetName sets the "name" field.
+func (m *BuildMutation) SetName(s string) {
+	m.name = &s
+}
+
+// Name returns the value of the "name" field in the mutation.
+func (m *BuildMutation) Name() (r string, exists bool) {
+	v := m.name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldName returns the old "name" field's value of the Build entity.
+// If the Build object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildMutation) OldName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldName: %w", err)
+	}
+	return oldValue.Name, nil
+}
+
+// ResetName resets all changes to the "name" field.
+func (m *BuildMutation) ResetName() {
+	m.name = nil
+}
+
+// SetDescription sets the "description" field.
+func (m *BuildMutation) SetDescription(s string) {
+	m.description = &s
+}
+
+// Description returns the value of the "description" field in the mutation.
+func (m *BuildMutation) Description() (r string, exists bool) {
+	v := m.description
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDescription returns the old "description" field's value of the Build entity.
+// If the Build object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildMutation) OldDescription(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDescription requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
+	}
+	return oldValue.Description, nil
+}
+
+// ClearDescription clears the value of the "description" field.
+func (m *BuildMutation) ClearDescription() {
+	m.description = nil
+	m.clearedFields[build.FieldDescription] = struct{}{}
+}
+
+// DescriptionCleared returns if the "description" field was cleared in this mutation.
+func (m *BuildMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[build.FieldDescription]
+	return ok
+}
+
+// ResetDescription resets all changes to the "description" field.
+func (m *BuildMutation) ResetDescription() {
+	m.description = nil
+	delete(m.clearedFields, build.FieldDescription)
+}
+
+// SetIsActive sets the "is_active" field.
+func (m *BuildMutation) SetIsActive(b bool) {
+	m.is_active = &b
+}
+
+// IsActive returns the value of the "is_active" field in the mutation.
+func (m *BuildMutation) IsActive() (r bool, exists bool) {
+	v := m.is_active
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsActive returns the old "is_active" field's value of the Build entity.
+// If the Build object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildMutation) OldIsActive(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsActive requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
+	}
+	return oldValue.IsActive, nil
+}
+
+// ResetIsActive resets all changes to the "is_active" field.
+func (m *BuildMutation) ResetIsActive() {
+	m.is_active = nil
+}
+
+// SetSport sets the "sport" field.
+func (m *BuildMutation) SetSport(s string) {
+	m.sport = &s
+}
+
+// Sport returns the value of the "sport" field in the mutation.
+func (m *BuildMutation) Sport() (r string, exists bool) {
+	v := m.sport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSport returns the old "sport" field's value of the Build entity.
+// If the Build object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildMutation) OldSport(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSport is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSport requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSport: %w", err)
+	}
+	return oldValue.Sport, nil
+}
+
+// ClearSport clears the value of the "sport" field.
+func (m *BuildMutation) ClearSport() {
+	m.sport = nil
+	m.clearedFields[build.FieldSport] = struct{}{}
+}
+
+// SportCleared returns if the "sport" field was cleared in this mutation.
+func (m *BuildMutation) SportCleared() bool {
+	_, ok := m.clearedFields[build.FieldSport]
+	return ok
+}
+
+// ResetSport resets all changes to the "sport" field.
+func (m *BuildMutation) ResetSport() {
+	m.sport = nil
+	delete(m.clearedFields, build.FieldSport)
+}
+
+// SetGroupID sets the "group" edge to the Group entity by id.
+func (m *BuildMutation) SetGroupID(id uuid.UUID) {
+	m.group = &id
+}
+
+// ClearGroup clears the "group" edge to the Group entity.
+func (m *BuildMutation) ClearGroup() {
+	m.clearedgroup = true
+}
+
+// GroupCleared reports if the "group" edge to the Group entity was cleared.
+func (m *BuildMutation) GroupCleared() bool {
+	return m.clearedgroup
+}
+
+// GroupID returns the "group" edge ID in the mutation.
+func (m *BuildMutation) GroupID() (id uuid.UUID, exists bool) {
+	if m.group != nil {
+		return *m.group, true
+	}
+	return
+}
+
+// GroupIDs returns the "group" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// GroupID instead. It exists only for internal usage by the builders.
+func (m *BuildMutation) GroupIDs() (ids []uuid.UUID) {
+	if id := m.group; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetGroup resets all changes to the "group" edge.
+func (m *BuildMutation) ResetGroup() {
+	m.group = nil
+	m.clearedgroup = false
+}
+
+// AddPartIDs adds the "parts" edge to the BuildPart entity by ids.
+func (m *BuildMutation) AddPartIDs(ids ...uuid.UUID) {
+	if m.parts == nil {
+		m.parts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.parts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearParts clears the "parts" edge to the BuildPart entity.
+func (m *BuildMutation) ClearParts() {
+	m.clearedparts = true
+}
+
+// PartsCleared reports if the "parts" edge to the BuildPart entity was cleared.
+func (m *BuildMutation) PartsCleared() bool {
+	return m.clearedparts
+}
+
+// RemovePartIDs removes the "parts" edge to the BuildPart entity by IDs.
+func (m *BuildMutation) RemovePartIDs(ids ...uuid.UUID) {
+	if m.removedparts == nil {
+		m.removedparts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.parts, ids[i])
+		m.removedparts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedParts returns the removed IDs of the "parts" edge to the BuildPart entity.
+func (m *BuildMutation) RemovedPartsIDs() (ids []uuid.UUID) {
+	for id := range m.removedparts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// PartsIDs returns the "parts" edge IDs in the mutation.
+func (m *BuildMutation) PartsIDs() (ids []uuid.UUID) {
+	for id := range m.parts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetParts resets all changes to the "parts" edge.
+func (m *BuildMutation) ResetParts() {
+	m.parts = nil
+	m.clearedparts = false
+	m.removedparts = nil
+}
+
+// AddUsageSessionIDs adds the "usage_sessions" edge to the UsageSession entity by ids.
+func (m *BuildMutation) AddUsageSessionIDs(ids ...uuid.UUID) {
+	if m.usage_sessions == nil {
+		m.usage_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.usage_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// ClearUsageSessions clears the "usage_sessions" edge to the UsageSession entity.
+func (m *BuildMutation) ClearUsageSessions() {
+	m.clearedusage_sessions = true
+}
+
+// UsageSessionsCleared reports if the "usage_sessions" edge to the UsageSession entity was cleared.
+func (m *BuildMutation) UsageSessionsCleared() bool {
+	return m.clearedusage_sessions
+}
+
+// RemoveUsageSessionIDs removes the "usage_sessions" edge to the UsageSession entity by IDs.
+func (m *BuildMutation) RemoveUsageSessionIDs(ids ...uuid.UUID) {
+	if m.removedusage_sessions == nil {
+		m.removedusage_sessions = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.usage_sessions, ids[i])
+		m.removedusage_sessions[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedUsageSessions returns the removed IDs of the "usage_sessions" edge to the UsageSession entity.
+func (m *BuildMutation) RemovedUsageSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.removedusage_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// UsageSessionsIDs returns the "usage_sessions" edge IDs in the mutation.
+func (m *BuildMutation) UsageSessionsIDs() (ids []uuid.UUID) {
+	for id := range m.usage_sessions {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetUsageSessions resets all changes to the "usage_sessions" edge.
+func (m *BuildMutation) ResetUsageSessions() {
+	m.usage_sessions = nil
+	m.clearedusage_sessions = false
+	m.removedusage_sessions = nil
+}
+
+// Where appends a list predicates to the BuildMutation builder.
+func (m *BuildMutation) Where(ps ...predicate.Build) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the BuildMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *BuildMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Build, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *BuildMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *BuildMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (Build).
+func (m *BuildMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BuildMutation) Fields() []string {
+	fields := make([]string, 0, 6)
+	if m.created_at != nil {
+		fields = append(fields, build.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, build.FieldUpdatedAt)
+	}
+	if m.name != nil {
+		fields = append(fields, build.FieldName)
+	}
+	if m.description != nil {
+		fields = append(fields, build.FieldDescription)
+	}
+	if m.is_active != nil {
+		fields = append(fields, build.FieldIsActive)
+	}
+	if m.sport != nil {
+		fields = append(fields, build.FieldSport)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BuildMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case build.FieldCreatedAt:
+		return m.CreatedAt()
+	case build.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case build.FieldName:
+		return m.Name()
+	case build.FieldDescription:
+		return m.Description()
+	case build.FieldIsActive:
+		return m.IsActive()
+	case build.FieldSport:
+		return m.Sport()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BuildMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case build.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case build.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case build.FieldName:
+		return m.OldName(ctx)
+	case build.FieldDescription:
+		return m.OldDescription(ctx)
+	case build.FieldIsActive:
+		return m.OldIsActive(ctx)
+	case build.FieldSport:
+		return m.OldSport(ctx)
+	}
+	return nil, fmt.Errorf("unknown Build field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case build.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case build.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case build.FieldName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetName(v)
+		return nil
+	case build.FieldDescription:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDescription(v)
+		return nil
+	case build.FieldIsActive:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsActive(v)
+		return nil
+	case build.FieldSport:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSport(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Build field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BuildMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BuildMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Build numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BuildMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(build.FieldDescription) {
+		fields = append(fields, build.FieldDescription)
+	}
+	if m.FieldCleared(build.FieldSport) {
+		fields = append(fields, build.FieldSport)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BuildMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BuildMutation) ClearField(name string) error {
+	switch name {
+	case build.FieldDescription:
+		m.ClearDescription()
+		return nil
+	case build.FieldSport:
+		m.ClearSport()
+		return nil
+	}
+	return fmt.Errorf("unknown Build nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BuildMutation) ResetField(name string) error {
+	switch name {
+	case build.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case build.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case build.FieldName:
+		m.ResetName()
+		return nil
+	case build.FieldDescription:
+		m.ResetDescription()
+		return nil
+	case build.FieldIsActive:
+		m.ResetIsActive()
+		return nil
+	case build.FieldSport:
+		m.ResetSport()
+		return nil
+	}
+	return fmt.Errorf("unknown Build field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BuildMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.group != nil {
+		edges = append(edges, build.EdgeGroup)
+	}
+	if m.parts != nil {
+		edges = append(edges, build.EdgeParts)
+	}
+	if m.usage_sessions != nil {
+		edges = append(edges, build.EdgeUsageSessions)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BuildMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case build.EdgeGroup:
+		if id := m.group; id != nil {
+			return []ent.Value{*id}
+		}
+	case build.EdgeParts:
+		ids := make([]ent.Value, 0, len(m.parts))
+		for id := range m.parts {
+			ids = append(ids, id)
+		}
+		return ids
+	case build.EdgeUsageSessions:
+		ids := make([]ent.Value, 0, len(m.usage_sessions))
+		for id := range m.usage_sessions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BuildMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.removedparts != nil {
+		edges = append(edges, build.EdgeParts)
+	}
+	if m.removedusage_sessions != nil {
+		edges = append(edges, build.EdgeUsageSessions)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BuildMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case build.EdgeParts:
+		ids := make([]ent.Value, 0, len(m.removedparts))
+		for id := range m.removedparts {
+			ids = append(ids, id)
+		}
+		return ids
+	case build.EdgeUsageSessions:
+		ids := make([]ent.Value, 0, len(m.removedusage_sessions))
+		for id := range m.removedusage_sessions {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BuildMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedgroup {
+		edges = append(edges, build.EdgeGroup)
+	}
+	if m.clearedparts {
+		edges = append(edges, build.EdgeParts)
+	}
+	if m.clearedusage_sessions {
+		edges = append(edges, build.EdgeUsageSessions)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BuildMutation) EdgeCleared(name string) bool {
+	switch name {
+	case build.EdgeGroup:
+		return m.clearedgroup
+	case build.EdgeParts:
+		return m.clearedparts
+	case build.EdgeUsageSessions:
+		return m.clearedusage_sessions
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BuildMutation) ClearEdge(name string) error {
+	switch name {
+	case build.EdgeGroup:
+		m.ClearGroup()
+		return nil
+	}
+	return fmt.Errorf("unknown Build unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BuildMutation) ResetEdge(name string) error {
+	switch name {
+	case build.EdgeGroup:
+		m.ResetGroup()
+		return nil
+	case build.EdgeParts:
+		m.ResetParts()
+		return nil
+	case build.EdgeUsageSessions:
+		m.ResetUsageSessions()
+		return nil
+	}
+	return fmt.Errorf("unknown Build edge %s", name)
+}
+
+// BuildPartMutation represents an operation that mutates the BuildPart nodes in the graph.
+type BuildPartMutation struct {
+	config
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	created_at    *time.Time
+	updated_at    *time.Time
+	added_date    *time.Time
+	removed_date  *time.Time
+	position      *string
+	clearedFields map[string]struct{}
+	build         *uuid.UUID
+	clearedbuild  bool
+	entity        *uuid.UUID
+	clearedentity bool
+	done          bool
+	oldValue      func(context.Context) (*BuildPart, error)
+	predicates    []predicate.BuildPart
+}
+
+var _ ent.Mutation = (*BuildPartMutation)(nil)
+
+// buildpartOption allows management of the mutation configuration using functional options.
+type buildpartOption func(*BuildPartMutation)
+
+// newBuildPartMutation creates new mutation for the BuildPart entity.
+func newBuildPartMutation(c config, op Op, opts ...buildpartOption) *BuildPartMutation {
+	m := &BuildPartMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeBuildPart,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withBuildPartID sets the ID field of the mutation.
+func withBuildPartID(id uuid.UUID) buildpartOption {
+	return func(m *BuildPartMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *BuildPart
+		)
+		m.oldValue = func(ctx context.Context) (*BuildPart, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().BuildPart.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withBuildPart sets the old BuildPart of the mutation.
+func withBuildPart(node *BuildPart) buildpartOption {
+	return func(m *BuildPartMutation) {
+		m.oldValue = func(context.Context) (*BuildPart, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m BuildPartMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m BuildPartMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of BuildPart entities.
+func (m *BuildPartMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *BuildPartMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *BuildPartMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().BuildPart.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *BuildPartMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *BuildPartMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the BuildPart entity.
+// If the BuildPart object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildPartMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *BuildPartMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *BuildPartMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *BuildPartMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the BuildPart entity.
+// If the BuildPart object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildPartMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *BuildPartMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetBuildID sets the "build_id" field.
+func (m *BuildPartMutation) SetBuildID(u uuid.UUID) {
+	m.build = &u
+}
+
+// BuildID returns the value of the "build_id" field in the mutation.
+func (m *BuildPartMutation) BuildID() (r uuid.UUID, exists bool) {
+	v := m.build
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldBuildID returns the old "build_id" field's value of the BuildPart entity.
+// If the BuildPart object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildPartMutation) OldBuildID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldBuildID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldBuildID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldBuildID: %w", err)
+	}
+	return oldValue.BuildID, nil
+}
+
+// ResetBuildID resets all changes to the "build_id" field.
+func (m *BuildPartMutation) ResetBuildID() {
+	m.build = nil
+}
+
+// SetEntityID sets the "entity_id" field.
+func (m *BuildPartMutation) SetEntityID(u uuid.UUID) {
+	m.entity = &u
+}
+
+// EntityID returns the value of the "entity_id" field in the mutation.
+func (m *BuildPartMutation) EntityID() (r uuid.UUID, exists bool) {
+	v := m.entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEntityID returns the old "entity_id" field's value of the BuildPart entity.
+// If the BuildPart object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildPartMutation) OldEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEntityID: %w", err)
+	}
+	return oldValue.EntityID, nil
+}
+
+// ResetEntityID resets all changes to the "entity_id" field.
+func (m *BuildPartMutation) ResetEntityID() {
+	m.entity = nil
+}
+
+// SetAddedDate sets the "added_date" field.
+func (m *BuildPartMutation) SetAddedDate(t time.Time) {
+	m.added_date = &t
+}
+
+// AddedDate returns the value of the "added_date" field in the mutation.
+func (m *BuildPartMutation) AddedDate() (r time.Time, exists bool) {
+	v := m.added_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAddedDate returns the old "added_date" field's value of the BuildPart entity.
+// If the BuildPart object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildPartMutation) OldAddedDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAddedDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAddedDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAddedDate: %w", err)
+	}
+	return oldValue.AddedDate, nil
+}
+
+// ResetAddedDate resets all changes to the "added_date" field.
+func (m *BuildPartMutation) ResetAddedDate() {
+	m.added_date = nil
+}
+
+// SetRemovedDate sets the "removed_date" field.
+func (m *BuildPartMutation) SetRemovedDate(t time.Time) {
+	m.removed_date = &t
+}
+
+// RemovedDate returns the value of the "removed_date" field in the mutation.
+func (m *BuildPartMutation) RemovedDate() (r time.Time, exists bool) {
+	v := m.removed_date
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldRemovedDate returns the old "removed_date" field's value of the BuildPart entity.
+// If the BuildPart object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildPartMutation) OldRemovedDate(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldRemovedDate is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldRemovedDate requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldRemovedDate: %w", err)
+	}
+	return oldValue.RemovedDate, nil
+}
+
+// ClearRemovedDate clears the value of the "removed_date" field.
+func (m *BuildPartMutation) ClearRemovedDate() {
+	m.removed_date = nil
+	m.clearedFields[buildpart.FieldRemovedDate] = struct{}{}
+}
+
+// RemovedDateCleared returns if the "removed_date" field was cleared in this mutation.
+func (m *BuildPartMutation) RemovedDateCleared() bool {
+	_, ok := m.clearedFields[buildpart.FieldRemovedDate]
+	return ok
+}
+
+// ResetRemovedDate resets all changes to the "removed_date" field.
+func (m *BuildPartMutation) ResetRemovedDate() {
+	m.removed_date = nil
+	delete(m.clearedFields, buildpart.FieldRemovedDate)
+}
+
+// SetPosition sets the "position" field.
+func (m *BuildPartMutation) SetPosition(s string) {
+	m.position = &s
+}
+
+// Position returns the value of the "position" field in the mutation.
+func (m *BuildPartMutation) Position() (r string, exists bool) {
+	v := m.position
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPosition returns the old "position" field's value of the BuildPart entity.
+// If the BuildPart object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BuildPartMutation) OldPosition(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPosition is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPosition requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPosition: %w", err)
+	}
+	return oldValue.Position, nil
+}
+
+// ClearPosition clears the value of the "position" field.
+func (m *BuildPartMutation) ClearPosition() {
+	m.position = nil
+	m.clearedFields[buildpart.FieldPosition] = struct{}{}
+}
+
+// PositionCleared returns if the "position" field was cleared in this mutation.
+func (m *BuildPartMutation) PositionCleared() bool {
+	_, ok := m.clearedFields[buildpart.FieldPosition]
+	return ok
+}
+
+// ResetPosition resets all changes to the "position" field.
+func (m *BuildPartMutation) ResetPosition() {
+	m.position = nil
+	delete(m.clearedFields, buildpart.FieldPosition)
+}
+
+// ClearBuild clears the "build" edge to the Build entity.
+func (m *BuildPartMutation) ClearBuild() {
+	m.clearedbuild = true
+	m.clearedFields[buildpart.FieldBuildID] = struct{}{}
+}
+
+// BuildCleared reports if the "build" edge to the Build entity was cleared.
+func (m *BuildPartMutation) BuildCleared() bool {
+	return m.clearedbuild
+}
+
+// BuildIDs returns the "build" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// BuildID instead. It exists only for internal usage by the builders.
+func (m *BuildPartMutation) BuildIDs() (ids []uuid.UUID) {
+	if id := m.build; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetBuild resets all changes to the "build" edge.
+func (m *BuildPartMutation) ResetBuild() {
+	m.build = nil
+	m.clearedbuild = false
+}
+
+// ClearEntity clears the "entity" edge to the Entity entity.
+func (m *BuildPartMutation) ClearEntity() {
+	m.clearedentity = true
+	m.clearedFields[buildpart.FieldEntityID] = struct{}{}
+}
+
+// EntityCleared reports if the "entity" edge to the Entity entity was cleared.
+func (m *BuildPartMutation) EntityCleared() bool {
+	return m.clearedentity
+}
+
+// EntityIDs returns the "entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// EntityID instead. It exists only for internal usage by the builders.
+func (m *BuildPartMutation) EntityIDs() (ids []uuid.UUID) {
+	if id := m.entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetEntity resets all changes to the "entity" edge.
+func (m *BuildPartMutation) ResetEntity() {
+	m.entity = nil
+	m.clearedentity = false
+}
+
+// Where appends a list predicates to the BuildPartMutation builder.
+func (m *BuildPartMutation) Where(ps ...predicate.BuildPart) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the BuildPartMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *BuildPartMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.BuildPart, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *BuildPartMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *BuildPartMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (BuildPart).
+func (m *BuildPartMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *BuildPartMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.created_at != nil {
+		fields = append(fields, buildpart.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, buildpart.FieldUpdatedAt)
+	}
+	if m.build != nil {
+		fields = append(fields, buildpart.FieldBuildID)
+	}
+	if m.entity != nil {
+		fields = append(fields, buildpart.FieldEntityID)
+	}
+	if m.added_date != nil {
+		fields = append(fields, buildpart.FieldAddedDate)
+	}
+	if m.removed_date != nil {
+		fields = append(fields, buildpart.FieldRemovedDate)
+	}
+	if m.position != nil {
+		fields = append(fields, buildpart.FieldPosition)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *BuildPartMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case buildpart.FieldCreatedAt:
+		return m.CreatedAt()
+	case buildpart.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case buildpart.FieldBuildID:
+		return m.BuildID()
+	case buildpart.FieldEntityID:
+		return m.EntityID()
+	case buildpart.FieldAddedDate:
+		return m.AddedDate()
+	case buildpart.FieldRemovedDate:
+		return m.RemovedDate()
+	case buildpart.FieldPosition:
+		return m.Position()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *BuildPartMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case buildpart.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case buildpart.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case buildpart.FieldBuildID:
+		return m.OldBuildID(ctx)
+	case buildpart.FieldEntityID:
+		return m.OldEntityID(ctx)
+	case buildpart.FieldAddedDate:
+		return m.OldAddedDate(ctx)
+	case buildpart.FieldRemovedDate:
+		return m.OldRemovedDate(ctx)
+	case buildpart.FieldPosition:
+		return m.OldPosition(ctx)
+	}
+	return nil, fmt.Errorf("unknown BuildPart field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildPartMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case buildpart.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case buildpart.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case buildpart.FieldBuildID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetBuildID(v)
+		return nil
+	case buildpart.FieldEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEntityID(v)
+		return nil
+	case buildpart.FieldAddedDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAddedDate(v)
+		return nil
+	case buildpart.FieldRemovedDate:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetRemovedDate(v)
+		return nil
+	case buildpart.FieldPosition:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPosition(v)
+		return nil
+	}
+	return fmt.Errorf("unknown BuildPart field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *BuildPartMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *BuildPartMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *BuildPartMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown BuildPart numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *BuildPartMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(buildpart.FieldRemovedDate) {
+		fields = append(fields, buildpart.FieldRemovedDate)
+	}
+	if m.FieldCleared(buildpart.FieldPosition) {
+		fields = append(fields, buildpart.FieldPosition)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *BuildPartMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *BuildPartMutation) ClearField(name string) error {
+	switch name {
+	case buildpart.FieldRemovedDate:
+		m.ClearRemovedDate()
+		return nil
+	case buildpart.FieldPosition:
+		m.ClearPosition()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildPart nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *BuildPartMutation) ResetField(name string) error {
+	switch name {
+	case buildpart.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case buildpart.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case buildpart.FieldBuildID:
+		m.ResetBuildID()
+		return nil
+	case buildpart.FieldEntityID:
+		m.ResetEntityID()
+		return nil
+	case buildpart.FieldAddedDate:
+		m.ResetAddedDate()
+		return nil
+	case buildpart.FieldRemovedDate:
+		m.ResetRemovedDate()
+		return nil
+	case buildpart.FieldPosition:
+		m.ResetPosition()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildPart field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *BuildPartMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.build != nil {
+		edges = append(edges, buildpart.EdgeBuild)
+	}
+	if m.entity != nil {
+		edges = append(edges, buildpart.EdgeEntity)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *BuildPartMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case buildpart.EdgeBuild:
+		if id := m.build; id != nil {
+			return []ent.Value{*id}
+		}
+	case buildpart.EdgeEntity:
+		if id := m.entity; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *BuildPartMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *BuildPartMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *BuildPartMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedbuild {
+		edges = append(edges, buildpart.EdgeBuild)
+	}
+	if m.clearedentity {
+		edges = append(edges, buildpart.EdgeEntity)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *BuildPartMutation) EdgeCleared(name string) bool {
+	switch name {
+	case buildpart.EdgeBuild:
+		return m.clearedbuild
+	case buildpart.EdgeEntity:
+		return m.clearedentity
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *BuildPartMutation) ClearEdge(name string) error {
+	switch name {
+	case buildpart.EdgeBuild:
+		m.ClearBuild()
+		return nil
+	case buildpart.EdgeEntity:
+		m.ClearEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildPart unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *BuildPartMutation) ResetEdge(name string) error {
+	switch name {
+	case buildpart.EdgeBuild:
+		m.ResetBuild()
+		return nil
+	case buildpart.EdgeEntity:
+		m.ResetEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown BuildPart edge %s", name)
+}
+
 // EntityMutation represents an operation that mutates the Entity nodes in the graph.
 type EntityMutation struct {
 	config
@@ -2672,9 +4347,9 @@ type EntityMutation struct {
 	maintenance_entries         map[uuid.UUID]struct{}
 	removedmaintenance_entries  map[uuid.UUID]struct{}
 	clearedmaintenance_entries  bool
-	setup_parts                 map[uuid.UUID]struct{}
-	removedsetup_parts          map[uuid.UUID]struct{}
-	clearedsetup_parts          bool
+	build_parts                 map[uuid.UUID]struct{}
+	removedbuild_parts          map[uuid.UUID]struct{}
+	clearedbuild_parts          bool
 	attachments                 map[uuid.UUID]struct{}
 	removedattachments          map[uuid.UUID]struct{}
 	clearedattachments          bool
@@ -4326,58 +6001,58 @@ func (m *EntityMutation) ResetMaintenanceEntries() {
 	m.removedmaintenance_entries = nil
 }
 
-// AddSetupPartIDs adds the "setup_parts" edge to the SetupPart entity by ids.
-func (m *EntityMutation) AddSetupPartIDs(ids ...uuid.UUID) {
-	if m.setup_parts == nil {
-		m.setup_parts = make(map[uuid.UUID]struct{})
+// AddBuildPartIDs adds the "build_parts" edge to the BuildPart entity by ids.
+func (m *EntityMutation) AddBuildPartIDs(ids ...uuid.UUID) {
+	if m.build_parts == nil {
+		m.build_parts = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.setup_parts[ids[i]] = struct{}{}
+		m.build_parts[ids[i]] = struct{}{}
 	}
 }
 
-// ClearSetupParts clears the "setup_parts" edge to the SetupPart entity.
-func (m *EntityMutation) ClearSetupParts() {
-	m.clearedsetup_parts = true
+// ClearBuildParts clears the "build_parts" edge to the BuildPart entity.
+func (m *EntityMutation) ClearBuildParts() {
+	m.clearedbuild_parts = true
 }
 
-// SetupPartsCleared reports if the "setup_parts" edge to the SetupPart entity was cleared.
-func (m *EntityMutation) SetupPartsCleared() bool {
-	return m.clearedsetup_parts
+// BuildPartsCleared reports if the "build_parts" edge to the BuildPart entity was cleared.
+func (m *EntityMutation) BuildPartsCleared() bool {
+	return m.clearedbuild_parts
 }
 
-// RemoveSetupPartIDs removes the "setup_parts" edge to the SetupPart entity by IDs.
-func (m *EntityMutation) RemoveSetupPartIDs(ids ...uuid.UUID) {
-	if m.removedsetup_parts == nil {
-		m.removedsetup_parts = make(map[uuid.UUID]struct{})
+// RemoveBuildPartIDs removes the "build_parts" edge to the BuildPart entity by IDs.
+func (m *EntityMutation) RemoveBuildPartIDs(ids ...uuid.UUID) {
+	if m.removedbuild_parts == nil {
+		m.removedbuild_parts = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.setup_parts, ids[i])
-		m.removedsetup_parts[ids[i]] = struct{}{}
+		delete(m.build_parts, ids[i])
+		m.removedbuild_parts[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedSetupParts returns the removed IDs of the "setup_parts" edge to the SetupPart entity.
-func (m *EntityMutation) RemovedSetupPartsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsetup_parts {
+// RemovedBuildParts returns the removed IDs of the "build_parts" edge to the BuildPart entity.
+func (m *EntityMutation) RemovedBuildPartsIDs() (ids []uuid.UUID) {
+	for id := range m.removedbuild_parts {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// SetupPartsIDs returns the "setup_parts" edge IDs in the mutation.
-func (m *EntityMutation) SetupPartsIDs() (ids []uuid.UUID) {
-	for id := range m.setup_parts {
+// BuildPartsIDs returns the "build_parts" edge IDs in the mutation.
+func (m *EntityMutation) BuildPartsIDs() (ids []uuid.UUID) {
+	for id := range m.build_parts {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetSetupParts resets all changes to the "setup_parts" edge.
-func (m *EntityMutation) ResetSetupParts() {
-	m.setup_parts = nil
-	m.clearedsetup_parts = false
-	m.removedsetup_parts = nil
+// ResetBuildParts resets all changes to the "build_parts" edge.
+func (m *EntityMutation) ResetBuildParts() {
+	m.build_parts = nil
+	m.clearedbuild_parts = false
+	m.removedbuild_parts = nil
 }
 
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by ids.
@@ -5118,8 +6793,8 @@ func (m *EntityMutation) AddedEdges() []string {
 	if m.maintenance_entries != nil {
 		edges = append(edges, entity.EdgeMaintenanceEntries)
 	}
-	if m.setup_parts != nil {
-		edges = append(edges, entity.EdgeSetupParts)
+	if m.build_parts != nil {
+		edges = append(edges, entity.EdgeBuildParts)
 	}
 	if m.attachments != nil {
 		edges = append(edges, entity.EdgeAttachments)
@@ -5177,9 +6852,9 @@ func (m *EntityMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case entity.EdgeSetupParts:
-		ids := make([]ent.Value, 0, len(m.setup_parts))
-		for id := range m.setup_parts {
+	case entity.EdgeBuildParts:
+		ids := make([]ent.Value, 0, len(m.build_parts))
+		for id := range m.build_parts {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5211,8 +6886,8 @@ func (m *EntityMutation) RemovedEdges() []string {
 	if m.removedmaintenance_entries != nil {
 		edges = append(edges, entity.EdgeMaintenanceEntries)
 	}
-	if m.removedsetup_parts != nil {
-		edges = append(edges, entity.EdgeSetupParts)
+	if m.removedbuild_parts != nil {
+		edges = append(edges, entity.EdgeBuildParts)
 	}
 	if m.removedattachments != nil {
 		edges = append(edges, entity.EdgeAttachments)
@@ -5254,9 +6929,9 @@ func (m *EntityMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case entity.EdgeSetupParts:
-		ids := make([]ent.Value, 0, len(m.removedsetup_parts))
-		for id := range m.removedsetup_parts {
+	case entity.EdgeBuildParts:
+		ids := make([]ent.Value, 0, len(m.removedbuild_parts))
+		for id := range m.removedbuild_parts {
 			ids = append(ids, id)
 		}
 		return ids
@@ -5300,8 +6975,8 @@ func (m *EntityMutation) ClearedEdges() []string {
 	if m.clearedmaintenance_entries {
 		edges = append(edges, entity.EdgeMaintenanceEntries)
 	}
-	if m.clearedsetup_parts {
-		edges = append(edges, entity.EdgeSetupParts)
+	if m.clearedbuild_parts {
+		edges = append(edges, entity.EdgeBuildParts)
 	}
 	if m.clearedattachments {
 		edges = append(edges, entity.EdgeAttachments)
@@ -5331,8 +7006,8 @@ func (m *EntityMutation) EdgeCleared(name string) bool {
 		return m.clearedfields
 	case entity.EdgeMaintenanceEntries:
 		return m.clearedmaintenance_entries
-	case entity.EdgeSetupParts:
-		return m.clearedsetup_parts
+	case entity.EdgeBuildParts:
+		return m.clearedbuild_parts
 	case entity.EdgeAttachments:
 		return m.clearedattachments
 	}
@@ -5390,8 +7065,8 @@ func (m *EntityMutation) ResetEdge(name string) error {
 	case entity.EdgeMaintenanceEntries:
 		m.ResetMaintenanceEntries()
 		return nil
-	case entity.EdgeSetupParts:
-		m.ResetSetupParts()
+	case entity.EdgeBuildParts:
+		m.ResetBuildParts()
 		return nil
 	case entity.EdgeAttachments:
 		m.ResetAttachments()
@@ -9748,9 +11423,9 @@ type GroupMutation struct {
 	tags                     map[uuid.UUID]struct{}
 	removedtags              map[uuid.UUID]struct{}
 	clearedtags              bool
-	setups                   map[uuid.UUID]struct{}
-	removedsetups            map[uuid.UUID]struct{}
-	clearedsetups            bool
+	builds                   map[uuid.UUID]struct{}
+	removedbuilds            map[uuid.UUID]struct{}
+	clearedbuilds            bool
 	invitation_tokens        map[uuid.UUID]struct{}
 	removedinvitation_tokens map[uuid.UUID]struct{}
 	clearedinvitation_tokens bool
@@ -10232,58 +11907,58 @@ func (m *GroupMutation) ResetTags() {
 	m.removedtags = nil
 }
 
-// AddSetupIDs adds the "setups" edge to the Setup entity by ids.
-func (m *GroupMutation) AddSetupIDs(ids ...uuid.UUID) {
-	if m.setups == nil {
-		m.setups = make(map[uuid.UUID]struct{})
+// AddBuildIDs adds the "builds" edge to the Build entity by ids.
+func (m *GroupMutation) AddBuildIDs(ids ...uuid.UUID) {
+	if m.builds == nil {
+		m.builds = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.setups[ids[i]] = struct{}{}
+		m.builds[ids[i]] = struct{}{}
 	}
 }
 
-// ClearSetups clears the "setups" edge to the Setup entity.
-func (m *GroupMutation) ClearSetups() {
-	m.clearedsetups = true
+// ClearBuilds clears the "builds" edge to the Build entity.
+func (m *GroupMutation) ClearBuilds() {
+	m.clearedbuilds = true
 }
 
-// SetupsCleared reports if the "setups" edge to the Setup entity was cleared.
-func (m *GroupMutation) SetupsCleared() bool {
-	return m.clearedsetups
+// BuildsCleared reports if the "builds" edge to the Build entity was cleared.
+func (m *GroupMutation) BuildsCleared() bool {
+	return m.clearedbuilds
 }
 
-// RemoveSetupIDs removes the "setups" edge to the Setup entity by IDs.
-func (m *GroupMutation) RemoveSetupIDs(ids ...uuid.UUID) {
-	if m.removedsetups == nil {
-		m.removedsetups = make(map[uuid.UUID]struct{})
+// RemoveBuildIDs removes the "builds" edge to the Build entity by IDs.
+func (m *GroupMutation) RemoveBuildIDs(ids ...uuid.UUID) {
+	if m.removedbuilds == nil {
+		m.removedbuilds = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.setups, ids[i])
-		m.removedsetups[ids[i]] = struct{}{}
+		delete(m.builds, ids[i])
+		m.removedbuilds[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedSetups returns the removed IDs of the "setups" edge to the Setup entity.
-func (m *GroupMutation) RemovedSetupsIDs() (ids []uuid.UUID) {
-	for id := range m.removedsetups {
+// RemovedBuilds returns the removed IDs of the "builds" edge to the Build entity.
+func (m *GroupMutation) RemovedBuildsIDs() (ids []uuid.UUID) {
+	for id := range m.removedbuilds {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// SetupsIDs returns the "setups" edge IDs in the mutation.
-func (m *GroupMutation) SetupsIDs() (ids []uuid.UUID) {
-	for id := range m.setups {
+// BuildsIDs returns the "builds" edge IDs in the mutation.
+func (m *GroupMutation) BuildsIDs() (ids []uuid.UUID) {
+	for id := range m.builds {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetSetups resets all changes to the "setups" edge.
-func (m *GroupMutation) ResetSetups() {
-	m.setups = nil
-	m.clearedsetups = false
-	m.removedsetups = nil
+// ResetBuilds resets all changes to the "builds" edge.
+func (m *GroupMutation) ResetBuilds() {
+	m.builds = nil
+	m.clearedbuilds = false
+	m.removedbuilds = nil
 }
 
 // AddInvitationTokenIDs adds the "invitation_tokens" edge to the GroupInvitationToken entity by ids.
@@ -10699,8 +12374,8 @@ func (m *GroupMutation) AddedEdges() []string {
 	if m.tags != nil {
 		edges = append(edges, group.EdgeTags)
 	}
-	if m.setups != nil {
-		edges = append(edges, group.EdgeSetups)
+	if m.builds != nil {
+		edges = append(edges, group.EdgeBuilds)
 	}
 	if m.invitation_tokens != nil {
 		edges = append(edges, group.EdgeInvitationTokens)
@@ -10745,9 +12420,9 @@ func (m *GroupMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case group.EdgeSetups:
-		ids := make([]ent.Value, 0, len(m.setups))
-		for id := range m.setups {
+	case group.EdgeBuilds:
+		ids := make([]ent.Value, 0, len(m.builds))
+		for id := range m.builds {
 			ids = append(ids, id)
 		}
 		return ids
@@ -10794,8 +12469,8 @@ func (m *GroupMutation) RemovedEdges() []string {
 	if m.removedtags != nil {
 		edges = append(edges, group.EdgeTags)
 	}
-	if m.removedsetups != nil {
-		edges = append(edges, group.EdgeSetups)
+	if m.removedbuilds != nil {
+		edges = append(edges, group.EdgeBuilds)
 	}
 	if m.removedinvitation_tokens != nil {
 		edges = append(edges, group.EdgeInvitationTokens)
@@ -10840,9 +12515,9 @@ func (m *GroupMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case group.EdgeSetups:
-		ids := make([]ent.Value, 0, len(m.removedsetups))
-		for id := range m.removedsetups {
+	case group.EdgeBuilds:
+		ids := make([]ent.Value, 0, len(m.removedbuilds))
+		for id := range m.removedbuilds {
 			ids = append(ids, id)
 		}
 		return ids
@@ -10889,8 +12564,8 @@ func (m *GroupMutation) ClearedEdges() []string {
 	if m.clearedtags {
 		edges = append(edges, group.EdgeTags)
 	}
-	if m.clearedsetups {
-		edges = append(edges, group.EdgeSetups)
+	if m.clearedbuilds {
+		edges = append(edges, group.EdgeBuilds)
 	}
 	if m.clearedinvitation_tokens {
 		edges = append(edges, group.EdgeInvitationTokens)
@@ -10919,8 +12594,8 @@ func (m *GroupMutation) EdgeCleared(name string) bool {
 		return m.clearedentities
 	case group.EdgeTags:
 		return m.clearedtags
-	case group.EdgeSetups:
-		return m.clearedsetups
+	case group.EdgeBuilds:
+		return m.clearedbuilds
 	case group.EdgeInvitationTokens:
 		return m.clearedinvitation_tokens
 	case group.EdgeNotifiers:
@@ -10957,8 +12632,8 @@ func (m *GroupMutation) ResetEdge(name string) error {
 	case group.EdgeTags:
 		m.ResetTags()
 		return nil
-	case group.EdgeSetups:
-		m.ResetSetups()
+	case group.EdgeBuilds:
+		m.ResetBuilds()
 		return nil
 	case group.EdgeInvitationTokens:
 		m.ResetInvitationTokens()
@@ -13921,1681 +15596,6 @@ func (m *PasswordResetTokensMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown PasswordResetTokens edge %s", name)
 }
 
-// SetupMutation represents an operation that mutates the Setup nodes in the graph.
-type SetupMutation struct {
-	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	created_at            *time.Time
-	updated_at            *time.Time
-	name                  *string
-	description           *string
-	is_active             *bool
-	sport                 *string
-	clearedFields         map[string]struct{}
-	group                 *uuid.UUID
-	clearedgroup          bool
-	parts                 map[uuid.UUID]struct{}
-	removedparts          map[uuid.UUID]struct{}
-	clearedparts          bool
-	usage_sessions        map[uuid.UUID]struct{}
-	removedusage_sessions map[uuid.UUID]struct{}
-	clearedusage_sessions bool
-	done                  bool
-	oldValue              func(context.Context) (*Setup, error)
-	predicates            []predicate.Setup
-}
-
-var _ ent.Mutation = (*SetupMutation)(nil)
-
-// setupOption allows management of the mutation configuration using functional options.
-type setupOption func(*SetupMutation)
-
-// newSetupMutation creates new mutation for the Setup entity.
-func newSetupMutation(c config, op Op, opts ...setupOption) *SetupMutation {
-	m := &SetupMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeSetup,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withSetupID sets the ID field of the mutation.
-func withSetupID(id uuid.UUID) setupOption {
-	return func(m *SetupMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *Setup
-		)
-		m.oldValue = func(ctx context.Context) (*Setup, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().Setup.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withSetup sets the old Setup of the mutation.
-func withSetup(node *Setup) setupOption {
-	return func(m *SetupMutation) {
-		m.oldValue = func(context.Context) (*Setup, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m SetupMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m SetupMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Setup entities.
-func (m *SetupMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *SetupMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *SetupMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().Setup.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *SetupMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *SetupMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the Setup entity.
-// If the Setup object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *SetupMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *SetupMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *SetupMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the Setup entity.
-// If the Setup object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *SetupMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetName sets the "name" field.
-func (m *SetupMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *SetupMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the Setup entity.
-// If the Setup object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupMutation) OldName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
-	}
-	return oldValue.Name, nil
-}
-
-// ResetName resets all changes to the "name" field.
-func (m *SetupMutation) ResetName() {
-	m.name = nil
-}
-
-// SetDescription sets the "description" field.
-func (m *SetupMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *SetupMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Setup entity.
-// If the Setup object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupMutation) OldDescription(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *SetupMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[setup.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *SetupMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[setup.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *SetupMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, setup.FieldDescription)
-}
-
-// SetIsActive sets the "is_active" field.
-func (m *SetupMutation) SetIsActive(b bool) {
-	m.is_active = &b
-}
-
-// IsActive returns the value of the "is_active" field in the mutation.
-func (m *SetupMutation) IsActive() (r bool, exists bool) {
-	v := m.is_active
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsActive returns the old "is_active" field's value of the Setup entity.
-// If the Setup object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupMutation) OldIsActive(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsActive is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsActive requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsActive: %w", err)
-	}
-	return oldValue.IsActive, nil
-}
-
-// ResetIsActive resets all changes to the "is_active" field.
-func (m *SetupMutation) ResetIsActive() {
-	m.is_active = nil
-}
-
-// SetSport sets the "sport" field.
-func (m *SetupMutation) SetSport(s string) {
-	m.sport = &s
-}
-
-// Sport returns the value of the "sport" field in the mutation.
-func (m *SetupMutation) Sport() (r string, exists bool) {
-	v := m.sport
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSport returns the old "sport" field's value of the Setup entity.
-// If the Setup object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupMutation) OldSport(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSport is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSport requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSport: %w", err)
-	}
-	return oldValue.Sport, nil
-}
-
-// ClearSport clears the value of the "sport" field.
-func (m *SetupMutation) ClearSport() {
-	m.sport = nil
-	m.clearedFields[setup.FieldSport] = struct{}{}
-}
-
-// SportCleared returns if the "sport" field was cleared in this mutation.
-func (m *SetupMutation) SportCleared() bool {
-	_, ok := m.clearedFields[setup.FieldSport]
-	return ok
-}
-
-// ResetSport resets all changes to the "sport" field.
-func (m *SetupMutation) ResetSport() {
-	m.sport = nil
-	delete(m.clearedFields, setup.FieldSport)
-}
-
-// SetGroupID sets the "group" edge to the Group entity by id.
-func (m *SetupMutation) SetGroupID(id uuid.UUID) {
-	m.group = &id
-}
-
-// ClearGroup clears the "group" edge to the Group entity.
-func (m *SetupMutation) ClearGroup() {
-	m.clearedgroup = true
-}
-
-// GroupCleared reports if the "group" edge to the Group entity was cleared.
-func (m *SetupMutation) GroupCleared() bool {
-	return m.clearedgroup
-}
-
-// GroupID returns the "group" edge ID in the mutation.
-func (m *SetupMutation) GroupID() (id uuid.UUID, exists bool) {
-	if m.group != nil {
-		return *m.group, true
-	}
-	return
-}
-
-// GroupIDs returns the "group" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// GroupID instead. It exists only for internal usage by the builders.
-func (m *SetupMutation) GroupIDs() (ids []uuid.UUID) {
-	if id := m.group; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetGroup resets all changes to the "group" edge.
-func (m *SetupMutation) ResetGroup() {
-	m.group = nil
-	m.clearedgroup = false
-}
-
-// AddPartIDs adds the "parts" edge to the SetupPart entity by ids.
-func (m *SetupMutation) AddPartIDs(ids ...uuid.UUID) {
-	if m.parts == nil {
-		m.parts = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.parts[ids[i]] = struct{}{}
-	}
-}
-
-// ClearParts clears the "parts" edge to the SetupPart entity.
-func (m *SetupMutation) ClearParts() {
-	m.clearedparts = true
-}
-
-// PartsCleared reports if the "parts" edge to the SetupPart entity was cleared.
-func (m *SetupMutation) PartsCleared() bool {
-	return m.clearedparts
-}
-
-// RemovePartIDs removes the "parts" edge to the SetupPart entity by IDs.
-func (m *SetupMutation) RemovePartIDs(ids ...uuid.UUID) {
-	if m.removedparts == nil {
-		m.removedparts = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.parts, ids[i])
-		m.removedparts[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedParts returns the removed IDs of the "parts" edge to the SetupPart entity.
-func (m *SetupMutation) RemovedPartsIDs() (ids []uuid.UUID) {
-	for id := range m.removedparts {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// PartsIDs returns the "parts" edge IDs in the mutation.
-func (m *SetupMutation) PartsIDs() (ids []uuid.UUID) {
-	for id := range m.parts {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetParts resets all changes to the "parts" edge.
-func (m *SetupMutation) ResetParts() {
-	m.parts = nil
-	m.clearedparts = false
-	m.removedparts = nil
-}
-
-// AddUsageSessionIDs adds the "usage_sessions" edge to the UsageSession entity by ids.
-func (m *SetupMutation) AddUsageSessionIDs(ids ...uuid.UUID) {
-	if m.usage_sessions == nil {
-		m.usage_sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.usage_sessions[ids[i]] = struct{}{}
-	}
-}
-
-// ClearUsageSessions clears the "usage_sessions" edge to the UsageSession entity.
-func (m *SetupMutation) ClearUsageSessions() {
-	m.clearedusage_sessions = true
-}
-
-// UsageSessionsCleared reports if the "usage_sessions" edge to the UsageSession entity was cleared.
-func (m *SetupMutation) UsageSessionsCleared() bool {
-	return m.clearedusage_sessions
-}
-
-// RemoveUsageSessionIDs removes the "usage_sessions" edge to the UsageSession entity by IDs.
-func (m *SetupMutation) RemoveUsageSessionIDs(ids ...uuid.UUID) {
-	if m.removedusage_sessions == nil {
-		m.removedusage_sessions = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.usage_sessions, ids[i])
-		m.removedusage_sessions[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedUsageSessions returns the removed IDs of the "usage_sessions" edge to the UsageSession entity.
-func (m *SetupMutation) RemovedUsageSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.removedusage_sessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// UsageSessionsIDs returns the "usage_sessions" edge IDs in the mutation.
-func (m *SetupMutation) UsageSessionsIDs() (ids []uuid.UUID) {
-	for id := range m.usage_sessions {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetUsageSessions resets all changes to the "usage_sessions" edge.
-func (m *SetupMutation) ResetUsageSessions() {
-	m.usage_sessions = nil
-	m.clearedusage_sessions = false
-	m.removedusage_sessions = nil
-}
-
-// Where appends a list predicates to the SetupMutation builder.
-func (m *SetupMutation) Where(ps ...predicate.Setup) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the SetupMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *SetupMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.Setup, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *SetupMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *SetupMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (Setup).
-func (m *SetupMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *SetupMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.created_at != nil {
-		fields = append(fields, setup.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, setup.FieldUpdatedAt)
-	}
-	if m.name != nil {
-		fields = append(fields, setup.FieldName)
-	}
-	if m.description != nil {
-		fields = append(fields, setup.FieldDescription)
-	}
-	if m.is_active != nil {
-		fields = append(fields, setup.FieldIsActive)
-	}
-	if m.sport != nil {
-		fields = append(fields, setup.FieldSport)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *SetupMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case setup.FieldCreatedAt:
-		return m.CreatedAt()
-	case setup.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case setup.FieldName:
-		return m.Name()
-	case setup.FieldDescription:
-		return m.Description()
-	case setup.FieldIsActive:
-		return m.IsActive()
-	case setup.FieldSport:
-		return m.Sport()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *SetupMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case setup.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case setup.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case setup.FieldName:
-		return m.OldName(ctx)
-	case setup.FieldDescription:
-		return m.OldDescription(ctx)
-	case setup.FieldIsActive:
-		return m.OldIsActive(ctx)
-	case setup.FieldSport:
-		return m.OldSport(ctx)
-	}
-	return nil, fmt.Errorf("unknown Setup field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SetupMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case setup.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case setup.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case setup.FieldName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetName(v)
-		return nil
-	case setup.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case setup.FieldIsActive:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsActive(v)
-		return nil
-	case setup.FieldSport:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSport(v)
-		return nil
-	}
-	return fmt.Errorf("unknown Setup field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *SetupMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *SetupMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SetupMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown Setup numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *SetupMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(setup.FieldDescription) {
-		fields = append(fields, setup.FieldDescription)
-	}
-	if m.FieldCleared(setup.FieldSport) {
-		fields = append(fields, setup.FieldSport)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *SetupMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *SetupMutation) ClearField(name string) error {
-	switch name {
-	case setup.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case setup.FieldSport:
-		m.ClearSport()
-		return nil
-	}
-	return fmt.Errorf("unknown Setup nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *SetupMutation) ResetField(name string) error {
-	switch name {
-	case setup.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case setup.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case setup.FieldName:
-		m.ResetName()
-		return nil
-	case setup.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case setup.FieldIsActive:
-		m.ResetIsActive()
-		return nil
-	case setup.FieldSport:
-		m.ResetSport()
-		return nil
-	}
-	return fmt.Errorf("unknown Setup field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *SetupMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.group != nil {
-		edges = append(edges, setup.EdgeGroup)
-	}
-	if m.parts != nil {
-		edges = append(edges, setup.EdgeParts)
-	}
-	if m.usage_sessions != nil {
-		edges = append(edges, setup.EdgeUsageSessions)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *SetupMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case setup.EdgeGroup:
-		if id := m.group; id != nil {
-			return []ent.Value{*id}
-		}
-	case setup.EdgeParts:
-		ids := make([]ent.Value, 0, len(m.parts))
-		for id := range m.parts {
-			ids = append(ids, id)
-		}
-		return ids
-	case setup.EdgeUsageSessions:
-		ids := make([]ent.Value, 0, len(m.usage_sessions))
-		for id := range m.usage_sessions {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *SetupMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedparts != nil {
-		edges = append(edges, setup.EdgeParts)
-	}
-	if m.removedusage_sessions != nil {
-		edges = append(edges, setup.EdgeUsageSessions)
-	}
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *SetupMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	case setup.EdgeParts:
-		ids := make([]ent.Value, 0, len(m.removedparts))
-		for id := range m.removedparts {
-			ids = append(ids, id)
-		}
-		return ids
-	case setup.EdgeUsageSessions:
-		ids := make([]ent.Value, 0, len(m.removedusage_sessions))
-		for id := range m.removedusage_sessions {
-			ids = append(ids, id)
-		}
-		return ids
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *SetupMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.clearedgroup {
-		edges = append(edges, setup.EdgeGroup)
-	}
-	if m.clearedparts {
-		edges = append(edges, setup.EdgeParts)
-	}
-	if m.clearedusage_sessions {
-		edges = append(edges, setup.EdgeUsageSessions)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *SetupMutation) EdgeCleared(name string) bool {
-	switch name {
-	case setup.EdgeGroup:
-		return m.clearedgroup
-	case setup.EdgeParts:
-		return m.clearedparts
-	case setup.EdgeUsageSessions:
-		return m.clearedusage_sessions
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *SetupMutation) ClearEdge(name string) error {
-	switch name {
-	case setup.EdgeGroup:
-		m.ClearGroup()
-		return nil
-	}
-	return fmt.Errorf("unknown Setup unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *SetupMutation) ResetEdge(name string) error {
-	switch name {
-	case setup.EdgeGroup:
-		m.ResetGroup()
-		return nil
-	case setup.EdgeParts:
-		m.ResetParts()
-		return nil
-	case setup.EdgeUsageSessions:
-		m.ResetUsageSessions()
-		return nil
-	}
-	return fmt.Errorf("unknown Setup edge %s", name)
-}
-
-// SetupPartMutation represents an operation that mutates the SetupPart nodes in the graph.
-type SetupPartMutation struct {
-	config
-	op            Op
-	typ           string
-	id            *uuid.UUID
-	created_at    *time.Time
-	updated_at    *time.Time
-	added_date    *time.Time
-	removed_date  *time.Time
-	position      *string
-	clearedFields map[string]struct{}
-	setup         *uuid.UUID
-	clearedsetup  bool
-	entity        *uuid.UUID
-	clearedentity bool
-	done          bool
-	oldValue      func(context.Context) (*SetupPart, error)
-	predicates    []predicate.SetupPart
-}
-
-var _ ent.Mutation = (*SetupPartMutation)(nil)
-
-// setuppartOption allows management of the mutation configuration using functional options.
-type setuppartOption func(*SetupPartMutation)
-
-// newSetupPartMutation creates new mutation for the SetupPart entity.
-func newSetupPartMutation(c config, op Op, opts ...setuppartOption) *SetupPartMutation {
-	m := &SetupPartMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeSetupPart,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withSetupPartID sets the ID field of the mutation.
-func withSetupPartID(id uuid.UUID) setuppartOption {
-	return func(m *SetupPartMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *SetupPart
-		)
-		m.oldValue = func(ctx context.Context) (*SetupPart, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().SetupPart.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withSetupPart sets the old SetupPart of the mutation.
-func withSetupPart(node *SetupPart) setuppartOption {
-	return func(m *SetupPartMutation) {
-		m.oldValue = func(context.Context) (*SetupPart, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m SetupPartMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m SetupPartMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of SetupPart entities.
-func (m *SetupPartMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *SetupPartMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *SetupPartMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().SetupPart.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *SetupPartMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *SetupPartMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the SetupPart entity.
-// If the SetupPart object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupPartMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *SetupPartMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *SetupPartMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *SetupPartMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the SetupPart entity.
-// If the SetupPart object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupPartMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *SetupPartMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetSetupID sets the "setup_id" field.
-func (m *SetupPartMutation) SetSetupID(u uuid.UUID) {
-	m.setup = &u
-}
-
-// SetupID returns the value of the "setup_id" field in the mutation.
-func (m *SetupPartMutation) SetupID() (r uuid.UUID, exists bool) {
-	v := m.setup
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSetupID returns the old "setup_id" field's value of the SetupPart entity.
-// If the SetupPart object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupPartMutation) OldSetupID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSetupID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSetupID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSetupID: %w", err)
-	}
-	return oldValue.SetupID, nil
-}
-
-// ResetSetupID resets all changes to the "setup_id" field.
-func (m *SetupPartMutation) ResetSetupID() {
-	m.setup = nil
-}
-
-// SetEntityID sets the "entity_id" field.
-func (m *SetupPartMutation) SetEntityID(u uuid.UUID) {
-	m.entity = &u
-}
-
-// EntityID returns the value of the "entity_id" field in the mutation.
-func (m *SetupPartMutation) EntityID() (r uuid.UUID, exists bool) {
-	v := m.entity
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEntityID returns the old "entity_id" field's value of the SetupPart entity.
-// If the SetupPart object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupPartMutation) OldEntityID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEntityID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEntityID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEntityID: %w", err)
-	}
-	return oldValue.EntityID, nil
-}
-
-// ResetEntityID resets all changes to the "entity_id" field.
-func (m *SetupPartMutation) ResetEntityID() {
-	m.entity = nil
-}
-
-// SetAddedDate sets the "added_date" field.
-func (m *SetupPartMutation) SetAddedDate(t time.Time) {
-	m.added_date = &t
-}
-
-// AddedDate returns the value of the "added_date" field in the mutation.
-func (m *SetupPartMutation) AddedDate() (r time.Time, exists bool) {
-	v := m.added_date
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAddedDate returns the old "added_date" field's value of the SetupPart entity.
-// If the SetupPart object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupPartMutation) OldAddedDate(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAddedDate is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAddedDate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAddedDate: %w", err)
-	}
-	return oldValue.AddedDate, nil
-}
-
-// ResetAddedDate resets all changes to the "added_date" field.
-func (m *SetupPartMutation) ResetAddedDate() {
-	m.added_date = nil
-}
-
-// SetRemovedDate sets the "removed_date" field.
-func (m *SetupPartMutation) SetRemovedDate(t time.Time) {
-	m.removed_date = &t
-}
-
-// RemovedDate returns the value of the "removed_date" field in the mutation.
-func (m *SetupPartMutation) RemovedDate() (r time.Time, exists bool) {
-	v := m.removed_date
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRemovedDate returns the old "removed_date" field's value of the SetupPart entity.
-// If the SetupPart object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupPartMutation) OldRemovedDate(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRemovedDate is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRemovedDate requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRemovedDate: %w", err)
-	}
-	return oldValue.RemovedDate, nil
-}
-
-// ClearRemovedDate clears the value of the "removed_date" field.
-func (m *SetupPartMutation) ClearRemovedDate() {
-	m.removed_date = nil
-	m.clearedFields[setuppart.FieldRemovedDate] = struct{}{}
-}
-
-// RemovedDateCleared returns if the "removed_date" field was cleared in this mutation.
-func (m *SetupPartMutation) RemovedDateCleared() bool {
-	_, ok := m.clearedFields[setuppart.FieldRemovedDate]
-	return ok
-}
-
-// ResetRemovedDate resets all changes to the "removed_date" field.
-func (m *SetupPartMutation) ResetRemovedDate() {
-	m.removed_date = nil
-	delete(m.clearedFields, setuppart.FieldRemovedDate)
-}
-
-// SetPosition sets the "position" field.
-func (m *SetupPartMutation) SetPosition(s string) {
-	m.position = &s
-}
-
-// Position returns the value of the "position" field in the mutation.
-func (m *SetupPartMutation) Position() (r string, exists bool) {
-	v := m.position
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPosition returns the old "position" field's value of the SetupPart entity.
-// If the SetupPart object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *SetupPartMutation) OldPosition(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPosition is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPosition requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPosition: %w", err)
-	}
-	return oldValue.Position, nil
-}
-
-// ClearPosition clears the value of the "position" field.
-func (m *SetupPartMutation) ClearPosition() {
-	m.position = nil
-	m.clearedFields[setuppart.FieldPosition] = struct{}{}
-}
-
-// PositionCleared returns if the "position" field was cleared in this mutation.
-func (m *SetupPartMutation) PositionCleared() bool {
-	_, ok := m.clearedFields[setuppart.FieldPosition]
-	return ok
-}
-
-// ResetPosition resets all changes to the "position" field.
-func (m *SetupPartMutation) ResetPosition() {
-	m.position = nil
-	delete(m.clearedFields, setuppart.FieldPosition)
-}
-
-// ClearSetup clears the "setup" edge to the Setup entity.
-func (m *SetupPartMutation) ClearSetup() {
-	m.clearedsetup = true
-	m.clearedFields[setuppart.FieldSetupID] = struct{}{}
-}
-
-// SetupCleared reports if the "setup" edge to the Setup entity was cleared.
-func (m *SetupPartMutation) SetupCleared() bool {
-	return m.clearedsetup
-}
-
-// SetupIDs returns the "setup" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SetupID instead. It exists only for internal usage by the builders.
-func (m *SetupPartMutation) SetupIDs() (ids []uuid.UUID) {
-	if id := m.setup; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetSetup resets all changes to the "setup" edge.
-func (m *SetupPartMutation) ResetSetup() {
-	m.setup = nil
-	m.clearedsetup = false
-}
-
-// ClearEntity clears the "entity" edge to the Entity entity.
-func (m *SetupPartMutation) ClearEntity() {
-	m.clearedentity = true
-	m.clearedFields[setuppart.FieldEntityID] = struct{}{}
-}
-
-// EntityCleared reports if the "entity" edge to the Entity entity was cleared.
-func (m *SetupPartMutation) EntityCleared() bool {
-	return m.clearedentity
-}
-
-// EntityIDs returns the "entity" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// EntityID instead. It exists only for internal usage by the builders.
-func (m *SetupPartMutation) EntityIDs() (ids []uuid.UUID) {
-	if id := m.entity; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetEntity resets all changes to the "entity" edge.
-func (m *SetupPartMutation) ResetEntity() {
-	m.entity = nil
-	m.clearedentity = false
-}
-
-// Where appends a list predicates to the SetupPartMutation builder.
-func (m *SetupPartMutation) Where(ps ...predicate.SetupPart) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the SetupPartMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *SetupPartMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.SetupPart, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *SetupPartMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *SetupPartMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (SetupPart).
-func (m *SetupPartMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *SetupPartMutation) Fields() []string {
-	fields := make([]string, 0, 7)
-	if m.created_at != nil {
-		fields = append(fields, setuppart.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, setuppart.FieldUpdatedAt)
-	}
-	if m.setup != nil {
-		fields = append(fields, setuppart.FieldSetupID)
-	}
-	if m.entity != nil {
-		fields = append(fields, setuppart.FieldEntityID)
-	}
-	if m.added_date != nil {
-		fields = append(fields, setuppart.FieldAddedDate)
-	}
-	if m.removed_date != nil {
-		fields = append(fields, setuppart.FieldRemovedDate)
-	}
-	if m.position != nil {
-		fields = append(fields, setuppart.FieldPosition)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *SetupPartMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case setuppart.FieldCreatedAt:
-		return m.CreatedAt()
-	case setuppart.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case setuppart.FieldSetupID:
-		return m.SetupID()
-	case setuppart.FieldEntityID:
-		return m.EntityID()
-	case setuppart.FieldAddedDate:
-		return m.AddedDate()
-	case setuppart.FieldRemovedDate:
-		return m.RemovedDate()
-	case setuppart.FieldPosition:
-		return m.Position()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *SetupPartMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case setuppart.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case setuppart.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case setuppart.FieldSetupID:
-		return m.OldSetupID(ctx)
-	case setuppart.FieldEntityID:
-		return m.OldEntityID(ctx)
-	case setuppart.FieldAddedDate:
-		return m.OldAddedDate(ctx)
-	case setuppart.FieldRemovedDate:
-		return m.OldRemovedDate(ctx)
-	case setuppart.FieldPosition:
-		return m.OldPosition(ctx)
-	}
-	return nil, fmt.Errorf("unknown SetupPart field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SetupPartMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case setuppart.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case setuppart.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case setuppart.FieldSetupID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSetupID(v)
-		return nil
-	case setuppart.FieldEntityID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEntityID(v)
-		return nil
-	case setuppart.FieldAddedDate:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAddedDate(v)
-		return nil
-	case setuppart.FieldRemovedDate:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRemovedDate(v)
-		return nil
-	case setuppart.FieldPosition:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPosition(v)
-		return nil
-	}
-	return fmt.Errorf("unknown SetupPart field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *SetupPartMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *SetupPartMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *SetupPartMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown SetupPart numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *SetupPartMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(setuppart.FieldRemovedDate) {
-		fields = append(fields, setuppart.FieldRemovedDate)
-	}
-	if m.FieldCleared(setuppart.FieldPosition) {
-		fields = append(fields, setuppart.FieldPosition)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *SetupPartMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *SetupPartMutation) ClearField(name string) error {
-	switch name {
-	case setuppart.FieldRemovedDate:
-		m.ClearRemovedDate()
-		return nil
-	case setuppart.FieldPosition:
-		m.ClearPosition()
-		return nil
-	}
-	return fmt.Errorf("unknown SetupPart nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *SetupPartMutation) ResetField(name string) error {
-	switch name {
-	case setuppart.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case setuppart.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case setuppart.FieldSetupID:
-		m.ResetSetupID()
-		return nil
-	case setuppart.FieldEntityID:
-		m.ResetEntityID()
-		return nil
-	case setuppart.FieldAddedDate:
-		m.ResetAddedDate()
-		return nil
-	case setuppart.FieldRemovedDate:
-		m.ResetRemovedDate()
-		return nil
-	case setuppart.FieldPosition:
-		m.ResetPosition()
-		return nil
-	}
-	return fmt.Errorf("unknown SetupPart field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *SetupPartMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.setup != nil {
-		edges = append(edges, setuppart.EdgeSetup)
-	}
-	if m.entity != nil {
-		edges = append(edges, setuppart.EdgeEntity)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *SetupPartMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case setuppart.EdgeSetup:
-		if id := m.setup; id != nil {
-			return []ent.Value{*id}
-		}
-	case setuppart.EdgeEntity:
-		if id := m.entity; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *SetupPartMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *SetupPartMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *SetupPartMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedsetup {
-		edges = append(edges, setuppart.EdgeSetup)
-	}
-	if m.clearedentity {
-		edges = append(edges, setuppart.EdgeEntity)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *SetupPartMutation) EdgeCleared(name string) bool {
-	switch name {
-	case setuppart.EdgeSetup:
-		return m.clearedsetup
-	case setuppart.EdgeEntity:
-		return m.clearedentity
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *SetupPartMutation) ClearEdge(name string) error {
-	switch name {
-	case setuppart.EdgeSetup:
-		m.ClearSetup()
-		return nil
-	case setuppart.EdgeEntity:
-		m.ClearEntity()
-		return nil
-	}
-	return fmt.Errorf("unknown SetupPart unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *SetupPartMutation) ResetEdge(name string) error {
-	switch name {
-	case setuppart.EdgeSetup:
-		m.ResetSetup()
-		return nil
-	case setuppart.EdgeEntity:
-		m.ResetEntity()
-		return nil
-	}
-	return fmt.Errorf("unknown SetupPart edge %s", name)
-}
-
 // TagMutation represents an operation that mutates the Tag nodes in the graph.
 type TagMutation struct {
 	config
@@ -17497,8 +17497,8 @@ type UsageSessionMutation struct {
 	rating              *int
 	addrating           *int
 	clearedFields       map[string]struct{}
-	setup               *uuid.UUID
-	clearedsetup        bool
+	build               *uuid.UUID
+	clearedbuild        bool
 	done                bool
 	oldValue            func(context.Context) (*UsageSession, error)
 	predicates          []predicate.UsageSession
@@ -17680,40 +17680,40 @@ func (m *UsageSessionMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetSetupID sets the "setup_id" field.
-func (m *UsageSessionMutation) SetSetupID(u uuid.UUID) {
-	m.setup = &u
+// SetBuildID sets the "build_id" field.
+func (m *UsageSessionMutation) SetBuildID(u uuid.UUID) {
+	m.build = &u
 }
 
-// SetupID returns the value of the "setup_id" field in the mutation.
-func (m *UsageSessionMutation) SetupID() (r uuid.UUID, exists bool) {
-	v := m.setup
+// BuildID returns the value of the "build_id" field in the mutation.
+func (m *UsageSessionMutation) BuildID() (r uuid.UUID, exists bool) {
+	v := m.build
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSetupID returns the old "setup_id" field's value of the UsageSession entity.
+// OldBuildID returns the old "build_id" field's value of the UsageSession entity.
 // If the UsageSession object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *UsageSessionMutation) OldSetupID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *UsageSessionMutation) OldBuildID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSetupID is only allowed on UpdateOne operations")
+		return v, errors.New("OldBuildID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSetupID requires an ID field in the mutation")
+		return v, errors.New("OldBuildID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSetupID: %w", err)
+		return v, fmt.Errorf("querying old value for OldBuildID: %w", err)
 	}
-	return oldValue.SetupID, nil
+	return oldValue.BuildID, nil
 }
 
-// ResetSetupID resets all changes to the "setup_id" field.
-func (m *UsageSessionMutation) ResetSetupID() {
-	m.setup = nil
+// ResetBuildID resets all changes to the "build_id" field.
+func (m *UsageSessionMutation) ResetBuildID() {
+	m.build = nil
 }
 
 // SetDate sets the "date" field.
@@ -18038,31 +18038,31 @@ func (m *UsageSessionMutation) ResetRating() {
 	delete(m.clearedFields, usagesession.FieldRating)
 }
 
-// ClearSetup clears the "setup" edge to the Setup entity.
-func (m *UsageSessionMutation) ClearSetup() {
-	m.clearedsetup = true
-	m.clearedFields[usagesession.FieldSetupID] = struct{}{}
+// ClearBuild clears the "build" edge to the Build entity.
+func (m *UsageSessionMutation) ClearBuild() {
+	m.clearedbuild = true
+	m.clearedFields[usagesession.FieldBuildID] = struct{}{}
 }
 
-// SetupCleared reports if the "setup" edge to the Setup entity was cleared.
-func (m *UsageSessionMutation) SetupCleared() bool {
-	return m.clearedsetup
+// BuildCleared reports if the "build" edge to the Build entity was cleared.
+func (m *UsageSessionMutation) BuildCleared() bool {
+	return m.clearedbuild
 }
 
-// SetupIDs returns the "setup" edge IDs in the mutation.
+// BuildIDs returns the "build" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SetupID instead. It exists only for internal usage by the builders.
-func (m *UsageSessionMutation) SetupIDs() (ids []uuid.UUID) {
-	if id := m.setup; id != nil {
+// BuildID instead. It exists only for internal usage by the builders.
+func (m *UsageSessionMutation) BuildIDs() (ids []uuid.UUID) {
+	if id := m.build; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSetup resets all changes to the "setup" edge.
-func (m *UsageSessionMutation) ResetSetup() {
-	m.setup = nil
-	m.clearedsetup = false
+// ResetBuild resets all changes to the "build" edge.
+func (m *UsageSessionMutation) ResetBuild() {
+	m.build = nil
+	m.clearedbuild = false
 }
 
 // Where appends a list predicates to the UsageSessionMutation builder.
@@ -18106,8 +18106,8 @@ func (m *UsageSessionMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, usagesession.FieldUpdatedAt)
 	}
-	if m.setup != nil {
-		fields = append(fields, usagesession.FieldSetupID)
+	if m.build != nil {
+		fields = append(fields, usagesession.FieldBuildID)
 	}
 	if m.date != nil {
 		fields = append(fields, usagesession.FieldDate)
@@ -18139,8 +18139,8 @@ func (m *UsageSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case usagesession.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case usagesession.FieldSetupID:
-		return m.SetupID()
+	case usagesession.FieldBuildID:
+		return m.BuildID()
 	case usagesession.FieldDate:
 		return m.Date()
 	case usagesession.FieldDurationMinutes:
@@ -18166,8 +18166,8 @@ func (m *UsageSessionMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldCreatedAt(ctx)
 	case usagesession.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case usagesession.FieldSetupID:
-		return m.OldSetupID(ctx)
+	case usagesession.FieldBuildID:
+		return m.OldBuildID(ctx)
 	case usagesession.FieldDate:
 		return m.OldDate(ctx)
 	case usagesession.FieldDurationMinutes:
@@ -18203,12 +18203,12 @@ func (m *UsageSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case usagesession.FieldSetupID:
+	case usagesession.FieldBuildID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSetupID(v)
+		m.SetBuildID(v)
 		return nil
 	case usagesession.FieldDate:
 		v, ok := value.(time.Time)
@@ -18367,8 +18367,8 @@ func (m *UsageSessionMutation) ResetField(name string) error {
 	case usagesession.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case usagesession.FieldSetupID:
-		m.ResetSetupID()
+	case usagesession.FieldBuildID:
+		m.ResetBuildID()
 		return nil
 	case usagesession.FieldDate:
 		m.ResetDate()
@@ -18395,8 +18395,8 @@ func (m *UsageSessionMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *UsageSessionMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.setup != nil {
-		edges = append(edges, usagesession.EdgeSetup)
+	if m.build != nil {
+		edges = append(edges, usagesession.EdgeBuild)
 	}
 	return edges
 }
@@ -18405,8 +18405,8 @@ func (m *UsageSessionMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *UsageSessionMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case usagesession.EdgeSetup:
-		if id := m.setup; id != nil {
+	case usagesession.EdgeBuild:
+		if id := m.build; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -18428,8 +18428,8 @@ func (m *UsageSessionMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *UsageSessionMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedsetup {
-		edges = append(edges, usagesession.EdgeSetup)
+	if m.clearedbuild {
+		edges = append(edges, usagesession.EdgeBuild)
 	}
 	return edges
 }
@@ -18438,8 +18438,8 @@ func (m *UsageSessionMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *UsageSessionMutation) EdgeCleared(name string) bool {
 	switch name {
-	case usagesession.EdgeSetup:
-		return m.clearedsetup
+	case usagesession.EdgeBuild:
+		return m.clearedbuild
 	}
 	return false
 }
@@ -18448,8 +18448,8 @@ func (m *UsageSessionMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *UsageSessionMutation) ClearEdge(name string) error {
 	switch name {
-	case usagesession.EdgeSetup:
-		m.ClearSetup()
+	case usagesession.EdgeBuild:
+		m.ClearBuild()
 		return nil
 	}
 	return fmt.Errorf("unknown UsageSession unique edge %s", name)
@@ -18459,8 +18459,8 @@ func (m *UsageSessionMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *UsageSessionMutation) ResetEdge(name string) error {
 	switch name {
-	case usagesession.EdgeSetup:
-		m.ResetSetup()
+	case usagesession.EdgeBuild:
+		m.ResetBuild()
 		return nil
 	}
 	return fmt.Errorf("unknown UsageSession edge %s", name)

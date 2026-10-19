@@ -20,6 +20,10 @@ type Tx struct {
 	AuthRoles *AuthRolesClient
 	// AuthTokens is the client for interacting with the AuthTokens builders.
 	AuthTokens *AuthTokensClient
+	// Build is the client for interacting with the Build builders.
+	Build *BuildClient
+	// BuildPart is the client for interacting with the BuildPart builders.
+	BuildPart *BuildPartClient
 	// Entity is the client for interacting with the Entity builders.
 	Entity *EntityClient
 	// EntityField is the client for interacting with the EntityField builders.
@@ -40,10 +44,6 @@ type Tx struct {
 	Notifier *NotifierClient
 	// PasswordResetTokens is the client for interacting with the PasswordResetTokens builders.
 	PasswordResetTokens *PasswordResetTokensClient
-	// Setup is the client for interacting with the Setup builders.
-	Setup *SetupClient
-	// SetupPart is the client for interacting with the SetupPart builders.
-	SetupPart *SetupPartClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// TemplateField is the client for interacting with the TemplateField builders.
@@ -189,6 +189,8 @@ func (tx *Tx) init() {
 	tx.Attachment = NewAttachmentClient(tx.config)
 	tx.AuthRoles = NewAuthRolesClient(tx.config)
 	tx.AuthTokens = NewAuthTokensClient(tx.config)
+	tx.Build = NewBuildClient(tx.config)
+	tx.BuildPart = NewBuildPartClient(tx.config)
 	tx.Entity = NewEntityClient(tx.config)
 	tx.EntityField = NewEntityFieldClient(tx.config)
 	tx.EntityTemplate = NewEntityTemplateClient(tx.config)
@@ -199,8 +201,6 @@ func (tx *Tx) init() {
 	tx.MaintenanceEntry = NewMaintenanceEntryClient(tx.config)
 	tx.Notifier = NewNotifierClient(tx.config)
 	tx.PasswordResetTokens = NewPasswordResetTokensClient(tx.config)
-	tx.Setup = NewSetupClient(tx.config)
-	tx.SetupPart = NewSetupPartClient(tx.config)
 	tx.Tag = NewTagClient(tx.config)
 	tx.TemplateField = NewTemplateFieldClient(tx.config)
 	tx.UsageSession = NewUsageSessionClient(tx.config)

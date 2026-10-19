@@ -378,21 +378,21 @@ func HasTagsWith(preds ...predicate.Tag) predicate.Group {
 	})
 }
 
-// HasSetups applies the HasEdge predicate on the "setups" edge.
-func HasSetups() predicate.Group {
+// HasBuilds applies the HasEdge predicate on the "builds" edge.
+func HasBuilds() predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SetupsTable, SetupsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, BuildsTable, BuildsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSetupsWith applies the HasEdge predicate on the "setups" edge with a given conditions (other predicates).
-func HasSetupsWith(preds ...predicate.Setup) predicate.Group {
+// HasBuildsWith applies the HasEdge predicate on the "builds" edge with a given conditions (other predicates).
+func HasBuildsWith(preds ...predicate.Build) predicate.Group {
 	return predicate.Group(func(s *sql.Selector) {
-		step := newSetupsStep()
+		step := newBuildsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

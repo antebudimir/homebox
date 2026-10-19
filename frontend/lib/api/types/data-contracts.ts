@@ -1475,7 +1475,7 @@ export interface ValidateErrorResponse {
   fields: string;
 }
 
-export interface SetupCreate {
+export interface BuildCreate {
   /** @minLength 1 */
   name: string;
   description: string;
@@ -1483,7 +1483,7 @@ export interface SetupCreate {
   isActive: boolean;
 }
 
-export interface SetupUpdate {
+export interface BuildUpdate {
   /** @minLength 1 */
   name: string;
   description: string;
@@ -1491,7 +1491,7 @@ export interface SetupUpdate {
   isActive: boolean;
 }
 
-export interface SetupOut {
+export interface BuildOut {
   id: string;
   name: string;
   description: string;
@@ -1499,14 +1499,14 @@ export interface SetupOut {
   isActive: boolean;
 }
 
-export interface SetupPartCreate {
+export interface BuildPartCreate {
   entityId: string;
   position: string;
 }
 
-export interface SetupPartOut {
+export interface BuildPartOut {
   id: string;
-  setupId: string;
+  buildId: string;
   entityId: string;
   entityName: string;
   position: string;
@@ -1514,12 +1514,12 @@ export interface SetupPartOut {
   removedDate?: Date | string | null;
 }
 
-export interface SetupPartAddOut {
-  part: SetupPartOut;
+export interface BuildPartAddOut {
+  part: BuildPartOut;
   warnings: string[];
 }
 
-export interface SetupStatsOut {
+export interface BuildStatsOut {
   totalInvestment: number;
   sessionCount: number;
   costPerSession: number;
@@ -1545,7 +1545,7 @@ export interface UsageSessionUpdate {
 
 export interface UsageSessionOut {
   id: string;
-  setupId: string;
+  buildId: string;
   date: Date | string;
   durationMinutes: number;
   location: string;

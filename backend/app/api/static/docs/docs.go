@@ -211,6 +211,513 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/builds": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get All Builds",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.Results-repo_BuildOut"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Create Build",
+                "parameters": [
+                    {
+                        "description": "Build Data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/builds/statistics": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get Build Statistics",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildsStatsOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/builds/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get Build",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildOut"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Update Build",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Build Data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildOut"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Delete Build",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/builds/{id}/parts": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get Build Parts (mounting history)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.Results-repo_BuildPartOut"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Mount a Part on a Build",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Part Data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildPartCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/repo.BuildPartAddOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/builds/{id}/parts/current": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get Currently Mounted Parts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.Results-repo_BuildPartOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/builds/{id}/parts/{part_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Remove a Part from a Build (stamps removedDate)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Build Part ID",
+                        "name": "part_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/builds/{id}/parts/{part_id}/purge": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Permanently delete a Build Part assignment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Build Part ID",
+                        "name": "part_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/builds/{id}/sessions": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get Usage Sessions for a Build",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.Results-repo_UsageSessionOut"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Log a Usage Session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Session Data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.UsageSessionCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/repo.UsageSessionOut"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/builds/{id}/sessions/{session_id}": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Update a Usage Session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Session Data",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/repo.UsageSessionUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/repo.UsageSessionOut"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Delete a Usage Session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Build ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/v1/currencies": {
             "get": {
                 "produces": [
@@ -880,6 +1387,39 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/v1/entities/{id}/build-history": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Builds"
+                ],
+                "summary": "Get the mounting history of a part across all builds",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Entity (Part) ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/v1.Results-repo_BuildPartOut"
+                        }
                     }
                 }
             }
@@ -3500,6 +4040,140 @@ const docTemplate = `{
                 }
             }
         },
+        "ent.Build": {
+            "type": "object",
+            "properties": {
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Description holds the value of the \"description\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the BuildQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.BuildEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "is_active": {
+                    "description": "IsActive holds the value of the \"is_active\" field.",
+                    "type": "boolean"
+                },
+                "name": {
+                    "description": "Name holds the value of the \"name\" field.",
+                    "type": "string"
+                },
+                "sport": {
+                    "description": "Sport holds the value of the \"sport\" field.",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.BuildEdges": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "description": "Group holds the value of the group edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Group"
+                        }
+                    ]
+                },
+                "parts": {
+                    "description": "Parts holds the value of the parts edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.BuildPart"
+                    }
+                },
+                "usage_sessions": {
+                    "description": "UsageSessions holds the value of the usage_sessions edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.UsageSession"
+                    }
+                }
+            }
+        },
+        "ent.BuildPart": {
+            "type": "object",
+            "properties": {
+                "added_date": {
+                    "description": "AddedDate holds the value of the \"added_date\" field.",
+                    "type": "string"
+                },
+                "build_id": {
+                    "description": "BuildID holds the value of the \"build_id\" field.",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the BuildPartQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.BuildPartEdges"
+                        }
+                    ]
+                },
+                "entity_id": {
+                    "description": "EntityID holds the value of the \"entity_id\" field.",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "position": {
+                    "description": "Position holds the value of the \"position\" field.",
+                    "type": "string"
+                },
+                "removed_date": {
+                    "description": "RemovedDate holds the value of the \"removed_date\" field.",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.BuildPartEdges": {
+            "type": "object",
+            "properties": {
+                "build": {
+                    "description": "Build holds the value of the build edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Build"
+                        }
+                    ]
+                },
+                "entity": {
+                    "description": "Entity holds the value of the entity edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Entity"
+                        }
+                    ]
+                }
+            }
+        },
         "ent.Entity": {
             "type": "object",
             "properties": {
@@ -3621,6 +4295,13 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/ent.Attachment"
+                    }
+                },
+                "build_parts": {
+                    "description": "BuildParts holds the value of the build_parts edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.BuildPart"
                     }
                 },
                 "children": {
@@ -4057,6 +4738,13 @@ const docTemplate = `{
         "ent.GroupEdges": {
             "type": "object",
             "properties": {
+                "builds": {
+                    "description": "Builds holds the value of the builds edge.",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/ent.Build"
+                    }
+                },
                 "entities": {
                     "description": "Entities holds the value of the entities edge.",
                     "type": "array",
@@ -4502,6 +5190,72 @@ const docTemplate = `{
                 }
             }
         },
+        "ent.UsageSession": {
+            "type": "object",
+            "properties": {
+                "build_id": {
+                    "description": "BuildID holds the value of the \"build_id\" field.",
+                    "type": "string"
+                },
+                "conditions": {
+                    "description": "Conditions holds the value of the \"conditions\" field.",
+                    "type": "string"
+                },
+                "created_at": {
+                    "description": "CreatedAt holds the value of the \"created_at\" field.",
+                    "type": "string"
+                },
+                "date": {
+                    "description": "Date holds the value of the \"date\" field.",
+                    "type": "string"
+                },
+                "duration_minutes": {
+                    "description": "DurationMinutes holds the value of the \"duration_minutes\" field.",
+                    "type": "integer"
+                },
+                "edges": {
+                    "description": "Edges holds the relations/edges for other nodes in the graph.\nThe values are being populated by the UsageSessionQuery when eager-loading is set.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.UsageSessionEdges"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "ID of the ent.",
+                    "type": "string"
+                },
+                "location": {
+                    "description": "Location holds the value of the \"location\" field.",
+                    "type": "string"
+                },
+                "notes": {
+                    "description": "Notes holds the value of the \"notes\" field.",
+                    "type": "string"
+                },
+                "rating": {
+                    "description": "Rating holds the value of the \"rating\" field.",
+                    "type": "integer"
+                },
+                "updated_at": {
+                    "description": "UpdatedAt holds the value of the \"updated_at\" field.",
+                    "type": "string"
+                }
+            }
+        },
+        "ent.UsageSessionEdges": {
+            "type": "object",
+            "properties": {
+                "build": {
+                    "description": "Build holds the value of the build edge.",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/ent.Build"
+                        }
+                    ]
+                }
+            }
+        },
         "ent.User": {
             "type": "object",
             "properties": {
@@ -4804,6 +5558,135 @@ const docTemplate = `{
                 },
                 "search_engine_name": {
                     "type": "string"
+                }
+            }
+        },
+        "repo.BuildCreate": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sport": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.BuildOut": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sport": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.BuildPartAddOut": {
+            "type": "object",
+            "properties": {
+                "part": {
+                    "$ref": "#/definitions/repo.BuildPartOut"
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "repo.BuildPartCreate": {
+            "type": "object",
+            "required": [
+                "entityId"
+            ],
+            "properties": {
+                "entityId": {
+                    "description": "EntityID is the part (an Entity) being mounted.",
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.BuildPartOut": {
+            "type": "object",
+            "properties": {
+                "addedDate": {
+                    "type": "string"
+                },
+                "buildId": {
+                    "type": "string"
+                },
+                "entityId": {
+                    "type": "string"
+                },
+                "entityName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "removedDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.BuildUpdate": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "isActive": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sport": {
+                    "type": "string"
+                }
+            }
+        },
+        "repo.BuildsStatsOut": {
+            "type": "object",
+            "properties": {
+                "costPerSession": {
+                    "type": "number"
+                },
+                "sessionCount": {
+                    "type": "integer"
+                },
+                "totalInvestment": {
+                    "type": "number"
                 }
             }
         },
@@ -6249,6 +7132,81 @@ const docTemplate = `{
                 }
             }
         },
+        "repo.UsageSessionCreate": {
+            "type": "object",
+            "properties": {
+                "conditions": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "durationMinutes": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                }
+            }
+        },
+        "repo.UsageSessionOut": {
+            "type": "object",
+            "properties": {
+                "buildId": {
+                    "type": "string"
+                },
+                "conditions": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "durationMinutes": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                }
+            }
+        },
+        "repo.UsageSessionUpdate": {
+            "type": "object",
+            "properties": {
+                "conditions": {
+                    "type": "string"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "durationMinutes": {
+                    "type": "integer"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "rating": {
+                    "type": "integer"
+                }
+            }
+        },
         "repo.UserOut": {
             "type": "object",
             "properties": {
@@ -6629,6 +7587,28 @@ const docTemplate = `{
                 }
             }
         },
+        "v1.Results-repo_BuildOut": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repo.BuildOut"
+                    }
+                }
+            }
+        },
+        "v1.Results-repo_BuildPartOut": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repo.BuildPartOut"
+                    }
+                }
+            }
+        },
         "v1.Results-repo_ExportOut": {
             "type": "object",
             "properties": {
@@ -6636,6 +7616,17 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/repo.ExportOut"
+                    }
+                }
+            }
+        },
+        "v1.Results-repo_UsageSessionOut": {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/repo.UsageSessionOut"
                     }
                 }
             }

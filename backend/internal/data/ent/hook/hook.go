@@ -57,6 +57,30 @@ func (f AuthTokensFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, 
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AuthTokensMutation", m)
 }
 
+// The BuildFunc type is an adapter to allow the use of ordinary
+// function as Build mutator.
+type BuildFunc func(context.Context, *ent.BuildMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BuildFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BuildMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BuildMutation", m)
+}
+
+// The BuildPartFunc type is an adapter to allow the use of ordinary
+// function as BuildPart mutator.
+type BuildPartFunc func(context.Context, *ent.BuildPartMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f BuildPartFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.BuildPartMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.BuildPartMutation", m)
+}
+
 // The EntityFunc type is an adapter to allow the use of ordinary
 // function as Entity mutator.
 type EntityFunc func(context.Context, *ent.EntityMutation) (ent.Value, error)
@@ -175,30 +199,6 @@ func (f PasswordResetTokensFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PasswordResetTokensMutation", m)
-}
-
-// The SetupFunc type is an adapter to allow the use of ordinary
-// function as Setup mutator.
-type SetupFunc func(context.Context, *ent.SetupMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SetupFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SetupMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SetupMutation", m)
-}
-
-// The SetupPartFunc type is an adapter to allow the use of ordinary
-// function as SetupPart mutator.
-type SetupPartFunc func(context.Context, *ent.SetupPartMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f SetupPartFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.SetupPartMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.SetupPartMutation", m)
 }
 
 // The TagFunc type is an adapter to allow the use of ordinary

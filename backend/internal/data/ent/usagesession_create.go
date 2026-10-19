@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 )
 
@@ -50,9 +50,9 @@ func (_c *UsageSessionCreate) SetNillableUpdatedAt(v *time.Time) *UsageSessionCr
 	return _c
 }
 
-// SetSetupID sets the "setup_id" field.
-func (_c *UsageSessionCreate) SetSetupID(v uuid.UUID) *UsageSessionCreate {
-	_c.mutation.SetSetupID(v)
+// SetBuildID sets the "build_id" field.
+func (_c *UsageSessionCreate) SetBuildID(v uuid.UUID) *UsageSessionCreate {
+	_c.mutation.SetBuildID(v)
 	return _c
 }
 
@@ -154,9 +154,9 @@ func (_c *UsageSessionCreate) SetNillableID(v *uuid.UUID) *UsageSessionCreate {
 	return _c
 }
 
-// SetSetup sets the "setup" edge to the Setup entity.
-func (_c *UsageSessionCreate) SetSetup(v *Setup) *UsageSessionCreate {
-	return _c.SetSetupID(v.ID)
+// SetBuild sets the "build" edge to the Build entity.
+func (_c *UsageSessionCreate) SetBuild(v *Build) *UsageSessionCreate {
+	return _c.SetBuildID(v.ID)
 }
 
 // Mutation returns the UsageSessionMutation object of the builder.
@@ -220,8 +220,8 @@ func (_c *UsageSessionCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "UsageSession.updated_at"`)}
 	}
-	if _, ok := _c.mutation.SetupID(); !ok {
-		return &ValidationError{Name: "setup_id", err: errors.New(`ent: missing required field "UsageSession.setup_id"`)}
+	if _, ok := _c.mutation.BuildID(); !ok {
+		return &ValidationError{Name: "build_id", err: errors.New(`ent: missing required field "UsageSession.build_id"`)}
 	}
 	if _, ok := _c.mutation.DurationMinutes(); !ok {
 		return &ValidationError{Name: "duration_minutes", err: errors.New(`ent: missing required field "UsageSession.duration_minutes"`)}
@@ -241,8 +241,8 @@ func (_c *UsageSessionCreate) check() error {
 			return &ValidationError{Name: "notes", err: fmt.Errorf(`ent: validator failed for field "UsageSession.notes": %w`, err)}
 		}
 	}
-	if len(_c.mutation.SetupIDs()) == 0 {
-		return &ValidationError{Name: "setup", err: errors.New(`ent: missing required edge "UsageSession.setup"`)}
+	if len(_c.mutation.BuildIDs()) == 0 {
+		return &ValidationError{Name: "build", err: errors.New(`ent: missing required edge "UsageSession.build"`)}
 	}
 	return nil
 }
@@ -311,21 +311,21 @@ func (_c *UsageSessionCreate) createSpec() (*UsageSession, *sqlgraph.CreateSpec)
 		_spec.SetField(usagesession.FieldRating, field.TypeInt, value)
 		_node.Rating = value
 	}
-	if nodes := _c.mutation.SetupIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.BuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   usagesession.SetupTable,
-			Columns: []string{usagesession.SetupColumn},
+			Table:   usagesession.BuildTable,
+			Columns: []string{usagesession.BuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.SetupID = nodes[0]
+		_node.BuildID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

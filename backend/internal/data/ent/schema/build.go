@@ -8,24 +8,24 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/schema/mixins"
 )
 
-// Setup holds the schema definition for the Setup entity. A Setup is a named
+// Build holds the schema definition for the Build entity. A Build is a named
 // assembly of parts (e.g. a skateboard or bike build). Parts are attached via
-// SetupPart rows which keep added/removed dates, so a part's mounting history
-// across setups is preserved.
-type Setup struct {
+// BuildPart rows which keep added/removed dates, so a part's mounting history
+// across builds is preserved.
+type Build struct {
 	ent.Schema
 }
 
-func (Setup) Mixin() []ent.Mixin {
+func (Build) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		mixins.BaseMixin{},
 		mixins.DetailsMixin{},
-		GroupMixin{ref: "setups"},
+		GroupMixin{ref: "builds"},
 	}
 }
 
-// Fields of the Setup.
-func (Setup) Fields() []ent.Field {
+// Fields of the Build.
+func (Build) Fields() []ent.Field {
 	return []ent.Field{
 		field.Bool("is_active").
 			Default(false),
@@ -35,8 +35,8 @@ func (Setup) Fields() []ent.Field {
 	}
 }
 
-// Edges of the Setup.
-func (Setup) Edges() []ent.Edge {
+// Edges of the Build.
+func (Build) Edges() []ent.Edge {
 	owned := func(s string, t any) ent.Edge {
 		return edge.To(s, t).
 			Annotations(entsql.Annotation{
@@ -45,7 +45,7 @@ func (Setup) Edges() []ent.Edge {
 	}
 
 	return []ent.Edge{
-		owned("parts", SetupPart.Type),
+		owned("parts", BuildPart.Type),
 		owned("usage_sessions", UsageSession.Type),
 	}
 }

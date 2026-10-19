@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 )
 
@@ -23,8 +23,8 @@ type UsageSession struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// SetupID holds the value of the "setup_id" field.
-	SetupID uuid.UUID `json:"setup_id,omitempty"`
+	// BuildID holds the value of the "build_id" field.
+	BuildID uuid.UUID `json:"build_id,omitempty"`
 	// Date holds the value of the "date" field.
 	Date time.Time `json:"date,omitempty"`
 	// DurationMinutes holds the value of the "duration_minutes" field.
@@ -45,22 +45,22 @@ type UsageSession struct {
 
 // UsageSessionEdges holds the relations/edges for other nodes in the graph.
 type UsageSessionEdges struct {
-	// Setup holds the value of the setup edge.
-	Setup *Setup `json:"setup,omitempty"`
+	// Build holds the value of the build edge.
+	Build *Build `json:"build,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// SetupOrErr returns the Setup value or an error if the edge
+// BuildOrErr returns the Build value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e UsageSessionEdges) SetupOrErr() (*Setup, error) {
-	if e.Setup != nil {
-		return e.Setup, nil
+func (e UsageSessionEdges) BuildOrErr() (*Build, error) {
+	if e.Build != nil {
+		return e.Build, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: setup.Label}
+		return nil, &NotFoundError{label: build.Label}
 	}
-	return nil, &NotLoadedError{edge: "setup"}
+	return nil, &NotLoadedError{edge: "build"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -74,7 +74,7 @@ func (*UsageSession) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case usagesession.FieldCreatedAt, usagesession.FieldUpdatedAt, usagesession.FieldDate:
 			values[i] = new(sql.NullTime)
-		case usagesession.FieldID, usagesession.FieldSetupID:
+		case usagesession.FieldID, usagesession.FieldBuildID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -109,11 +109,11 @@ func (_m *UsageSession) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case usagesession.FieldSetupID:
+		case usagesession.FieldBuildID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field setup_id", values[i])
+				return fmt.Errorf("unexpected type %T for field build_id", values[i])
 			} else if value != nil {
-				_m.SetupID = *value
+				_m.BuildID = *value
 			}
 		case usagesession.FieldDate:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -164,9 +164,9 @@ func (_m *UsageSession) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QuerySetup queries the "setup" edge of the UsageSession entity.
-func (_m *UsageSession) QuerySetup() *SetupQuery {
-	return NewUsageSessionClient(_m.config).QuerySetup(_m)
+// QueryBuild queries the "build" edge of the UsageSession entity.
+func (_m *UsageSession) QueryBuild() *BuildQuery {
+	return NewUsageSessionClient(_m.config).QueryBuild(_m)
 }
 
 // Update returns a builder for updating this UsageSession.
@@ -198,8 +198,8 @@ func (_m *UsageSession) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("setup_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.SetupID))
+	builder.WriteString("build_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.BuildID))
 	builder.WriteString(", ")
 	builder.WriteString("date=")
 	builder.WriteString(_m.Date.Format(time.ANSIC))

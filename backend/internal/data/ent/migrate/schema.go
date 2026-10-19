@@ -129,6 +129,62 @@ var (
 			},
 		},
 	}
+	// BuildsColumns holds the columns for the "builds" table.
+	BuildsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Size: 255},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 1000},
+		{Name: "is_active", Type: field.TypeBool, Default: false},
+		{Name: "sport", Type: field.TypeString, Nullable: true, Size: 64},
+		{Name: "group_builds", Type: field.TypeUUID},
+	}
+	// BuildsTable holds the schema information for the "builds" table.
+	BuildsTable = &schema.Table{
+		Name:       "builds",
+		Columns:    BuildsColumns,
+		PrimaryKey: []*schema.Column{BuildsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "builds_groups_builds",
+				Columns:    []*schema.Column{BuildsColumns[7]},
+				RefColumns: []*schema.Column{GroupsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
+	// BuildPartsColumns holds the columns for the "build_parts" table.
+	BuildPartsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "added_date", Type: field.TypeTime},
+		{Name: "removed_date", Type: field.TypeTime, Nullable: true},
+		{Name: "position", Type: field.TypeString, Nullable: true, Size: 64},
+		{Name: "build_id", Type: field.TypeUUID},
+		{Name: "entity_id", Type: field.TypeUUID},
+	}
+	// BuildPartsTable holds the schema information for the "build_parts" table.
+	BuildPartsTable = &schema.Table{
+		Name:       "build_parts",
+		Columns:    BuildPartsColumns,
+		PrimaryKey: []*schema.Column{BuildPartsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "build_parts_builds_parts",
+				Columns:    []*schema.Column{BuildPartsColumns[6]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "build_parts_entities_build_parts",
+				Columns:    []*schema.Column{BuildPartsColumns[7]},
+				RefColumns: []*schema.Column{EntitiesColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// EntitiesColumns holds the columns for the "entities" table.
 	EntitiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -522,62 +578,6 @@ var (
 			},
 		},
 	}
-	// SetupsColumns holds the columns for the "setups" table.
-	SetupsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "name", Type: field.TypeString, Size: 255},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 1000},
-		{Name: "is_active", Type: field.TypeBool, Default: false},
-		{Name: "sport", Type: field.TypeString, Nullable: true, Size: 64},
-		{Name: "group_setups", Type: field.TypeUUID},
-	}
-	// SetupsTable holds the schema information for the "setups" table.
-	SetupsTable = &schema.Table{
-		Name:       "setups",
-		Columns:    SetupsColumns,
-		PrimaryKey: []*schema.Column{SetupsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "setups_groups_setups",
-				Columns:    []*schema.Column{SetupsColumns[7]},
-				RefColumns: []*schema.Column{GroupsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// SetupPartsColumns holds the columns for the "setup_parts" table.
-	SetupPartsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "added_date", Type: field.TypeTime},
-		{Name: "removed_date", Type: field.TypeTime, Nullable: true},
-		{Name: "position", Type: field.TypeString, Nullable: true, Size: 64},
-		{Name: "entity_id", Type: field.TypeUUID},
-		{Name: "setup_id", Type: field.TypeUUID},
-	}
-	// SetupPartsTable holds the schema information for the "setup_parts" table.
-	SetupPartsTable = &schema.Table{
-		Name:       "setup_parts",
-		Columns:    SetupPartsColumns,
-		PrimaryKey: []*schema.Column{SetupPartsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "setup_parts_entities_setup_parts",
-				Columns:    []*schema.Column{SetupPartsColumns[6]},
-				RefColumns: []*schema.Column{EntitiesColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "setup_parts_setups_parts",
-				Columns:    []*schema.Column{SetupPartsColumns[7]},
-				RefColumns: []*schema.Column{SetupsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -649,7 +649,7 @@ var (
 		{Name: "conditions", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "rating", Type: field.TypeInt, Nullable: true},
-		{Name: "setup_id", Type: field.TypeUUID},
+		{Name: "build_id", Type: field.TypeUUID},
 	}
 	// UsageSessionsTable holds the schema information for the "usage_sessions" table.
 	UsageSessionsTable = &schema.Table{
@@ -658,9 +658,9 @@ var (
 		PrimaryKey: []*schema.Column{UsageSessionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "usage_sessions_setups_usage_sessions",
+				Symbol:     "usage_sessions_builds_usage_sessions",
 				Columns:    []*schema.Column{UsageSessionsColumns[9]},
-				RefColumns: []*schema.Column{SetupsColumns[0]},
+				RefColumns: []*schema.Column{BuildsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -751,6 +751,8 @@ var (
 		AttachmentsTable,
 		AuthRolesTable,
 		AuthTokensTable,
+		BuildsTable,
+		BuildPartsTable,
 		EntitiesTable,
 		EntityFieldsTable,
 		EntityTemplatesTable,
@@ -761,8 +763,6 @@ var (
 		MaintenanceEntriesTable,
 		NotifiersTable,
 		PasswordResetTokensTable,
-		SetupsTable,
-		SetupPartsTable,
 		TagsTable,
 		TemplateFieldsTable,
 		UsageSessionsTable,
@@ -778,6 +778,9 @@ func init() {
 	AttachmentsTable.ForeignKeys[1].RefTable = EntitiesTable
 	AuthRolesTable.ForeignKeys[0].RefTable = AuthTokensTable
 	AuthTokensTable.ForeignKeys[0].RefTable = UsersTable
+	BuildsTable.ForeignKeys[0].RefTable = GroupsTable
+	BuildPartsTable.ForeignKeys[0].RefTable = BuildsTable
+	BuildPartsTable.ForeignKeys[1].RefTable = EntitiesTable
 	EntitiesTable.ForeignKeys[0].RefTable = EntitiesTable
 	EntitiesTable.ForeignKeys[1].RefTable = EntitiesTable
 	EntitiesTable.ForeignKeys[2].RefTable = EntityTypesTable
@@ -793,13 +796,10 @@ func init() {
 	NotifiersTable.ForeignKeys[0].RefTable = GroupsTable
 	NotifiersTable.ForeignKeys[1].RefTable = UsersTable
 	PasswordResetTokensTable.ForeignKeys[0].RefTable = UsersTable
-	SetupsTable.ForeignKeys[0].RefTable = GroupsTable
-	SetupPartsTable.ForeignKeys[0].RefTable = EntitiesTable
-	SetupPartsTable.ForeignKeys[1].RefTable = SetupsTable
 	TagsTable.ForeignKeys[0].RefTable = GroupsTable
 	TagsTable.ForeignKeys[1].RefTable = TagsTable
 	TemplateFieldsTable.ForeignKeys[0].RefTable = EntityTemplatesTable
-	UsageSessionsTable.ForeignKeys[0].RefTable = SetupsTable
+	UsageSessionsTable.ForeignKeys[0].RefTable = BuildsTable
 	UserGroupsTable.ForeignKeys[0].RefTable = UsersTable
 	UserGroupsTable.ForeignKeys[1].RefTable = GroupsTable
 	UserGroupsTable.Annotation = &entsql.Annotation{

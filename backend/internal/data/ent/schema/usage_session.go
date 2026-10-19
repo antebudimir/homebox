@@ -8,7 +8,7 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/schema/mixins"
 )
 
-// UsageSession logs a single use of a Setup (date, duration, location,
+// UsageSession logs a single use of a Build (date, duration, location,
 // conditions, rating). Sessions drive cost-per-use and wear analytics.
 type UsageSession struct {
 	ent.Schema
@@ -23,7 +23,7 @@ func (UsageSession) Mixin() []ent.Mixin {
 // Fields of the UsageSession.
 func (UsageSession) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("setup_id", uuid.UUID{}),
+		field.UUID("build_id", uuid.UUID{}),
 		field.Time("date").
 			Optional(),
 		field.Int("duration_minutes").
@@ -45,9 +45,9 @@ func (UsageSession) Fields() []ent.Field {
 // Edges of the UsageSession.
 func (UsageSession) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("setup", Setup.Type).
+		edge.From("build", Build.Type).
 			Ref("usage_sessions").
-			Field("setup_id").
+			Field("build_id").
 			Required().
 			Unique(),
 	}

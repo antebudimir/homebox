@@ -42,8 +42,8 @@ type GroupEdges struct {
 	Entities []*Entity `json:"entities,omitempty"`
 	// Tags holds the value of the tags edge.
 	Tags []*Tag `json:"tags,omitempty"`
-	// Setups holds the value of the setups edge.
-	Setups []*Setup `json:"setups,omitempty"`
+	// Builds holds the value of the builds edge.
+	Builds []*Build `json:"builds,omitempty"`
 	// InvitationTokens holds the value of the invitation_tokens edge.
 	InvitationTokens []*GroupInvitationToken `json:"invitation_tokens,omitempty"`
 	// Notifiers holds the value of the notifiers edge.
@@ -95,13 +95,13 @@ func (e GroupEdges) TagsOrErr() ([]*Tag, error) {
 	return nil, &NotLoadedError{edge: "tags"}
 }
 
-// SetupsOrErr returns the Setups value or an error if the edge
+// BuildsOrErr returns the Builds value or an error if the edge
 // was not loaded in eager-loading.
-func (e GroupEdges) SetupsOrErr() ([]*Setup, error) {
+func (e GroupEdges) BuildsOrErr() ([]*Build, error) {
 	if e.loadedTypes[4] {
-		return e.Setups, nil
+		return e.Builds, nil
 	}
-	return nil, &NotLoadedError{edge: "setups"}
+	return nil, &NotLoadedError{edge: "builds"}
 }
 
 // InvitationTokensOrErr returns the InvitationTokens value or an error if the edge
@@ -238,9 +238,9 @@ func (_m *Group) QueryTags() *TagQuery {
 	return NewGroupClient(_m.config).QueryTags(_m)
 }
 
-// QuerySetups queries the "setups" edge of the Group entity.
-func (_m *Group) QuerySetups() *SetupQuery {
-	return NewGroupClient(_m.config).QuerySetups(_m)
+// QueryBuilds queries the "builds" edge of the Group entity.
+func (_m *Group) QueryBuilds() *BuildQuery {
+	return NewGroupClient(_m.config).QueryBuilds(_m)
 }
 
 // QueryInvitationTokens queries the "invitation_tokens" edge of the Group entity.

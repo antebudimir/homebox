@@ -31,8 +31,8 @@ const (
 	EdgeEntities = "entities"
 	// EdgeTags holds the string denoting the tags edge name in mutations.
 	EdgeTags = "tags"
-	// EdgeSetups holds the string denoting the setups edge name in mutations.
-	EdgeSetups = "setups"
+	// EdgeBuilds holds the string denoting the builds edge name in mutations.
+	EdgeBuilds = "builds"
 	// EdgeInvitationTokens holds the string denoting the invitation_tokens edge name in mutations.
 	EdgeInvitationTokens = "invitation_tokens"
 	// EdgeNotifiers holds the string denoting the notifiers edge name in mutations.
@@ -71,13 +71,13 @@ const (
 	TagsInverseTable = "tags"
 	// TagsColumn is the table column denoting the tags relation/edge.
 	TagsColumn = "group_tags"
-	// SetupsTable is the table that holds the setups relation/edge.
-	SetupsTable = "setups"
-	// SetupsInverseTable is the table name for the Setup entity.
-	// It exists in this package in order to avoid circular dependency with the "setup" package.
-	SetupsInverseTable = "setups"
-	// SetupsColumn is the table column denoting the setups relation/edge.
-	SetupsColumn = "group_setups"
+	// BuildsTable is the table that holds the builds relation/edge.
+	BuildsTable = "builds"
+	// BuildsInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	BuildsInverseTable = "builds"
+	// BuildsColumn is the table column denoting the builds relation/edge.
+	BuildsColumn = "group_builds"
 	// InvitationTokensTable is the table that holds the invitation_tokens relation/edge.
 	InvitationTokensTable = "group_invitation_tokens"
 	// InvitationTokensInverseTable is the table name for the GroupInvitationToken entity.
@@ -239,17 +239,17 @@ func ByTags(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// BySetupsCount orders the results by setups count.
-func BySetupsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByBuildsCount orders the results by builds count.
+func ByBuildsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSetupsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newBuildsStep(), opts...)
 	}
 }
 
-// BySetups orders the results by setups terms.
-func BySetups(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByBuilds orders the results by builds terms.
+func ByBuilds(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSetupsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newBuildsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -350,11 +350,11 @@ func newTagsStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, TagsTable, TagsColumn),
 	)
 }
-func newSetupsStep() *sqlgraph.Step {
+func newBuildsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SetupsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, SetupsTable, SetupsColumn),
+		sqlgraph.To(BuildsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, BuildsTable, BuildsColumn),
 	)
 }
 func newInvitationTokensStep() *sqlgraph.Step {

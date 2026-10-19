@@ -18,6 +18,12 @@ type AuthRoles func(*sql.Selector)
 // AuthTokens is the predicate function for authtokens builders.
 type AuthTokens func(*sql.Selector)
 
+// Build is the predicate function for build builders.
+type Build func(*sql.Selector)
+
+// BuildPart is the predicate function for buildpart builders.
+type BuildPart func(*sql.Selector)
+
 // Entity is the predicate function for entity builders.
 type Entity func(*sql.Selector)
 
@@ -47,12 +53,6 @@ type Notifier func(*sql.Selector)
 
 // PasswordResetTokens is the predicate function for passwordresettokens builders.
 type PasswordResetTokens func(*sql.Selector)
-
-// Setup is the predicate function for setup builders.
-type Setup func(*sql.Selector)
-
-// SetupPart is the predicate function for setuppart builders.
-type SetupPart func(*sql.Selector)
 
 // Tag is the predicate function for tag builders.
 type Tag func(*sql.Selector)

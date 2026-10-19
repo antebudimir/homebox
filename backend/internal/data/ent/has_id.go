@@ -20,6 +20,14 @@ func (_m *AuthTokens) GetID() uuid.UUID {
 	return _m.ID
 }
 
+func (_m *Build) GetID() uuid.UUID {
+	return _m.ID
+}
+
+func (_m *BuildPart) GetID() uuid.UUID {
+	return _m.ID
+}
+
 func (_m *Entity) GetID() uuid.UUID {
 	return _m.ID
 }
@@ -57,14 +65,6 @@ func (_m *Notifier) GetID() uuid.UUID {
 }
 
 func (_m *PasswordResetTokens) GetID() uuid.UUID {
-	return _m.ID
-}
-
-func (_m *Setup) GetID() uuid.UUID {
-	return _m.ID
-}
-
-func (_m *SetupPart) GetID() uuid.UUID {
 	return _m.ID
 }
 

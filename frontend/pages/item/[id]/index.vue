@@ -471,9 +471,9 @@
         to: `/item/${itemId.value}/maintenance`,
       },
       {
-        id: "setup-history",
-        name: "setups.history.tab",
-        to: `/item/${itemId.value}/setup-history`,
+        id: "build-history",
+        name: "builds.history.tab",
+        to: `/item/${itemId.value}/build-history`,
       },
       {
         id: "edit",

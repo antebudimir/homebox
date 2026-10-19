@@ -66,9 +66,9 @@ func UpdatedAt(v time.Time) predicate.UsageSession {
 	return predicate.UsageSession(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// SetupID applies equality check predicate on the "setup_id" field. It's identical to SetupIDEQ.
-func SetupID(v uuid.UUID) predicate.UsageSession {
-	return predicate.UsageSession(sql.FieldEQ(FieldSetupID, v))
+// BuildID applies equality check predicate on the "build_id" field. It's identical to BuildIDEQ.
+func BuildID(v uuid.UUID) predicate.UsageSession {
+	return predicate.UsageSession(sql.FieldEQ(FieldBuildID, v))
 }
 
 // Date applies equality check predicate on the "date" field. It's identical to DateEQ.
@@ -181,24 +181,24 @@ func UpdatedAtLTE(v time.Time) predicate.UsageSession {
 	return predicate.UsageSession(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// SetupIDEQ applies the EQ predicate on the "setup_id" field.
-func SetupIDEQ(v uuid.UUID) predicate.UsageSession {
-	return predicate.UsageSession(sql.FieldEQ(FieldSetupID, v))
+// BuildIDEQ applies the EQ predicate on the "build_id" field.
+func BuildIDEQ(v uuid.UUID) predicate.UsageSession {
+	return predicate.UsageSession(sql.FieldEQ(FieldBuildID, v))
 }
 
-// SetupIDNEQ applies the NEQ predicate on the "setup_id" field.
-func SetupIDNEQ(v uuid.UUID) predicate.UsageSession {
-	return predicate.UsageSession(sql.FieldNEQ(FieldSetupID, v))
+// BuildIDNEQ applies the NEQ predicate on the "build_id" field.
+func BuildIDNEQ(v uuid.UUID) predicate.UsageSession {
+	return predicate.UsageSession(sql.FieldNEQ(FieldBuildID, v))
 }
 
-// SetupIDIn applies the In predicate on the "setup_id" field.
-func SetupIDIn(vs ...uuid.UUID) predicate.UsageSession {
-	return predicate.UsageSession(sql.FieldIn(FieldSetupID, vs...))
+// BuildIDIn applies the In predicate on the "build_id" field.
+func BuildIDIn(vs ...uuid.UUID) predicate.UsageSession {
+	return predicate.UsageSession(sql.FieldIn(FieldBuildID, vs...))
 }
 
-// SetupIDNotIn applies the NotIn predicate on the "setup_id" field.
-func SetupIDNotIn(vs ...uuid.UUID) predicate.UsageSession {
-	return predicate.UsageSession(sql.FieldNotIn(FieldSetupID, vs...))
+// BuildIDNotIn applies the NotIn predicate on the "build_id" field.
+func BuildIDNotIn(vs ...uuid.UUID) predicate.UsageSession {
+	return predicate.UsageSession(sql.FieldNotIn(FieldBuildID, vs...))
 }
 
 // DateEQ applies the EQ predicate on the "date" field.
@@ -566,21 +566,21 @@ func RatingNotNil() predicate.UsageSession {
 	return predicate.UsageSession(sql.FieldNotNull(FieldRating))
 }
 
-// HasSetup applies the HasEdge predicate on the "setup" edge.
-func HasSetup() predicate.UsageSession {
+// HasBuild applies the HasEdge predicate on the "build" edge.
+func HasBuild() predicate.UsageSession {
 	return predicate.UsageSession(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, SetupTable, SetupColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, BuildTable, BuildColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSetupWith applies the HasEdge predicate on the "setup" edge with a given conditions (other predicates).
-func HasSetupWith(preds ...predicate.Setup) predicate.UsageSession {
+// HasBuildWith applies the HasEdge predicate on the "build" edge with a given conditions (other predicates).
+func HasBuildWith(preds ...predicate.Build) predicate.UsageSession {
 	return predicate.UsageSession(func(s *sql.Selector) {
-		step := newSetupStep()
+		step := newBuildStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

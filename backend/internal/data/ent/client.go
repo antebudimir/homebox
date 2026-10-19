@@ -20,6 +20,8 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/attachment"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authroles"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/authtokens"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytemplate"
@@ -30,8 +32,6 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/passwordresettokens"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/templatefield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
@@ -52,6 +52,10 @@ type Client struct {
 	AuthRoles *AuthRolesClient
 	// AuthTokens is the client for interacting with the AuthTokens builders.
 	AuthTokens *AuthTokensClient
+	// Build is the client for interacting with the Build builders.
+	Build *BuildClient
+	// BuildPart is the client for interacting with the BuildPart builders.
+	BuildPart *BuildPartClient
 	// Entity is the client for interacting with the Entity builders.
 	Entity *EntityClient
 	// EntityField is the client for interacting with the EntityField builders.
@@ -72,10 +76,6 @@ type Client struct {
 	Notifier *NotifierClient
 	// PasswordResetTokens is the client for interacting with the PasswordResetTokens builders.
 	PasswordResetTokens *PasswordResetTokensClient
-	// Setup is the client for interacting with the Setup builders.
-	Setup *SetupClient
-	// SetupPart is the client for interacting with the SetupPart builders.
-	SetupPart *SetupPartClient
 	// Tag is the client for interacting with the Tag builders.
 	Tag *TagClient
 	// TemplateField is the client for interacting with the TemplateField builders.
@@ -101,6 +101,8 @@ func (c *Client) init() {
 	c.Attachment = NewAttachmentClient(c.config)
 	c.AuthRoles = NewAuthRolesClient(c.config)
 	c.AuthTokens = NewAuthTokensClient(c.config)
+	c.Build = NewBuildClient(c.config)
+	c.BuildPart = NewBuildPartClient(c.config)
 	c.Entity = NewEntityClient(c.config)
 	c.EntityField = NewEntityFieldClient(c.config)
 	c.EntityTemplate = NewEntityTemplateClient(c.config)
@@ -111,8 +113,6 @@ func (c *Client) init() {
 	c.MaintenanceEntry = NewMaintenanceEntryClient(c.config)
 	c.Notifier = NewNotifierClient(c.config)
 	c.PasswordResetTokens = NewPasswordResetTokensClient(c.config)
-	c.Setup = NewSetupClient(c.config)
-	c.SetupPart = NewSetupPartClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.TemplateField = NewTemplateFieldClient(c.config)
 	c.UsageSession = NewUsageSessionClient(c.config)
@@ -214,6 +214,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Attachment:           NewAttachmentClient(cfg),
 		AuthRoles:            NewAuthRolesClient(cfg),
 		AuthTokens:           NewAuthTokensClient(cfg),
+		Build:                NewBuildClient(cfg),
+		BuildPart:            NewBuildPartClient(cfg),
 		Entity:               NewEntityClient(cfg),
 		EntityField:          NewEntityFieldClient(cfg),
 		EntityTemplate:       NewEntityTemplateClient(cfg),
@@ -224,8 +226,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MaintenanceEntry:     NewMaintenanceEntryClient(cfg),
 		Notifier:             NewNotifierClient(cfg),
 		PasswordResetTokens:  NewPasswordResetTokensClient(cfg),
-		Setup:                NewSetupClient(cfg),
-		SetupPart:            NewSetupPartClient(cfg),
 		Tag:                  NewTagClient(cfg),
 		TemplateField:        NewTemplateFieldClient(cfg),
 		UsageSession:         NewUsageSessionClient(cfg),
@@ -254,6 +254,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Attachment:           NewAttachmentClient(cfg),
 		AuthRoles:            NewAuthRolesClient(cfg),
 		AuthTokens:           NewAuthTokensClient(cfg),
+		Build:                NewBuildClient(cfg),
+		BuildPart:            NewBuildPartClient(cfg),
 		Entity:               NewEntityClient(cfg),
 		EntityField:          NewEntityFieldClient(cfg),
 		EntityTemplate:       NewEntityTemplateClient(cfg),
@@ -264,8 +266,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MaintenanceEntry:     NewMaintenanceEntryClient(cfg),
 		Notifier:             NewNotifierClient(cfg),
 		PasswordResetTokens:  NewPasswordResetTokensClient(cfg),
-		Setup:                NewSetupClient(cfg),
-		SetupPart:            NewSetupPartClient(cfg),
 		Tag:                  NewTagClient(cfg),
 		TemplateField:        NewTemplateFieldClient(cfg),
 		UsageSession:         NewUsageSessionClient(cfg),
@@ -300,9 +300,9 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.APIKey, c.Attachment, c.AuthRoles, c.AuthTokens, c.Entity, c.EntityField,
-		c.EntityTemplate, c.EntityType, c.Export, c.Group, c.GroupInvitationToken,
-		c.MaintenanceEntry, c.Notifier, c.PasswordResetTokens, c.Setup, c.SetupPart,
+		c.APIKey, c.Attachment, c.AuthRoles, c.AuthTokens, c.Build, c.BuildPart,
+		c.Entity, c.EntityField, c.EntityTemplate, c.EntityType, c.Export, c.Group,
+		c.GroupInvitationToken, c.MaintenanceEntry, c.Notifier, c.PasswordResetTokens,
 		c.Tag, c.TemplateField, c.UsageSession, c.User, c.UserGroup,
 	} {
 		n.Use(hooks...)
@@ -313,9 +313,9 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.APIKey, c.Attachment, c.AuthRoles, c.AuthTokens, c.Entity, c.EntityField,
-		c.EntityTemplate, c.EntityType, c.Export, c.Group, c.GroupInvitationToken,
-		c.MaintenanceEntry, c.Notifier, c.PasswordResetTokens, c.Setup, c.SetupPart,
+		c.APIKey, c.Attachment, c.AuthRoles, c.AuthTokens, c.Build, c.BuildPart,
+		c.Entity, c.EntityField, c.EntityTemplate, c.EntityType, c.Export, c.Group,
+		c.GroupInvitationToken, c.MaintenanceEntry, c.Notifier, c.PasswordResetTokens,
 		c.Tag, c.TemplateField, c.UsageSession, c.User, c.UserGroup,
 	} {
 		n.Intercept(interceptors...)
@@ -333,6 +333,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AuthRoles.mutate(ctx, m)
 	case *AuthTokensMutation:
 		return c.AuthTokens.mutate(ctx, m)
+	case *BuildMutation:
+		return c.Build.mutate(ctx, m)
+	case *BuildPartMutation:
+		return c.BuildPart.mutate(ctx, m)
 	case *EntityMutation:
 		return c.Entity.mutate(ctx, m)
 	case *EntityFieldMutation:
@@ -353,10 +357,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Notifier.mutate(ctx, m)
 	case *PasswordResetTokensMutation:
 		return c.PasswordResetTokens.mutate(ctx, m)
-	case *SetupMutation:
-		return c.Setup.mutate(ctx, m)
-	case *SetupPartMutation:
-		return c.SetupPart.mutate(ctx, m)
 	case *TagMutation:
 		return c.Tag.mutate(ctx, m)
 	case *TemplateFieldMutation:
@@ -1000,6 +1000,352 @@ func (c *AuthTokensClient) mutate(ctx context.Context, m *AuthTokensMutation) (V
 	}
 }
 
+// BuildClient is a client for the Build schema.
+type BuildClient struct {
+	config
+}
+
+// NewBuildClient returns a client for the Build from the given config.
+func NewBuildClient(c config) *BuildClient {
+	return &BuildClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `build.Hooks(f(g(h())))`.
+func (c *BuildClient) Use(hooks ...Hook) {
+	c.hooks.Build = append(c.hooks.Build, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `build.Intercept(f(g(h())))`.
+func (c *BuildClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Build = append(c.inters.Build, interceptors...)
+}
+
+// Create returns a builder for creating a Build entity.
+func (c *BuildClient) Create() *BuildCreate {
+	mutation := newBuildMutation(c.config, OpCreate)
+	return &BuildCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Build entities.
+func (c *BuildClient) CreateBulk(builders ...*BuildCreate) *BuildCreateBulk {
+	return &BuildCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BuildClient) MapCreateBulk(slice any, setFunc func(*BuildCreate, int)) *BuildCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BuildCreateBulk{err: fmt.Errorf("calling to BuildClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BuildCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BuildCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Build.
+func (c *BuildClient) Update() *BuildUpdate {
+	mutation := newBuildMutation(c.config, OpUpdate)
+	return &BuildUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BuildClient) UpdateOne(_m *Build) *BuildUpdateOne {
+	mutation := newBuildMutation(c.config, OpUpdateOne, withBuild(_m))
+	return &BuildUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BuildClient) UpdateOneID(id uuid.UUID) *BuildUpdateOne {
+	mutation := newBuildMutation(c.config, OpUpdateOne, withBuildID(id))
+	return &BuildUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Build.
+func (c *BuildClient) Delete() *BuildDelete {
+	mutation := newBuildMutation(c.config, OpDelete)
+	return &BuildDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BuildClient) DeleteOne(_m *Build) *BuildDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BuildClient) DeleteOneID(id uuid.UUID) *BuildDeleteOne {
+	builder := c.Delete().Where(build.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BuildDeleteOne{builder}
+}
+
+// Query returns a query builder for Build.
+func (c *BuildClient) Query() *BuildQuery {
+	return &BuildQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBuild},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Build entity by its id.
+func (c *BuildClient) Get(ctx context.Context, id uuid.UUID) (*Build, error) {
+	return c.Query().Where(build.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BuildClient) GetX(ctx context.Context, id uuid.UUID) *Build {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryGroup queries the group edge of a Build.
+func (c *BuildClient) QueryGroup(_m *Build) *GroupQuery {
+	query := (&GroupClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(group.Table, group.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, build.GroupTable, build.GroupColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryParts queries the parts edge of a Build.
+func (c *BuildClient) QueryParts(_m *Build) *BuildPartQuery {
+	query := (&BuildPartClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(buildpart.Table, buildpart.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, build.PartsTable, build.PartsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUsageSessions queries the usage_sessions edge of a Build.
+func (c *BuildClient) QueryUsageSessions(_m *Build) *UsageSessionQuery {
+	query := (&UsageSessionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(build.Table, build.FieldID, id),
+			sqlgraph.To(usagesession.Table, usagesession.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, build.UsageSessionsTable, build.UsageSessionsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BuildClient) Hooks() []Hook {
+	return c.hooks.Build
+}
+
+// Interceptors returns the client interceptors.
+func (c *BuildClient) Interceptors() []Interceptor {
+	return c.inters.Build
+}
+
+func (c *BuildClient) mutate(ctx context.Context, m *BuildMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BuildCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BuildUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BuildUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BuildDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Build mutation op: %q", m.Op())
+	}
+}
+
+// BuildPartClient is a client for the BuildPart schema.
+type BuildPartClient struct {
+	config
+}
+
+// NewBuildPartClient returns a client for the BuildPart from the given config.
+func NewBuildPartClient(c config) *BuildPartClient {
+	return &BuildPartClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `buildpart.Hooks(f(g(h())))`.
+func (c *BuildPartClient) Use(hooks ...Hook) {
+	c.hooks.BuildPart = append(c.hooks.BuildPart, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `buildpart.Intercept(f(g(h())))`.
+func (c *BuildPartClient) Intercept(interceptors ...Interceptor) {
+	c.inters.BuildPart = append(c.inters.BuildPart, interceptors...)
+}
+
+// Create returns a builder for creating a BuildPart entity.
+func (c *BuildPartClient) Create() *BuildPartCreate {
+	mutation := newBuildPartMutation(c.config, OpCreate)
+	return &BuildPartCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of BuildPart entities.
+func (c *BuildPartClient) CreateBulk(builders ...*BuildPartCreate) *BuildPartCreateBulk {
+	return &BuildPartCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *BuildPartClient) MapCreateBulk(slice any, setFunc func(*BuildPartCreate, int)) *BuildPartCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &BuildPartCreateBulk{err: fmt.Errorf("calling to BuildPartClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*BuildPartCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &BuildPartCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for BuildPart.
+func (c *BuildPartClient) Update() *BuildPartUpdate {
+	mutation := newBuildPartMutation(c.config, OpUpdate)
+	return &BuildPartUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *BuildPartClient) UpdateOne(_m *BuildPart) *BuildPartUpdateOne {
+	mutation := newBuildPartMutation(c.config, OpUpdateOne, withBuildPart(_m))
+	return &BuildPartUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *BuildPartClient) UpdateOneID(id uuid.UUID) *BuildPartUpdateOne {
+	mutation := newBuildPartMutation(c.config, OpUpdateOne, withBuildPartID(id))
+	return &BuildPartUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for BuildPart.
+func (c *BuildPartClient) Delete() *BuildPartDelete {
+	mutation := newBuildPartMutation(c.config, OpDelete)
+	return &BuildPartDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *BuildPartClient) DeleteOne(_m *BuildPart) *BuildPartDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *BuildPartClient) DeleteOneID(id uuid.UUID) *BuildPartDeleteOne {
+	builder := c.Delete().Where(buildpart.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &BuildPartDeleteOne{builder}
+}
+
+// Query returns a query builder for BuildPart.
+func (c *BuildPartClient) Query() *BuildPartQuery {
+	return &BuildPartQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeBuildPart},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a BuildPart entity by its id.
+func (c *BuildPartClient) Get(ctx context.Context, id uuid.UUID) (*BuildPart, error) {
+	return c.Query().Where(buildpart.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *BuildPartClient) GetX(ctx context.Context, id uuid.UUID) *BuildPart {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryBuild queries the build edge of a BuildPart.
+func (c *BuildPartClient) QueryBuild(_m *BuildPart) *BuildQuery {
+	query := (&BuildClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildpart.Table, buildpart.FieldID, id),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, buildpart.BuildTable, buildpart.BuildColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEntity queries the entity edge of a BuildPart.
+func (c *BuildPartClient) QueryEntity(_m *BuildPart) *EntityQuery {
+	query := (&EntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(buildpart.Table, buildpart.FieldID, id),
+			sqlgraph.To(entity.Table, entity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, buildpart.EntityTable, buildpart.EntityColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *BuildPartClient) Hooks() []Hook {
+	return c.hooks.BuildPart
+}
+
+// Interceptors returns the client interceptors.
+func (c *BuildPartClient) Interceptors() []Interceptor {
+	return c.inters.BuildPart
+}
+
+func (c *BuildPartClient) mutate(ctx context.Context, m *BuildPartMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&BuildPartCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&BuildPartUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&BuildPartUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&BuildPartDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown BuildPart mutation op: %q", m.Op())
+	}
+}
+
 // EntityClient is a client for the Entity schema.
 type EntityClient struct {
 	config
@@ -1252,15 +1598,15 @@ func (c *EntityClient) QueryMaintenanceEntries(_m *Entity) *MaintenanceEntryQuer
 	return query
 }
 
-// QuerySetupParts queries the setup_parts edge of a Entity.
-func (c *EntityClient) QuerySetupParts(_m *Entity) *SetupPartQuery {
-	query := (&SetupPartClient{config: c.config}).Query()
+// QueryBuildParts queries the build_parts edge of a Entity.
+func (c *EntityClient) QueryBuildParts(_m *Entity) *BuildPartQuery {
+	query := (&BuildPartClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(entity.Table, entity.FieldID, id),
-			sqlgraph.To(setuppart.Table, setuppart.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, entity.SetupPartsTable, entity.SetupPartsColumn),
+			sqlgraph.To(buildpart.Table, buildpart.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, entity.BuildPartsTable, entity.BuildPartsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2141,15 +2487,15 @@ func (c *GroupClient) QueryTags(_m *Group) *TagQuery {
 	return query
 }
 
-// QuerySetups queries the setups edge of a Group.
-func (c *GroupClient) QuerySetups(_m *Group) *SetupQuery {
-	query := (&SetupClient{config: c.config}).Query()
+// QueryBuilds queries the builds edge of a Group.
+func (c *GroupClient) QueryBuilds(_m *Group) *BuildQuery {
+	query := (&BuildClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(group.Table, group.FieldID, id),
-			sqlgraph.To(setup.Table, setup.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, group.SetupsTable, group.SetupsColumn),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, group.BuildsTable, group.BuildsColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2874,352 +3220,6 @@ func (c *PasswordResetTokensClient) mutate(ctx context.Context, m *PasswordReset
 	}
 }
 
-// SetupClient is a client for the Setup schema.
-type SetupClient struct {
-	config
-}
-
-// NewSetupClient returns a client for the Setup from the given config.
-func NewSetupClient(c config) *SetupClient {
-	return &SetupClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `setup.Hooks(f(g(h())))`.
-func (c *SetupClient) Use(hooks ...Hook) {
-	c.hooks.Setup = append(c.hooks.Setup, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `setup.Intercept(f(g(h())))`.
-func (c *SetupClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Setup = append(c.inters.Setup, interceptors...)
-}
-
-// Create returns a builder for creating a Setup entity.
-func (c *SetupClient) Create() *SetupCreate {
-	mutation := newSetupMutation(c.config, OpCreate)
-	return &SetupCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Setup entities.
-func (c *SetupClient) CreateBulk(builders ...*SetupCreate) *SetupCreateBulk {
-	return &SetupCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SetupClient) MapCreateBulk(slice any, setFunc func(*SetupCreate, int)) *SetupCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SetupCreateBulk{err: fmt.Errorf("calling to SetupClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SetupCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SetupCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Setup.
-func (c *SetupClient) Update() *SetupUpdate {
-	mutation := newSetupMutation(c.config, OpUpdate)
-	return &SetupUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SetupClient) UpdateOne(_m *Setup) *SetupUpdateOne {
-	mutation := newSetupMutation(c.config, OpUpdateOne, withSetup(_m))
-	return &SetupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SetupClient) UpdateOneID(id uuid.UUID) *SetupUpdateOne {
-	mutation := newSetupMutation(c.config, OpUpdateOne, withSetupID(id))
-	return &SetupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Setup.
-func (c *SetupClient) Delete() *SetupDelete {
-	mutation := newSetupMutation(c.config, OpDelete)
-	return &SetupDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SetupClient) DeleteOne(_m *Setup) *SetupDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SetupClient) DeleteOneID(id uuid.UUID) *SetupDeleteOne {
-	builder := c.Delete().Where(setup.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SetupDeleteOne{builder}
-}
-
-// Query returns a query builder for Setup.
-func (c *SetupClient) Query() *SetupQuery {
-	return &SetupQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSetup},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Setup entity by its id.
-func (c *SetupClient) Get(ctx context.Context, id uuid.UUID) (*Setup, error) {
-	return c.Query().Where(setup.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SetupClient) GetX(ctx context.Context, id uuid.UUID) *Setup {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryGroup queries the group edge of a Setup.
-func (c *SetupClient) QueryGroup(_m *Setup) *GroupQuery {
-	query := (&GroupClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(setup.Table, setup.FieldID, id),
-			sqlgraph.To(group.Table, group.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, setup.GroupTable, setup.GroupColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryParts queries the parts edge of a Setup.
-func (c *SetupClient) QueryParts(_m *Setup) *SetupPartQuery {
-	query := (&SetupPartClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(setup.Table, setup.FieldID, id),
-			sqlgraph.To(setuppart.Table, setuppart.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, setup.PartsTable, setup.PartsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryUsageSessions queries the usage_sessions edge of a Setup.
-func (c *SetupClient) QueryUsageSessions(_m *Setup) *UsageSessionQuery {
-	query := (&UsageSessionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(setup.Table, setup.FieldID, id),
-			sqlgraph.To(usagesession.Table, usagesession.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, setup.UsageSessionsTable, setup.UsageSessionsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SetupClient) Hooks() []Hook {
-	return c.hooks.Setup
-}
-
-// Interceptors returns the client interceptors.
-func (c *SetupClient) Interceptors() []Interceptor {
-	return c.inters.Setup
-}
-
-func (c *SetupClient) mutate(ctx context.Context, m *SetupMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SetupCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SetupUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SetupUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SetupDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Setup mutation op: %q", m.Op())
-	}
-}
-
-// SetupPartClient is a client for the SetupPart schema.
-type SetupPartClient struct {
-	config
-}
-
-// NewSetupPartClient returns a client for the SetupPart from the given config.
-func NewSetupPartClient(c config) *SetupPartClient {
-	return &SetupPartClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `setuppart.Hooks(f(g(h())))`.
-func (c *SetupPartClient) Use(hooks ...Hook) {
-	c.hooks.SetupPart = append(c.hooks.SetupPart, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `setuppart.Intercept(f(g(h())))`.
-func (c *SetupPartClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SetupPart = append(c.inters.SetupPart, interceptors...)
-}
-
-// Create returns a builder for creating a SetupPart entity.
-func (c *SetupPartClient) Create() *SetupPartCreate {
-	mutation := newSetupPartMutation(c.config, OpCreate)
-	return &SetupPartCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SetupPart entities.
-func (c *SetupPartClient) CreateBulk(builders ...*SetupPartCreate) *SetupPartCreateBulk {
-	return &SetupPartCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SetupPartClient) MapCreateBulk(slice any, setFunc func(*SetupPartCreate, int)) *SetupPartCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SetupPartCreateBulk{err: fmt.Errorf("calling to SetupPartClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SetupPartCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SetupPartCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SetupPart.
-func (c *SetupPartClient) Update() *SetupPartUpdate {
-	mutation := newSetupPartMutation(c.config, OpUpdate)
-	return &SetupPartUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SetupPartClient) UpdateOne(_m *SetupPart) *SetupPartUpdateOne {
-	mutation := newSetupPartMutation(c.config, OpUpdateOne, withSetupPart(_m))
-	return &SetupPartUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SetupPartClient) UpdateOneID(id uuid.UUID) *SetupPartUpdateOne {
-	mutation := newSetupPartMutation(c.config, OpUpdateOne, withSetupPartID(id))
-	return &SetupPartUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SetupPart.
-func (c *SetupPartClient) Delete() *SetupPartDelete {
-	mutation := newSetupPartMutation(c.config, OpDelete)
-	return &SetupPartDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SetupPartClient) DeleteOne(_m *SetupPart) *SetupPartDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SetupPartClient) DeleteOneID(id uuid.UUID) *SetupPartDeleteOne {
-	builder := c.Delete().Where(setuppart.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SetupPartDeleteOne{builder}
-}
-
-// Query returns a query builder for SetupPart.
-func (c *SetupPartClient) Query() *SetupPartQuery {
-	return &SetupPartQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSetupPart},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SetupPart entity by its id.
-func (c *SetupPartClient) Get(ctx context.Context, id uuid.UUID) (*SetupPart, error) {
-	return c.Query().Where(setuppart.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SetupPartClient) GetX(ctx context.Context, id uuid.UUID) *SetupPart {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QuerySetup queries the setup edge of a SetupPart.
-func (c *SetupPartClient) QuerySetup(_m *SetupPart) *SetupQuery {
-	query := (&SetupClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(setuppart.Table, setuppart.FieldID, id),
-			sqlgraph.To(setup.Table, setup.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, setuppart.SetupTable, setuppart.SetupColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEntity queries the entity edge of a SetupPart.
-func (c *SetupPartClient) QueryEntity(_m *SetupPart) *EntityQuery {
-	query := (&EntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(setuppart.Table, setuppart.FieldID, id),
-			sqlgraph.To(entity.Table, entity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, setuppart.EntityTable, setuppart.EntityColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SetupPartClient) Hooks() []Hook {
-	return c.hooks.SetupPart
-}
-
-// Interceptors returns the client interceptors.
-func (c *SetupPartClient) Interceptors() []Interceptor {
-	return c.inters.SetupPart
-}
-
-func (c *SetupPartClient) mutate(ctx context.Context, m *SetupPartMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SetupPartCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SetupPartUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SetupPartUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SetupPartDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SetupPart mutation op: %q", m.Op())
-	}
-}
-
 // TagClient is a client for the Tag schema.
 type TagClient struct {
 	config
@@ -3674,15 +3674,15 @@ func (c *UsageSessionClient) GetX(ctx context.Context, id uuid.UUID) *UsageSessi
 	return obj
 }
 
-// QuerySetup queries the setup edge of a UsageSession.
-func (c *UsageSessionClient) QuerySetup(_m *UsageSession) *SetupQuery {
-	query := (&SetupClient{config: c.config}).Query()
+// QueryBuild queries the build edge of a UsageSession.
+func (c *UsageSessionClient) QueryBuild(_m *UsageSession) *BuildQuery {
+	query := (&BuildClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(usagesession.Table, usagesession.FieldID, id),
-			sqlgraph.To(setup.Table, setup.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, usagesession.SetupTable, usagesession.SetupColumn),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usagesession.BuildTable, usagesession.BuildColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -4063,15 +4063,15 @@ func (c *UserGroupClient) mutate(ctx context.Context, m *UserGroupMutation) (Val
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		APIKey, Attachment, AuthRoles, AuthTokens, Entity, EntityField, EntityTemplate,
-		EntityType, Export, Group, GroupInvitationToken, MaintenanceEntry, Notifier,
-		PasswordResetTokens, Setup, SetupPart, Tag, TemplateField, UsageSession, User,
-		UserGroup []ent.Hook
+		APIKey, Attachment, AuthRoles, AuthTokens, Build, BuildPart, Entity,
+		EntityField, EntityTemplate, EntityType, Export, Group, GroupInvitationToken,
+		MaintenanceEntry, Notifier, PasswordResetTokens, Tag, TemplateField,
+		UsageSession, User, UserGroup []ent.Hook
 	}
 	inters struct {
-		APIKey, Attachment, AuthRoles, AuthTokens, Entity, EntityField, EntityTemplate,
-		EntityType, Export, Group, GroupInvitationToken, MaintenanceEntry, Notifier,
-		PasswordResetTokens, Setup, SetupPart, Tag, TemplateField, UsageSession, User,
-		UserGroup []ent.Interceptor
+		APIKey, Attachment, AuthRoles, AuthTokens, Build, BuildPart, Entity,
+		EntityField, EntityTemplate, EntityType, Export, Group, GroupInvitationToken,
+		MaintenanceEntry, Notifier, PasswordResetTokens, Tag, TemplateField,
+		UsageSession, User, UserGroup []ent.Interceptor
 	}
 )

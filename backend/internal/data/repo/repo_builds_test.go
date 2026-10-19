@@ -10,12 +10,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSetupRepository_CRUD(t *testing.T) {
+func TestBuildRepository_CRUD(t *testing.T) {
 	ctx := context.Background()
 
-	created, err := tRepos.Setups.Create(ctx, tGroup.ID, SetupCreate{
+	created, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{
 		Name:        "Park Deck",
-		Description: "Main street setup",
+		Description: "Main street build",
 		Sport:       "skateboarding",
 		IsActive:    true,
 	})
@@ -24,11 +24,11 @@ func TestSetupRepository_CRUD(t *testing.T) {
 	assert.Equal(t, "Park Deck", created.Name)
 	assert.True(t, created.IsActive)
 
-	got, err := tRepos.Setups.GetOne(ctx, tGroup.ID, created.ID)
+	got, err := tRepos.Builds.GetOne(ctx, tGroup.ID, created.ID)
 	require.NoError(t, err)
 	assert.Equal(t, created.Name, got.Name)
 
-	updated, err := tRepos.Setups.Update(ctx, tGroup.ID, created.ID, SetupUpdate{
+	updated, err := tRepos.Builds.Update(ctx, tGroup.ID, created.ID, BuildUpdate{
 		Name:        "Park Deck v2",
 		Description: "Updated",
 		Sport:       "skateboarding",
@@ -38,23 +38,23 @@ func TestSetupRepository_CRUD(t *testing.T) {
 	assert.Equal(t, "Park Deck v2", updated.Name)
 	assert.False(t, updated.IsActive)
 
-	all, err := tRepos.Setups.GetAll(ctx, tGroup.ID)
+	all, err := tRepos.Builds.GetAll(ctx, tGroup.ID)
 	require.NoError(t, err)
 	assert.Len(t, all, 1)
 
-	require.NoError(t, tRepos.Setups.Delete(ctx, tGroup.ID, created.ID))
-	_, err = tRepos.Setups.GetOne(ctx, tGroup.ID, created.ID)
+	require.NoError(t, tRepos.Builds.Delete(ctx, tGroup.ID, created.ID))
+	_, err = tRepos.Builds.GetOne(ctx, tGroup.ID, created.ID)
 	assert.Error(t, err)
 }
 
-func TestSetupRepository_Parts(t *testing.T) {
+func TestBuildRepository_Parts(t *testing.T) {
 	ctx := context.Background()
 	entities := useEntities(t, 2)
 
-	setup, err := tRepos.Setups.Create(ctx, tGroup.ID, SetupCreate{Name: "Cruiser"})
+	build, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{Name: "Cruiser"})
 	require.NoError(t, err)
 
-	part, err := tRepos.Setups.AddPart(ctx, tGroup.ID, setup.ID, SetupPartCreate{
+	part, err := tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{
 		EntityID: entities[0].ID,
 		Position: "front_truck",
 	})
@@ -68,38 +68,38 @@ func TestSetupRepository_Parts(t *testing.T) {
 	// A part from another group must be rejected.
 	assert.NotEqual(t, part.Part.EntityID, entities[1].ID)
 
-	current, err := tRepos.Setups.GetParts(ctx, tGroup.ID, setup.ID, true)
+	current, err := tRepos.Builds.GetParts(ctx, tGroup.ID, build.ID, true)
 	require.NoError(t, err)
 	assert.Len(t, current, 1)
 
 	// Removing stamps removed_date rather than deleting the row.
-	require.NoError(t, tRepos.Setups.RemovePart(ctx, tGroup.ID, part.Part.ID))
-	current, err = tRepos.Setups.GetParts(ctx, tGroup.ID, setup.ID, true)
+	require.NoError(t, tRepos.Builds.RemovePart(ctx, tGroup.ID, part.Part.ID))
+	current, err = tRepos.Builds.GetParts(ctx, tGroup.ID, build.ID, true)
 	require.NoError(t, err)
 	assert.Len(t, current, 0)
 
-	history, err := tRepos.Setups.GetParts(ctx, tGroup.ID, setup.ID, false)
+	history, err := tRepos.Builds.GetParts(ctx, tGroup.ID, build.ID, false)
 	require.NoError(t, err)
 	assert.Len(t, history, 1)
 	require.NotNil(t, history[0].RemovedDate)
 
-	byEntity, err := tRepos.Setups.GetPartsByEntity(ctx, tGroup.ID, entities[0].ID)
+	byEntity, err := tRepos.Builds.GetPartsByEntity(ctx, tGroup.ID, entities[0].ID)
 	require.NoError(t, err)
 	assert.Len(t, byEntity, 1)
 
 	// Removing twice fails: the row is already stamped.
-	assert.Error(t, tRepos.Setups.RemovePart(ctx, tGroup.ID, part.Part.ID))
-	require.NoError(t, tRepos.Setups.DeletePart(ctx, tGroup.ID, part.Part.ID))
+	assert.Error(t, tRepos.Builds.RemovePart(ctx, tGroup.ID, part.Part.ID))
+	require.NoError(t, tRepos.Builds.DeletePart(ctx, tGroup.ID, part.Part.ID))
 
-	history, err = tRepos.Setups.GetParts(ctx, tGroup.ID, setup.ID, false)
+	history, err = tRepos.Builds.GetParts(ctx, tGroup.ID, build.ID, false)
 	require.NoError(t, err)
 	assert.Len(t, history, 0)
 
 	// Cleanup
-	require.NoError(t, tRepos.Setups.Delete(ctx, tGroup.ID, setup.ID))
+	require.NoError(t, tRepos.Builds.Delete(ctx, tGroup.ID, build.ID))
 }
 
-func TestSetupRepository_AddPartLocationWarning(t *testing.T) {
+func TestBuildRepository_AddPartLocationWarning(t *testing.T) {
 	ctx := context.Background()
 
 	// Mounting a location-typed entity is allowed but should warn.
@@ -113,18 +113,18 @@ func TestSetupRepository_AddPartLocationWarning(t *testing.T) {
 		_ = tRepos.Entities.Delete(ctx, location.ID)
 	})
 
-	setup, err := tRepos.Setups.Create(ctx, tGroup.ID, SetupCreate{Name: "Warning Setup"})
+	build, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{Name: "Warning Build"})
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		_ = tRepos.Setups.Delete(ctx, tGroup.ID, setup.ID)
+		_ = tRepos.Builds.Delete(ctx, tGroup.ID, build.ID)
 	})
 
-	result, err := tRepos.Setups.AddPart(ctx, tGroup.ID, setup.ID, SetupPartCreate{EntityID: location.ID})
+	result, err := tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{EntityID: location.ID})
 	require.NoError(t, err)
 	assert.Equal(t, []string{"entity_is_location"}, result.Warnings)
 }
 
-func TestSetupRepository_Stats(t *testing.T) {
+func TestBuildRepository_Stats(t *testing.T) {
 	ctx := context.Background()
 
 	entities := useEntities(t, 2)
@@ -137,23 +137,23 @@ func TestSetupRepository_Stats(t *testing.T) {
 		})
 	}
 
-	setup, err := tRepos.Setups.Create(ctx, tGroup.ID, SetupCreate{Name: "Stats Setup"})
+	build, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{Name: "Stats Build"})
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		_ = tRepos.Setups.Delete(ctx, tGroup.ID, setup.ID)
+		_ = tRepos.Builds.Delete(ctx, tGroup.ID, build.ID)
 	})
 
-	// Mount the same part on the setup twice (removed and re-mounted) plus
+	// Mount the same part on the build twice (removed and re-mounted) plus
 	// the second part; investment must count each distinct part once.
-	first, err := tRepos.Setups.AddPart(ctx, tGroup.ID, setup.ID, SetupPartCreate{EntityID: entities[0].ID})
+	first, err := tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{EntityID: entities[0].ID})
 	require.NoError(t, err)
-	require.NoError(t, tRepos.Setups.RemovePart(ctx, tGroup.ID, first.Part.ID))
-	_, err = tRepos.Setups.AddPart(ctx, tGroup.ID, setup.ID, SetupPartCreate{EntityID: entities[0].ID})
+	require.NoError(t, tRepos.Builds.RemovePart(ctx, tGroup.ID, first.Part.ID))
+	_, err = tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{EntityID: entities[0].ID})
 	require.NoError(t, err)
-	_, err = tRepos.Setups.AddPart(ctx, tGroup.ID, setup.ID, SetupPartCreate{EntityID: entities[1].ID})
+	_, err = tRepos.Builds.AddPart(ctx, tGroup.ID, build.ID, BuildPartCreate{EntityID: entities[1].ID})
 	require.NoError(t, err)
 
-	// A second group's setup must not affect this group's stats.
+	// A second group's build must not affect this group's stats.
 	otherGroup, err := tRepos.Groups.GroupCreate(ctx, "stats-foreign-"+uuid.NewString(), uuid.Nil)
 	require.NoError(t, err)
 	t.Cleanup(func() {
@@ -170,43 +170,43 @@ func TestSetupRepository_Stats(t *testing.T) {
 	_, err = tClient.Entity.UpdateOneID(otherEntity.ID).SetPurchasePrice(50.0).Save(ctx)
 	require.NoError(t, err)
 
-	otherSetup, err := tRepos.Setups.Create(ctx, otherGroup.ID, SetupCreate{Name: "Foreign Setup"})
+	otherBuild, err := tRepos.Builds.Create(ctx, otherGroup.ID, BuildCreate{Name: "Foreign Build"})
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		_ = tRepos.Setups.Delete(ctx, otherGroup.ID, otherSetup.ID)
+		_ = tRepos.Builds.Delete(ctx, otherGroup.ID, otherBuild.ID)
 		_ = tRepos.Entities.Delete(ctx, otherEntity.ID)
 	})
-	_, err = tRepos.Setups.AddPart(ctx, otherGroup.ID, otherSetup.ID, SetupPartCreate{EntityID: otherEntity.ID})
+	_, err = tRepos.Builds.AddPart(ctx, otherGroup.ID, otherBuild.ID, BuildPartCreate{EntityID: otherEntity.ID})
 	require.NoError(t, err)
 
-	stats, err := tRepos.Setups.Stats(ctx, tGroup.ID)
+	stats, err := tRepos.Builds.Stats(ctx, tGroup.ID)
 	require.NoError(t, err)
 	assert.InDelta(t, 75.5, stats.TotalInvestment, 0.001)
 	assert.Equal(t, 0, stats.SessionCount)
 	assert.InDelta(t, 0.0, stats.CostPerSession, 0.001)
 
 	// The foreign group only sees its own investment.
-	foreignStats, err := tRepos.Setups.Stats(ctx, otherGroup.ID)
+	foreignStats, err := tRepos.Builds.Stats(ctx, otherGroup.ID)
 	require.NoError(t, err)
 	assert.InDelta(t, 50.0, foreignStats.TotalInvestment, 0.001)
 
 	// Logging a session turns on cost-per-session.
-	_, err = tRepos.Setups.CreateSession(ctx, tGroup.ID, setup.ID, UsageSessionCreate{Date: time.Now()})
+	_, err = tRepos.Builds.CreateSession(ctx, tGroup.ID, build.ID, UsageSessionCreate{Date: time.Now()})
 	require.NoError(t, err)
 
-	stats, err = tRepos.Setups.Stats(ctx, tGroup.ID)
+	stats, err = tRepos.Builds.Stats(ctx, tGroup.ID)
 	require.NoError(t, err)
 	assert.Equal(t, 1, stats.SessionCount)
 	assert.InDelta(t, 75.5, stats.CostPerSession, 0.001)
 }
 
-func TestSetupRepository_Sessions(t *testing.T) {
+func TestBuildRepository_Sessions(t *testing.T) {
 	ctx := context.Background()
 
-	setup, err := tRepos.Setups.Create(ctx, tGroup.ID, SetupCreate{Name: "BMX"})
+	build, err := tRepos.Builds.Create(ctx, tGroup.ID, BuildCreate{Name: "BMX"})
 	require.NoError(t, err)
 
-	session, err := tRepos.Setups.CreateSession(ctx, tGroup.ID, setup.ID, UsageSessionCreate{
+	session, err := tRepos.Builds.CreateSession(ctx, tGroup.ID, build.ID, UsageSessionCreate{
 		Date:            time.Now(),
 		DurationMinutes: 90,
 		Location:        "skatepark",
@@ -218,11 +218,11 @@ func TestSetupRepository_Sessions(t *testing.T) {
 	assert.Equal(t, 90, session.DurationMinutes)
 	assert.Equal(t, 4, session.Rating)
 
-	sessions, err := tRepos.Setups.GetSessions(ctx, tGroup.ID, setup.ID)
+	sessions, err := tRepos.Builds.GetSessions(ctx, tGroup.ID, build.ID)
 	require.NoError(t, err)
 	assert.Len(t, sessions, 1)
 
-	updated, err := tRepos.Setups.UpdateSession(ctx, tGroup.ID, session.ID, UsageSessionUpdate{
+	updated, err := tRepos.Builds.UpdateSession(ctx, tGroup.ID, session.ID, UsageSessionUpdate{
 		Date:            time.Now(),
 		DurationMinutes: 120,
 		Location:        "skatepark",
@@ -234,10 +234,10 @@ func TestSetupRepository_Sessions(t *testing.T) {
 	assert.Equal(t, 120, updated.DurationMinutes)
 	assert.Equal(t, 5, updated.Rating)
 
-	require.NoError(t, tRepos.Setups.DeleteSession(ctx, tGroup.ID, session.ID))
-	sessions, err = tRepos.Setups.GetSessions(ctx, tGroup.ID, setup.ID)
+	require.NoError(t, tRepos.Builds.DeleteSession(ctx, tGroup.ID, session.ID))
+	sessions, err = tRepos.Builds.GetSessions(ctx, tGroup.ID, build.ID)
 	require.NoError(t, err)
 	assert.Len(t, sessions, 0)
 
-	require.NoError(t, tRepos.Setups.Delete(ctx, tGroup.ID, setup.ID))
+	require.NoError(t, tRepos.Builds.Delete(ctx, tGroup.ID, build.ID))
 }

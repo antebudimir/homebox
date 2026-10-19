@@ -792,7 +792,7 @@
         "scanner": "Scanner",
         "search": "Search",
         "templates": "Templates",
-        "setups": "Setups"
+        "builds": "Builds"
     },
     "pages": {
         "templates": {
@@ -1051,9 +1051,9 @@
             "wipe_inventory_success": "Successfully wiped inventory. { results } items deleted."
         }
     },
-    "setups": {
-        "page_title": "Setups",
-        "empty": "No setups yet. Create your first setup to start tracking your gear.",
+    "builds": {
+        "page_title": "Builds",
+        "empty": "No builds yet. Create your first setup to start tracking your gear.",
         "create": "New Setup",
         "active": "Active",
         "inactive": "Inactive",
@@ -1099,7 +1099,7 @@
             "failed_update": "Failed to update setup",
             "deleted": "Setup deleted",
             "failed_delete": "Failed to delete setup",
-            "failed_load": "Failed to load setups",
+            "failed_load": "Failed to load builds",
             "part_added": "Part mounted",
             "part_failed_add": "Failed to mount part",
             "part_removed": "Part unmounted",

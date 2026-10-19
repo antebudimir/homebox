@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 )
 
@@ -24,7 +24,7 @@ type UsageSessionQuery struct {
 	order      []usagesession.OrderOption
 	inters     []Interceptor
 	predicates []predicate.UsageSession
-	withSetup  *SetupQuery
+	withBuild  *BuildQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,9 +61,9 @@ func (_q *UsageSessionQuery) Order(o ...usagesession.OrderOption) *UsageSessionQ
 	return _q
 }
 
-// QuerySetup chains the current query on the "setup" edge.
-func (_q *UsageSessionQuery) QuerySetup() *SetupQuery {
-	query := (&SetupClient{config: _q.config}).Query()
+// QueryBuild chains the current query on the "build" edge.
+func (_q *UsageSessionQuery) QueryBuild() *BuildQuery {
+	query := (&BuildClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -74,8 +74,8 @@ func (_q *UsageSessionQuery) QuerySetup() *SetupQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(usagesession.Table, usagesession.FieldID, selector),
-			sqlgraph.To(setup.Table, setup.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, usagesession.SetupTable, usagesession.SetupColumn),
+			sqlgraph.To(build.Table, build.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, usagesession.BuildTable, usagesession.BuildColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -275,21 +275,21 @@ func (_q *UsageSessionQuery) Clone() *UsageSessionQuery {
 		order:      append([]usagesession.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.UsageSession{}, _q.predicates...),
-		withSetup:  _q.withSetup.Clone(),
+		withBuild:  _q.withBuild.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
 }
 
-// WithSetup tells the query-builder to eager-load the nodes that are connected to
-// the "setup" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *UsageSessionQuery) WithSetup(opts ...func(*SetupQuery)) *UsageSessionQuery {
-	query := (&SetupClient{config: _q.config}).Query()
+// WithBuild tells the query-builder to eager-load the nodes that are connected to
+// the "build" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UsageSessionQuery) WithBuild(opts ...func(*BuildQuery)) *UsageSessionQuery {
+	query := (&BuildClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSetup = query
+	_q.withBuild = query
 	return _q
 }
 
@@ -372,7 +372,7 @@ func (_q *UsageSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		nodes       = []*UsageSession{}
 		_spec       = _q.querySpec()
 		loadedTypes = [1]bool{
-			_q.withSetup != nil,
+			_q.withBuild != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -393,20 +393,20 @@ func (_q *UsageSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withSetup; query != nil {
-		if err := _q.loadSetup(ctx, query, nodes, nil,
-			func(n *UsageSession, e *Setup) { n.Edges.Setup = e }); err != nil {
+	if query := _q.withBuild; query != nil {
+		if err := _q.loadBuild(ctx, query, nodes, nil,
+			func(n *UsageSession, e *Build) { n.Edges.Build = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *UsageSessionQuery) loadSetup(ctx context.Context, query *SetupQuery, nodes []*UsageSession, init func(*UsageSession), assign func(*UsageSession, *Setup)) error {
+func (_q *UsageSessionQuery) loadBuild(ctx context.Context, query *BuildQuery, nodes []*UsageSession, init func(*UsageSession), assign func(*UsageSession, *Build)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*UsageSession)
 	for i := range nodes {
-		fk := nodes[i].SetupID
+		fk := nodes[i].BuildID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -415,7 +415,7 @@ func (_q *UsageSessionQuery) loadSetup(ctx context.Context, query *SetupQuery, n
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(setup.IDIn(ids...))
+	query.Where(build.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -423,7 +423,7 @@ func (_q *UsageSessionQuery) loadSetup(ctx context.Context, query *SetupQuery, n
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "setup_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "build_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -457,8 +457,8 @@ func (_q *UsageSessionQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if _q.withSetup != nil {
-			_spec.Node.AddColumnOnce(usagesession.FieldSetupID)
+		if _q.withBuild != nil {
+			_spec.Node.AddColumnOnce(usagesession.FieldBuildID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

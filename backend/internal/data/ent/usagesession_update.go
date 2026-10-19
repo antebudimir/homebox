@@ -12,8 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 )
 
@@ -36,16 +36,16 @@ func (_u *UsageSessionUpdate) SetUpdatedAt(v time.Time) *UsageSessionUpdate {
 	return _u
 }
 
-// SetSetupID sets the "setup_id" field.
-func (_u *UsageSessionUpdate) SetSetupID(v uuid.UUID) *UsageSessionUpdate {
-	_u.mutation.SetSetupID(v)
+// SetBuildID sets the "build_id" field.
+func (_u *UsageSessionUpdate) SetBuildID(v uuid.UUID) *UsageSessionUpdate {
+	_u.mutation.SetBuildID(v)
 	return _u
 }
 
-// SetNillableSetupID sets the "setup_id" field if the given value is not nil.
-func (_u *UsageSessionUpdate) SetNillableSetupID(v *uuid.UUID) *UsageSessionUpdate {
+// SetNillableBuildID sets the "build_id" field if the given value is not nil.
+func (_u *UsageSessionUpdate) SetNillableBuildID(v *uuid.UUID) *UsageSessionUpdate {
 	if v != nil {
-		_u.SetSetupID(*v)
+		_u.SetBuildID(*v)
 	}
 	return _u
 }
@@ -178,9 +178,9 @@ func (_u *UsageSessionUpdate) ClearRating() *UsageSessionUpdate {
 	return _u
 }
 
-// SetSetup sets the "setup" edge to the Setup entity.
-func (_u *UsageSessionUpdate) SetSetup(v *Setup) *UsageSessionUpdate {
-	return _u.SetSetupID(v.ID)
+// SetBuild sets the "build" edge to the Build entity.
+func (_u *UsageSessionUpdate) SetBuild(v *Build) *UsageSessionUpdate {
+	return _u.SetBuildID(v.ID)
 }
 
 // Mutation returns the UsageSessionMutation object of the builder.
@@ -188,9 +188,9 @@ func (_u *UsageSessionUpdate) Mutation() *UsageSessionMutation {
 	return _u.mutation
 }
 
-// ClearSetup clears the "setup" edge to the Setup entity.
-func (_u *UsageSessionUpdate) ClearSetup() *UsageSessionUpdate {
-	_u.mutation.ClearSetup()
+// ClearBuild clears the "build" edge to the Build entity.
+func (_u *UsageSessionUpdate) ClearBuild() *UsageSessionUpdate {
+	_u.mutation.ClearBuild()
 	return _u
 }
 
@@ -247,8 +247,8 @@ func (_u *UsageSessionUpdate) check() error {
 			return &ValidationError{Name: "notes", err: fmt.Errorf(`ent: validator failed for field "UsageSession.notes": %w`, err)}
 		}
 	}
-	if _u.mutation.SetupCleared() && len(_u.mutation.SetupIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "UsageSession.setup"`)
+	if _u.mutation.BuildCleared() && len(_u.mutation.BuildIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "UsageSession.build"`)
 	}
 	return nil
 }
@@ -307,28 +307,28 @@ func (_u *UsageSessionUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if _u.mutation.RatingCleared() {
 		_spec.ClearField(usagesession.FieldRating, field.TypeInt)
 	}
-	if _u.mutation.SetupCleared() {
+	if _u.mutation.BuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   usagesession.SetupTable,
-			Columns: []string{usagesession.SetupColumn},
+			Table:   usagesession.BuildTable,
+			Columns: []string{usagesession.BuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SetupIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.BuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   usagesession.SetupTable,
-			Columns: []string{usagesession.SetupColumn},
+			Table:   usagesession.BuildTable,
+			Columns: []string{usagesession.BuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -362,16 +362,16 @@ func (_u *UsageSessionUpdateOne) SetUpdatedAt(v time.Time) *UsageSessionUpdateOn
 	return _u
 }
 
-// SetSetupID sets the "setup_id" field.
-func (_u *UsageSessionUpdateOne) SetSetupID(v uuid.UUID) *UsageSessionUpdateOne {
-	_u.mutation.SetSetupID(v)
+// SetBuildID sets the "build_id" field.
+func (_u *UsageSessionUpdateOne) SetBuildID(v uuid.UUID) *UsageSessionUpdateOne {
+	_u.mutation.SetBuildID(v)
 	return _u
 }
 
-// SetNillableSetupID sets the "setup_id" field if the given value is not nil.
-func (_u *UsageSessionUpdateOne) SetNillableSetupID(v *uuid.UUID) *UsageSessionUpdateOne {
+// SetNillableBuildID sets the "build_id" field if the given value is not nil.
+func (_u *UsageSessionUpdateOne) SetNillableBuildID(v *uuid.UUID) *UsageSessionUpdateOne {
 	if v != nil {
-		_u.SetSetupID(*v)
+		_u.SetBuildID(*v)
 	}
 	return _u
 }
@@ -504,9 +504,9 @@ func (_u *UsageSessionUpdateOne) ClearRating() *UsageSessionUpdateOne {
 	return _u
 }
 
-// SetSetup sets the "setup" edge to the Setup entity.
-func (_u *UsageSessionUpdateOne) SetSetup(v *Setup) *UsageSessionUpdateOne {
-	return _u.SetSetupID(v.ID)
+// SetBuild sets the "build" edge to the Build entity.
+func (_u *UsageSessionUpdateOne) SetBuild(v *Build) *UsageSessionUpdateOne {
+	return _u.SetBuildID(v.ID)
 }
 
 // Mutation returns the UsageSessionMutation object of the builder.
@@ -514,9 +514,9 @@ func (_u *UsageSessionUpdateOne) Mutation() *UsageSessionMutation {
 	return _u.mutation
 }
 
-// ClearSetup clears the "setup" edge to the Setup entity.
-func (_u *UsageSessionUpdateOne) ClearSetup() *UsageSessionUpdateOne {
-	_u.mutation.ClearSetup()
+// ClearBuild clears the "build" edge to the Build entity.
+func (_u *UsageSessionUpdateOne) ClearBuild() *UsageSessionUpdateOne {
+	_u.mutation.ClearBuild()
 	return _u
 }
 
@@ -586,8 +586,8 @@ func (_u *UsageSessionUpdateOne) check() error {
 			return &ValidationError{Name: "notes", err: fmt.Errorf(`ent: validator failed for field "UsageSession.notes": %w`, err)}
 		}
 	}
-	if _u.mutation.SetupCleared() && len(_u.mutation.SetupIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "UsageSession.setup"`)
+	if _u.mutation.BuildCleared() && len(_u.mutation.BuildIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "UsageSession.build"`)
 	}
 	return nil
 }
@@ -663,28 +663,28 @@ func (_u *UsageSessionUpdateOne) sqlSave(ctx context.Context) (_node *UsageSessi
 	if _u.mutation.RatingCleared() {
 		_spec.ClearField(usagesession.FieldRating, field.TypeInt)
 	}
-	if _u.mutation.SetupCleared() {
+	if _u.mutation.BuildCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   usagesession.SetupTable,
-			Columns: []string{usagesession.SetupColumn},
+			Table:   usagesession.BuildTable,
+			Columns: []string{usagesession.BuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SetupIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.BuildIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   usagesession.SetupTable,
-			Columns: []string{usagesession.SetupColumn},
+			Table:   usagesession.BuildTable,
+			Columns: []string{usagesession.BuildColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

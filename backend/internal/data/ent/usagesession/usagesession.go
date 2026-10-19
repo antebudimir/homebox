@@ -19,8 +19,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldSetupID holds the string denoting the setup_id field in the database.
-	FieldSetupID = "setup_id"
+	// FieldBuildID holds the string denoting the build_id field in the database.
+	FieldBuildID = "build_id"
 	// FieldDate holds the string denoting the date field in the database.
 	FieldDate = "date"
 	// FieldDurationMinutes holds the string denoting the duration_minutes field in the database.
@@ -33,17 +33,17 @@ const (
 	FieldNotes = "notes"
 	// FieldRating holds the string denoting the rating field in the database.
 	FieldRating = "rating"
-	// EdgeSetup holds the string denoting the setup edge name in mutations.
-	EdgeSetup = "setup"
+	// EdgeBuild holds the string denoting the build edge name in mutations.
+	EdgeBuild = "build"
 	// Table holds the table name of the usagesession in the database.
 	Table = "usage_sessions"
-	// SetupTable is the table that holds the setup relation/edge.
-	SetupTable = "usage_sessions"
-	// SetupInverseTable is the table name for the Setup entity.
-	// It exists in this package in order to avoid circular dependency with the "setup" package.
-	SetupInverseTable = "setups"
-	// SetupColumn is the table column denoting the setup relation/edge.
-	SetupColumn = "setup_id"
+	// BuildTable is the table that holds the build relation/edge.
+	BuildTable = "usage_sessions"
+	// BuildInverseTable is the table name for the Build entity.
+	// It exists in this package in order to avoid circular dependency with the "build" package.
+	BuildInverseTable = "builds"
+	// BuildColumn is the table column denoting the build relation/edge.
+	BuildColumn = "build_id"
 )
 
 // Columns holds all SQL columns for usagesession fields.
@@ -51,7 +51,7 @@ var Columns = []string{
 	FieldID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldSetupID,
+	FieldBuildID,
 	FieldDate,
 	FieldDurationMinutes,
 	FieldLocation,
@@ -107,9 +107,9 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// BySetupID orders the results by the setup_id field.
-func BySetupID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSetupID, opts...).ToFunc()
+// ByBuildID orders the results by the build_id field.
+func ByBuildID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldBuildID, opts...).ToFunc()
 }
 
 // ByDate orders the results by the date field.
@@ -142,16 +142,16 @@ func ByRating(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRating, opts...).ToFunc()
 }
 
-// BySetupField orders the results by setup field.
-func BySetupField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByBuildField orders the results by build field.
+func ByBuildField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSetupStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newBuildStep(), sql.OrderByField(field, opts...))
 	}
 }
-func newSetupStep() *sqlgraph.Step {
+func newBuildStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SetupInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, SetupTable, SetupColumn),
+		sqlgraph.To(BuildInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, BuildTable, BuildColumn),
 	)
 }

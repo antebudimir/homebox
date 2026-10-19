@@ -12,12 +12,12 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/attachment"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entityfield"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/maintenanceentry"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 )
 
@@ -505,19 +505,19 @@ func (_c *EntityCreate) AddMaintenanceEntries(v ...*MaintenanceEntry) *EntityCre
 	return _c.AddMaintenanceEntryIDs(ids...)
 }
 
-// AddSetupPartIDs adds the "setup_parts" edge to the SetupPart entity by IDs.
-func (_c *EntityCreate) AddSetupPartIDs(ids ...uuid.UUID) *EntityCreate {
-	_c.mutation.AddSetupPartIDs(ids...)
+// AddBuildPartIDs adds the "build_parts" edge to the BuildPart entity by IDs.
+func (_c *EntityCreate) AddBuildPartIDs(ids ...uuid.UUID) *EntityCreate {
+	_c.mutation.AddBuildPartIDs(ids...)
 	return _c
 }
 
-// AddSetupParts adds the "setup_parts" edges to the SetupPart entity.
-func (_c *EntityCreate) AddSetupParts(v ...*SetupPart) *EntityCreate {
+// AddBuildParts adds the "build_parts" edges to the BuildPart entity.
+func (_c *EntityCreate) AddBuildParts(v ...*BuildPart) *EntityCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddSetupPartIDs(ids...)
+	return _c.AddBuildPartIDs(ids...)
 }
 
 // AddAttachmentIDs adds the "attachments" edge to the Attachment entity by IDs.
@@ -981,15 +981,15 @@ func (_c *EntityCreate) createSpec() (*Entity, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SetupPartsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.BuildPartsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   entity.SetupPartsTable,
-			Columns: []string{entity.SetupPartsColumn},
+			Table:   entity.BuildPartsTable,
+			Columns: []string{entity.BuildPartsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setuppart.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(buildpart.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

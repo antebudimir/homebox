@@ -10,7 +10,7 @@
   import BaseContainer from "@/components/Base/Container.vue";
   import BaseSectionHeader from "@/components/Base/SectionHeader.vue";
   import BaseCard from "@/components/Base/Card.vue";
-  import type { EntitySummary, SetupOut, SetupPartOut, UsageSessionOut } from "~~/lib/api/types/data-contracts";
+  import type { EntitySummary, BuildOut, BuildPartOut, UsageSessionOut } from "~~/lib/api/types/data-contracts";
 
   definePageMeta({
     middleware: ["auth"],
@@ -20,28 +20,28 @@
   const route = useRoute();
   const api = useUserApi();
 
-  const setupId = computed(() => route.params.id as string);
+  const buildId = computed(() => route.params.id as string);
 
-  const setup = ref<SetupOut | null>(null);
-  const parts = ref<SetupPartOut[]>([]);
+  const build = ref<BuildOut | null>(null);
+  const parts = ref<BuildPartOut[]>([]);
   const sessions = ref<UsageSessionOut[]>([]);
   const loading = ref(true);
 
   async function loadAll() {
     loading.value = true;
 
-    const [setupRes, partsRes, sessionsRes] = await Promise.all([
-      api.setups.get(setupId.value),
-      api.setups.getParts(setupId.value),
-      api.setups.getSessions(setupId.value),
+    const [buildRes, partsRes, sessionsRes] = await Promise.all([
+      api.builds.get(buildId.value),
+      api.builds.getParts(buildId.value),
+      api.builds.getSessions(buildId.value),
     ]);
 
-    if (setupRes.error) {
-      toast.error(t("setups.toast.failed_load"));
+    if (buildRes.error) {
+      toast.error(t("builds.toast.failed_load"));
       loading.value = false;
       return;
     }
-    setup.value = setupRes.data;
+    build.value = buildRes.data;
     parts.value = partsRes.error ? [] : partsRes.data;
     sessions.value = sessionsRes.error ? [] : sessionsRes.data;
     loading.value = false;
@@ -51,34 +51,34 @@
 
   const currentParts = computed(() => parts.value.filter(p => !p.removedDate));
 
-  // --- edit / delete setup ---
+  // --- edit / delete build ---
   const showEdit = ref(false);
   const saving = ref(false);
   const editForm = reactive({ name: "", description: "", sport: "", isActive: true });
 
   function openEdit() {
-    if (!setup.value) {
+    if (!build.value) {
       return;
     }
-    editForm.name = setup.value.name;
-    editForm.description = setup.value.description;
-    editForm.sport = setup.value.sport;
-    editForm.isActive = setup.value.isActive;
+    editForm.name = build.value.name;
+    editForm.description = build.value.description;
+    editForm.sport = build.value.sport;
+    editForm.isActive = build.value.isActive;
     showEdit.value = true;
   }
 
   async function saveEdit() {
-    if (!setup.value || !editForm.name) {
+    if (!build.value || !editForm.name) {
       return;
     }
     saving.value = true;
-    const { error } = await api.setups.update(setup.value.id, { ...editForm });
+    const { error } = await api.builds.update(build.value.id, { ...editForm });
     saving.value = false;
     if (error) {
-      toast.error(t("setups.toast.failed_update"));
+      toast.error(t("builds.toast.failed_update"));
       return;
     }
-    toast.success(t("setups.toast.updated"));
+    toast.success(t("builds.toast.updated"));
     showEdit.value = false;
     await loadAll();
   }
@@ -86,19 +86,19 @@
   const showDelete = ref(false);
   const deleting = ref(false);
 
-  async function deleteSetup() {
-    if (!setup.value) {
+  async function deleteBuild() {
+    if (!build.value) {
       return;
     }
     deleting.value = true;
-    const { error } = await api.setups.delete(setup.value.id);
+    const { error } = await api.builds.delete(build.value.id);
     deleting.value = false;
     if (error) {
-      toast.error(t("setups.toast.failed_delete"));
+      toast.error(t("builds.toast.failed_delete"));
       return;
     }
-    toast.success(t("setups.toast.deleted"));
-    await navigateTo("/setups");
+    toast.success(t("builds.toast.deleted"));
+    await navigateTo("/builds");
   }
 
   // --- parts ---
@@ -112,7 +112,7 @@
     if (allEntities.value.length === 0) {
       const { data, error } = await api.items.getAll();
       if (error) {
-        toast.error(t("setups.toast.failed_load"));
+        toast.error(t("builds.toast.failed_load"));
         return;
       }
       allEntities.value = data.items;
@@ -124,42 +124,42 @@
       return;
     }
     mounting.value = true;
-    const { data, error } = await api.setups.addPart(setupId.value, {
+    const { data, error } = await api.builds.addPart(buildId.value, {
       entityId: mountForm.entityId,
       position: mountForm.position,
     });
     mounting.value = false;
     if (error) {
-      toast.error(t("setups.toast.part_failed_add"));
+      toast.error(t("builds.toast.part_failed_add"));
       return;
     }
     if (data && data.warnings && data.warnings.length > 0) {
-      toast.warning(data.warnings.map(code => t(`setups.warning.${code}`)).join(" "));
+      toast.warning(data.warnings.map(code => t(`builds.warning.${code}`)).join(" "));
     }
-    toast.success(t("setups.toast.part_added"));
+    toast.success(t("builds.toast.part_added"));
     showMount.value = false;
     mountForm.entityId = "";
     mountForm.position = "";
     await loadAll();
   }
 
-  async function unmountPart(part: SetupPartOut) {
-    const { error } = await api.setups.removePart(setupId.value, part.id);
+  async function unmountPart(part: BuildPartOut) {
+    const { error } = await api.builds.removePart(buildId.value, part.id);
     if (error) {
-      toast.error(t("setups.toast.part_failed_remove"));
+      toast.error(t("builds.toast.part_failed_remove"));
       return;
     }
-    toast.success(t("setups.toast.part_removed"));
+    toast.success(t("builds.toast.part_removed"));
     await loadAll();
   }
 
-  async function purgePart(part: SetupPartOut) {
-    const { error } = await api.setups.purgePart(setupId.value, part.id);
+  async function purgePart(part: BuildPartOut) {
+    const { error } = await api.builds.purgePart(buildId.value, part.id);
     if (error) {
-      toast.error(t("setups.toast.part_failed_delete"));
+      toast.error(t("builds.toast.part_failed_delete"));
       return;
     }
-    toast.success(t("setups.toast.part_deleted"));
+    toast.success(t("builds.toast.part_deleted"));
     await loadAll();
   }
 
@@ -179,16 +179,16 @@
 
   async function logSession() {
     loggingSession.value = true;
-    const { error } = await api.setups.createSession(setupId.value, {
+    const { error } = await api.builds.createSession(buildId.value, {
       ...sessionForm,
       date: new Date(sessionForm.date).toISOString(),
     });
     loggingSession.value = false;
     if (error) {
-      toast.error(t("setups.toast.session_failed_log"));
+      toast.error(t("builds.toast.session_failed_log"));
       return;
     }
-    toast.success(t("setups.toast.session_logged"));
+    toast.success(t("builds.toast.session_logged"));
     showSession.value = false;
     sessionForm.durationMinutes = 0;
     sessionForm.location = "";
@@ -199,12 +199,12 @@
   }
 
   async function deleteSession(session: UsageSessionOut) {
-    const { error } = await api.setups.deleteSession(setupId.value, session.id);
+    const { error } = await api.builds.deleteSession(buildId.value, session.id);
     if (error) {
-      toast.error(t("setups.toast.session_failed_delete"));
+      toast.error(t("builds.toast.session_failed_delete"));
       return;
     }
-    toast.success(t("setups.toast.session_deleted"));
+    toast.success(t("builds.toast.session_deleted"));
     await loadAll();
   }
 </script>
@@ -214,22 +214,22 @@
     <BaseContainer class="flex flex-col gap-6">
       <div v-if="loading">{{ $t("global.loading") }}</div>
 
-      <template v-else-if="setup">
+      <template v-else-if="build">
         <div class="flex items-start justify-between gap-4">
           <div class="flex flex-col gap-2">
-            <NuxtLink to="/setups" class="text-sm text-foreground/70 hover:underline">
-              ← {{ $t("menu.setups") }}
+            <NuxtLink to="/builds" class="text-sm text-foreground/70 hover:underline">
+              ← {{ $t("menu.builds") }}
             </NuxtLink>
             <BaseSectionHeader class="!mb-0">
-              {{ setup.name }}
+              {{ build.name }}
               <span
                 class="ml-3 rounded-full px-2 py-1 text-xs"
-                :class="setup.isActive ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
+                :class="build.isActive ? 'bg-green-500/15 text-green-600' : 'bg-muted text-muted-foreground'"
               >
-                {{ setup.isActive ? $t("setups.active") : $t("setups.inactive") }}
+                {{ build.isActive ? $t("builds.active") : $t("builds.inactive") }}
               </span>
             </BaseSectionHeader>
-            <p v-if="setup.description" class="text-foreground/70">{{ setup.description }}</p>
+            <p v-if="build.description" class="text-foreground/70">{{ build.description }}</p>
           </div>
           <ButtonGroup>
             <Button variant="outline" @click="openEdit">{{ $t("global.edit") }}</Button>
@@ -239,29 +239,29 @@
 
         <!-- Parts -->
         <BaseCard collapsable>
-          <template #title> {{ $t("setups.parts.title") }} ({{ currentParts.length }}) </template>
+          <template #title> {{ $t("builds.parts.title") }} ({{ currentParts.length }}) </template>
           <template #title-actions>
             <div class="mt-2 flex items-center gap-4">
               <Label class="flex cursor-pointer items-center gap-2">
                 <Switch v-model="showHistory" />
-                {{ $t("setups.parts.history") }}
+                {{ $t("builds.parts.history") }}
               </Label>
-              <Button size="sm" @click="openMount">{{ $t("setups.parts.mount") }}</Button>
+              <Button size="sm" @click="openMount">{{ $t("builds.parts.mount") }}</Button>
             </div>
           </template>
 
           <p v-if="currentParts.length === 0" class="px-6 pb-4 text-foreground/70">
-            {{ $t("setups.parts.empty") }}
+            {{ $t("builds.parts.empty") }}
           </p>
 
           <div v-else class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b text-left text-foreground/70">
-                  <th class="p-4">{{ $t("setups.parts.entity") }}</th>
-                  <th class="p-4">{{ $t("setups.parts.position") }}</th>
-                  <th class="p-4">{{ $t("setups.parts.mounted") }}</th>
-                  <th v-if="showHistory" class="p-4">{{ $t("setups.parts.removed") }}</th>
+                  <th class="p-4">{{ $t("builds.parts.entity") }}</th>
+                  <th class="p-4">{{ $t("builds.parts.position") }}</th>
+                  <th class="p-4">{{ $t("builds.parts.mounted") }}</th>
+                  <th v-if="showHistory" class="p-4">{{ $t("builds.parts.removed") }}</th>
                   <th class="p-4" />
                 </tr>
               </thead>
@@ -279,10 +279,10 @@
                   </td>
                   <td class="p-4 text-right">
                     <Button v-if="!part.removedDate" size="sm" variant="outline" @click="unmountPart(part)">
-                      {{ $t("setups.parts.unmount") }}
+                      {{ $t("builds.parts.unmount") }}
                     </Button>
                     <Button v-else size="sm" variant="destructive" @click="purgePart(part)">
-                      {{ $t("setups.parts.purge") }}
+                      {{ $t("builds.parts.purge") }}
                     </Button>
                   </td>
                 </tr>
@@ -293,27 +293,27 @@
 
         <!-- Sessions -->
         <BaseCard collapsable>
-          <template #title> {{ $t("setups.sessions.title") }} ({{ sessions.length }}) </template>
+          <template #title> {{ $t("builds.sessions.title") }} ({{ sessions.length }}) </template>
           <template #title-actions>
             <div class="mt-2">
-              <Button size="sm" @click="showSession = true">{{ $t("setups.sessions.log") }}</Button>
+              <Button size="sm" @click="showSession = true">{{ $t("builds.sessions.log") }}</Button>
             </div>
           </template>
 
           <p v-if="sessions.length === 0" class="px-6 pb-4 text-foreground/70">
-            {{ $t("setups.sessions.empty") }}
+            {{ $t("builds.sessions.empty") }}
           </p>
 
           <div v-else class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b text-left text-foreground/70">
-                  <th class="p-4">{{ $t("setups.sessions.date") }}</th>
-                  <th class="p-4">{{ $t("setups.sessions.duration_minutes") }}</th>
-                  <th class="p-4">{{ $t("setups.sessions.location") }}</th>
-                  <th class="p-4">{{ $t("setups.sessions.conditions") }}</th>
-                  <th class="p-4">{{ $t("setups.sessions.notes") }}</th>
-                  <th class="p-4">{{ $t("setups.sessions.rating") }}</th>
+                  <th class="p-4">{{ $t("builds.sessions.date") }}</th>
+                  <th class="p-4">{{ $t("builds.sessions.duration_minutes") }}</th>
+                  <th class="p-4">{{ $t("builds.sessions.location") }}</th>
+                  <th class="p-4">{{ $t("builds.sessions.conditions") }}</th>
+                  <th class="p-4">{{ $t("builds.sessions.notes") }}</th>
+                  <th class="p-4">{{ $t("builds.sessions.rating") }}</th>
                   <th class="p-4" />
                 </tr>
               </thead>
@@ -340,7 +340,7 @@
         <DialogRoot v-model:open="showEdit">
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{{ $t("setups.edit") }}</DialogTitle>
+              <DialogTitle>{{ $t("builds.edit") }}</DialogTitle>
             </DialogHeader>
             <form class="flex flex-col gap-4" @submit.prevent="saveEdit">
               <div class="flex flex-col gap-2">
@@ -352,12 +352,12 @@
                 <Input id="edit-description" v-model="editForm.description" />
               </div>
               <div class="flex flex-col gap-2">
-                <Label for="edit-sport">{{ $t("setups.sport") }}</Label>
+                <Label for="edit-sport">{{ $t("builds.sport") }}</Label>
                 <Input id="edit-sport" v-model="editForm.sport" />
               </div>
               <Label class="flex cursor-pointer items-center gap-2">
                 <Switch v-model="editForm.isActive" />
-                {{ $t("setups.active") }}
+                {{ $t("builds.active") }}
               </Label>
               <DialogFooter>
                 <Button type="button" variant="outline" @click="showEdit = false">{{ $t("global.cancel") }}</Button>
@@ -373,10 +373,10 @@
             <DialogHeader>
               <DialogTitle>{{ $t("global.delete") }}</DialogTitle>
             </DialogHeader>
-            <p>{{ $t("setups.delete_confirm") }}</p>
+            <p>{{ $t("builds.delete_confirm") }}</p>
             <DialogFooter>
               <Button variant="outline" @click="showDelete = false">{{ $t("global.cancel") }}</Button>
-              <Button variant="destructive" :disabled="deleting" @click="deleteSetup">
+              <Button variant="destructive" :disabled="deleting" @click="deleteBuild">
                 {{ $t("global.delete") }}
               </Button>
             </DialogFooter>
@@ -387,25 +387,25 @@
         <DialogRoot v-model:open="showMount">
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{{ $t("setups.parts.mount") }}</DialogTitle>
+              <DialogTitle>{{ $t("builds.parts.mount") }}</DialogTitle>
             </DialogHeader>
             <form class="flex flex-col gap-4" @submit.prevent="mountPart">
               <div class="flex flex-col gap-2">
-                <Label for="mount-entity">{{ $t("setups.parts.entity") }}</Label>
+                <Label for="mount-entity">{{ $t("builds.parts.entity") }}</Label>
                 <select
                   id="mount-entity"
                   v-model="mountForm.entityId"
                   class="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
                   required
                 >
-                  <option value="" disabled>{{ $t("setups.parts.entity_placeholder") }}</option>
+                  <option value="" disabled>{{ $t("builds.parts.entity_placeholder") }}</option>
                   <option v-for="entity in allEntities" :key="entity.id" :value="entity.id">
                     {{ entity.name }}
                   </option>
                 </select>
               </div>
               <div class="flex flex-col gap-2">
-                <Label for="mount-position">{{ $t("setups.parts.position") }}</Label>
+                <Label for="mount-position">{{ $t("builds.parts.position") }}</Label>
                 <Input id="mount-position" v-model="mountForm.position" />
               </div>
               <DialogFooter>
@@ -420,31 +420,31 @@
         <DialogRoot v-model:open="showSession">
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{{ $t("setups.sessions.log") }}</DialogTitle>
+              <DialogTitle>{{ $t("builds.sessions.log") }}</DialogTitle>
             </DialogHeader>
             <form class="flex flex-col gap-4" @submit.prevent="logSession">
               <div class="flex flex-col gap-2">
-                <Label for="session-date">{{ $t("setups.sessions.date") }}</Label>
+                <Label for="session-date">{{ $t("builds.sessions.date") }}</Label>
                 <Input id="session-date" v-model="sessionForm.date" type="date" required />
               </div>
               <div class="flex flex-col gap-2">
-                <Label for="session-duration">{{ $t("setups.sessions.duration_minutes") }}</Label>
+                <Label for="session-duration">{{ $t("builds.sessions.duration_minutes") }}</Label>
                 <Input id="session-duration" v-model.number="sessionForm.durationMinutes" type="number" min="0" />
               </div>
               <div class="flex flex-col gap-2">
-                <Label for="session-location">{{ $t("setups.sessions.location") }}</Label>
+                <Label for="session-location">{{ $t("builds.sessions.location") }}</Label>
                 <Input id="session-location" v-model="sessionForm.location" />
               </div>
               <div class="flex flex-col gap-2">
-                <Label for="session-conditions">{{ $t("setups.sessions.conditions") }}</Label>
+                <Label for="session-conditions">{{ $t("builds.sessions.conditions") }}</Label>
                 <Input id="session-conditions" v-model="sessionForm.conditions" />
               </div>
               <div class="flex flex-col gap-2">
-                <Label for="session-notes">{{ $t("setups.sessions.notes") }}</Label>
+                <Label for="session-notes">{{ $t("builds.sessions.notes") }}</Label>
                 <Input id="session-notes" v-model="sessionForm.notes" />
               </div>
               <div class="flex flex-col gap-2">
-                <Label for="session-rating">{{ $t("setups.sessions.rating") }}</Label>
+                <Label for="session-rating">{{ $t("builds.sessions.rating") }}</Label>
                 <Input id="session-rating" v-model.number="sessionForm.rating" type="number" min="0" max="5" />
               </div>
               <DialogFooter>

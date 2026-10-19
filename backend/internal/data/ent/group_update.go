@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytemplate"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entitytype"
@@ -20,7 +21,6 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/groupinvitationtoken"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/notifier"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/tag"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/user"
 )
@@ -132,19 +132,19 @@ func (_u *GroupUpdate) AddTags(v ...*Tag) *GroupUpdate {
 	return _u.AddTagIDs(ids...)
 }
 
-// AddSetupIDs adds the "setups" edge to the Setup entity by IDs.
-func (_u *GroupUpdate) AddSetupIDs(ids ...uuid.UUID) *GroupUpdate {
-	_u.mutation.AddSetupIDs(ids...)
+// AddBuildIDs adds the "builds" edge to the Build entity by IDs.
+func (_u *GroupUpdate) AddBuildIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.AddBuildIDs(ids...)
 	return _u
 }
 
-// AddSetups adds the "setups" edges to the Setup entity.
-func (_u *GroupUpdate) AddSetups(v ...*Setup) *GroupUpdate {
+// AddBuilds adds the "builds" edges to the Build entity.
+func (_u *GroupUpdate) AddBuilds(v ...*Build) *GroupUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddSetupIDs(ids...)
+	return _u.AddBuildIDs(ids...)
 }
 
 // AddInvitationTokenIDs adds the "invitation_tokens" edge to the GroupInvitationToken entity by IDs.
@@ -296,25 +296,25 @@ func (_u *GroupUpdate) RemoveTags(v ...*Tag) *GroupUpdate {
 	return _u.RemoveTagIDs(ids...)
 }
 
-// ClearSetups clears all "setups" edges to the Setup entity.
-func (_u *GroupUpdate) ClearSetups() *GroupUpdate {
-	_u.mutation.ClearSetups()
+// ClearBuilds clears all "builds" edges to the Build entity.
+func (_u *GroupUpdate) ClearBuilds() *GroupUpdate {
+	_u.mutation.ClearBuilds()
 	return _u
 }
 
-// RemoveSetupIDs removes the "setups" edge to Setup entities by IDs.
-func (_u *GroupUpdate) RemoveSetupIDs(ids ...uuid.UUID) *GroupUpdate {
-	_u.mutation.RemoveSetupIDs(ids...)
+// RemoveBuildIDs removes the "builds" edge to Build entities by IDs.
+func (_u *GroupUpdate) RemoveBuildIDs(ids ...uuid.UUID) *GroupUpdate {
+	_u.mutation.RemoveBuildIDs(ids...)
 	return _u
 }
 
-// RemoveSetups removes "setups" edges to Setup entities.
-func (_u *GroupUpdate) RemoveSetups(v ...*Setup) *GroupUpdate {
+// RemoveBuilds removes "builds" edges to Build entities.
+func (_u *GroupUpdate) RemoveBuilds(v ...*Build) *GroupUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveSetupIDs(ids...)
+	return _u.RemoveBuildIDs(ids...)
 }
 
 // ClearInvitationTokens clears all "invitation_tokens" edges to the GroupInvitationToken entity.
@@ -660,28 +660,28 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SetupsCleared() {
+	if _u.mutation.BuildsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.SetupsTable,
-			Columns: []string{group.SetupsColumn},
+			Table:   group.BuildsTable,
+			Columns: []string{group.BuildsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedSetupsIDs(); len(nodes) > 0 && !_u.mutation.SetupsCleared() {
+	if nodes := _u.mutation.RemovedBuildsIDs(); len(nodes) > 0 && !_u.mutation.BuildsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.SetupsTable,
-			Columns: []string{group.SetupsColumn},
+			Table:   group.BuildsTable,
+			Columns: []string{group.BuildsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -689,15 +689,15 @@ func (_u *GroupUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SetupsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.BuildsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.SetupsTable,
-			Columns: []string{group.SetupsColumn},
+			Table:   group.BuildsTable,
+			Columns: []string{group.BuildsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -999,19 +999,19 @@ func (_u *GroupUpdateOne) AddTags(v ...*Tag) *GroupUpdateOne {
 	return _u.AddTagIDs(ids...)
 }
 
-// AddSetupIDs adds the "setups" edge to the Setup entity by IDs.
-func (_u *GroupUpdateOne) AddSetupIDs(ids ...uuid.UUID) *GroupUpdateOne {
-	_u.mutation.AddSetupIDs(ids...)
+// AddBuildIDs adds the "builds" edge to the Build entity by IDs.
+func (_u *GroupUpdateOne) AddBuildIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.AddBuildIDs(ids...)
 	return _u
 }
 
-// AddSetups adds the "setups" edges to the Setup entity.
-func (_u *GroupUpdateOne) AddSetups(v ...*Setup) *GroupUpdateOne {
+// AddBuilds adds the "builds" edges to the Build entity.
+func (_u *GroupUpdateOne) AddBuilds(v ...*Build) *GroupUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddSetupIDs(ids...)
+	return _u.AddBuildIDs(ids...)
 }
 
 // AddInvitationTokenIDs adds the "invitation_tokens" edge to the GroupInvitationToken entity by IDs.
@@ -1163,25 +1163,25 @@ func (_u *GroupUpdateOne) RemoveTags(v ...*Tag) *GroupUpdateOne {
 	return _u.RemoveTagIDs(ids...)
 }
 
-// ClearSetups clears all "setups" edges to the Setup entity.
-func (_u *GroupUpdateOne) ClearSetups() *GroupUpdateOne {
-	_u.mutation.ClearSetups()
+// ClearBuilds clears all "builds" edges to the Build entity.
+func (_u *GroupUpdateOne) ClearBuilds() *GroupUpdateOne {
+	_u.mutation.ClearBuilds()
 	return _u
 }
 
-// RemoveSetupIDs removes the "setups" edge to Setup entities by IDs.
-func (_u *GroupUpdateOne) RemoveSetupIDs(ids ...uuid.UUID) *GroupUpdateOne {
-	_u.mutation.RemoveSetupIDs(ids...)
+// RemoveBuildIDs removes the "builds" edge to Build entities by IDs.
+func (_u *GroupUpdateOne) RemoveBuildIDs(ids ...uuid.UUID) *GroupUpdateOne {
+	_u.mutation.RemoveBuildIDs(ids...)
 	return _u
 }
 
-// RemoveSetups removes "setups" edges to Setup entities.
-func (_u *GroupUpdateOne) RemoveSetups(v ...*Setup) *GroupUpdateOne {
+// RemoveBuilds removes "builds" edges to Build entities.
+func (_u *GroupUpdateOne) RemoveBuilds(v ...*Build) *GroupUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveSetupIDs(ids...)
+	return _u.RemoveBuildIDs(ids...)
 }
 
 // ClearInvitationTokens clears all "invitation_tokens" edges to the GroupInvitationToken entity.
@@ -1557,28 +1557,28 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SetupsCleared() {
+	if _u.mutation.BuildsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.SetupsTable,
-			Columns: []string{group.SetupsColumn},
+			Table:   group.BuildsTable,
+			Columns: []string{group.BuildsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedSetupsIDs(); len(nodes) > 0 && !_u.mutation.SetupsCleared() {
+	if nodes := _u.mutation.RemovedBuildsIDs(); len(nodes) > 0 && !_u.mutation.BuildsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.SetupsTable,
-			Columns: []string{group.SetupsColumn},
+			Table:   group.BuildsTable,
+			Columns: []string{group.BuildsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1586,15 +1586,15 @@ func (_u *GroupUpdateOne) sqlSave(ctx context.Context) (_node *Group, err error)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.SetupsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.BuildsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   group.SetupsTable,
-			Columns: []string{group.SetupsColumn},
+			Table:   group.BuildsTable,
+			Columns: []string{group.BuildsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(setup.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(build.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

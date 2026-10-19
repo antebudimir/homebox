@@ -9,33 +9,33 @@ import (
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/entity"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/group"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/predicate"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setup"
-	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/setuppart"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/build"
+	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/buildpart"
 	"github.com/sysadminsmedia/homebox/backend/internal/data/ent/usagesession"
 )
 
-// SetupRepository covers setups, their part assignments, and usage sessions.
-// A SetupPart row with a null removed_date means the part is currently
-// mounted; stamped rows preserve the mounting history across setups.
-type SetupRepository struct {
+// BuildRepository covers builds, their part assignments, and usage sessions.
+// A BuildPart row with a null removed_date means the part is currently
+// mounted; stamped rows preserve the mounting history across builds.
+type BuildRepository struct {
 	db *ent.Client
 }
 
-type SetupCreate struct {
+type BuildCreate struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Sport       string `json:"sport"`
 	IsActive    bool   `json:"isActive"`
 }
 
-type SetupUpdate struct {
+type BuildUpdate struct {
 	Name        string `json:"name" validate:"required"`
 	Description string `json:"description"`
 	Sport       string `json:"sport"`
 	IsActive    bool   `json:"isActive"`
 }
 
-type SetupOut struct {
+type BuildOut struct {
 	ID          uuid.UUID `json:"id"`
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
@@ -43,15 +43,15 @@ type SetupOut struct {
 	IsActive    bool      `json:"isActive"`
 }
 
-type SetupPartCreate struct {
+type BuildPartCreate struct {
 	// EntityID is the part (an Entity) being mounted.
 	EntityID uuid.UUID `json:"entityId" validate:"required"`
 	Position string    `json:"position"`
 }
 
-type SetupPartOut struct {
+type BuildPartOut struct {
 	ID          uuid.UUID  `json:"id"`
-	SetupID     uuid.UUID  `json:"setupId"`
+	BuildID     uuid.UUID  `json:"buildId"`
 	EntityID    uuid.UUID  `json:"entityId"`
 	EntityName  string     `json:"entityName"`
 	Position    string     `json:"position"`
@@ -59,16 +59,16 @@ type SetupPartOut struct {
 	RemovedDate *time.Time `json:"removedDate"`
 }
 
-// SetupPartAddOut wraps a freshly mounted part with non-blocking warnings so
+// BuildPartAddOut wraps a freshly mounted part with non-blocking warnings so
 // the client can surface them without failing the mount.
-type SetupPartAddOut struct {
-	Part     SetupPartOut `json:"part"`
+type BuildPartAddOut struct {
+	Part     BuildPartOut `json:"part"`
 	Warnings []string     `json:"warnings"`
 }
 
-// SetupsStatsOut aggregates investment and usage analytics across all of the
-// group's setups. CostPerSession is 0 when no sessions have been logged.
-type SetupsStatsOut struct {
+// BuildsStatsOut aggregates investment and usage analytics across all of the
+// group's builds. CostPerSession is 0 when no sessions have been logged.
+type BuildsStatsOut struct {
 	TotalInvestment float64 `json:"totalInvestment"`
 	SessionCount    int     `json:"sessionCount"`
 	CostPerSession  float64 `json:"costPerSession"`
@@ -94,7 +94,7 @@ type UsageSessionUpdate struct {
 
 type UsageSessionOut struct {
 	ID              uuid.UUID `json:"id"`
-	SetupID         uuid.UUID `json:"setupId"`
+	BuildID         uuid.UUID `json:"buildId"`
 	Date            time.Time `json:"date"`
 	DurationMinutes int       `json:"durationMinutes"`
 	Location        string    `json:"location"`
@@ -104,12 +104,12 @@ type UsageSessionOut struct {
 }
 
 var (
-	mapSetupErr  = mapTErrFunc(mapSetup)
-	mapEachSetup = mapTEachFunc(mapSetup)
+	mapBuildErr  = mapTErrFunc(mapBuild)
+	mapEachBuild = mapTEachFunc(mapBuild)
 )
 
-func mapSetup(s *ent.Setup) SetupOut {
-	return SetupOut{
+func mapBuild(s *ent.Build) BuildOut {
+	return BuildOut{
 		ID:          s.ID,
 		Name:        s.Name,
 		Description: s.Description,
@@ -118,10 +118,10 @@ func mapSetup(s *ent.Setup) SetupOut {
 	}
 }
 
-func mapSetupPart(p *ent.SetupPart) SetupPartOut {
-	out := SetupPartOut{
+func mapBuildPart(p *ent.BuildPart) BuildPartOut {
+	out := BuildPartOut{
 		ID:          p.ID,
-		SetupID:     p.SetupID,
+		BuildID:     p.BuildID,
 		EntityID:    p.EntityID,
 		Position:    p.Position,
 		AddedDate:   p.AddedDate,
@@ -140,7 +140,7 @@ func mapSetupPart(p *ent.SetupPart) SetupPartOut {
 func mapUsageSession(s *ent.UsageSession) UsageSessionOut {
 	return UsageSessionOut{
 		ID:              s.ID,
-		SetupID:         s.SetupID,
+		BuildID:         s.BuildID,
 		Date:            s.Date,
 		DurationMinutes: s.DurationMinutes,
 		Location:        s.Location,
@@ -150,63 +150,63 @@ func mapUsageSession(s *ent.UsageSession) UsageSessionOut {
 	}
 }
 
-// setupScoped returns a predicate limiting setups to the given group.
-func setupScoped(gid uuid.UUID) predicate.Setup {
-	return setup.HasGroupWith(group.ID(gid))
+// buildScoped returns a predicate limiting builds to the given group.
+func buildScoped(gid uuid.UUID) predicate.Build {
+	return build.HasGroupWith(group.ID(gid))
 }
 
-func (r *SetupRepository) GetAll(ctx context.Context, gid uuid.UUID) ([]SetupOut, error) {
-	setups, err := r.db.Setup.Query().
-		Where(setupScoped(gid)).
-		Order(ent.Desc(setup.FieldIsActive), ent.Desc(setup.FieldCreatedAt)).
+func (r *BuildRepository) GetAll(ctx context.Context, gid uuid.UUID) ([]BuildOut, error) {
+	builds, err := r.db.Build.Query().
+		Where(buildScoped(gid)).
+		Order(ent.Desc(build.FieldIsActive), ent.Desc(build.FieldCreatedAt)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return mapEachSetup(setups), nil
+	return mapEachBuild(builds), nil
 }
 
-func (r *SetupRepository) GetOne(ctx context.Context, gid, id uuid.UUID) (SetupOut, error) {
-	s, err := r.db.Setup.Query().
-		Where(setup.ID(id), setupScoped(gid)).
+func (r *BuildRepository) GetOne(ctx context.Context, gid, id uuid.UUID) (BuildOut, error) {
+	s, err := r.db.Build.Query().
+		Where(build.ID(id), buildScoped(gid)).
 		Only(ctx)
 	if err != nil {
-		return SetupOut{}, err
+		return BuildOut{}, err
 	}
-	return mapSetup(s), nil
+	return mapBuild(s), nil
 }
 
-func (r *SetupRepository) Create(ctx context.Context, gid uuid.UUID, input SetupCreate) (SetupOut, error) {
-	s, err := r.db.Setup.Create().
+func (r *BuildRepository) Create(ctx context.Context, gid uuid.UUID, input BuildCreate) (BuildOut, error) {
+	s, err := r.db.Build.Create().
 		SetGroupID(gid).
 		SetName(input.Name).
 		SetDescription(input.Description).
 		SetSport(input.Sport).
 		SetIsActive(input.IsActive).
 		Save(ctx)
-	return mapSetupErr(s, err)
+	return mapBuildErr(s, err)
 }
 
-func (r *SetupRepository) Update(ctx context.Context, gid, id uuid.UUID, input SetupUpdate) (SetupOut, error) {
-	s, err := r.db.Setup.Update().
-		Where(setup.ID(id), setupScoped(gid)).
+func (r *BuildRepository) Update(ctx context.Context, gid, id uuid.UUID, input BuildUpdate) (BuildOut, error) {
+	s, err := r.db.Build.Update().
+		Where(build.ID(id), buildScoped(gid)).
 		SetName(input.Name).
 		SetDescription(input.Description).
 		SetSport(input.Sport).
 		SetIsActive(input.IsActive).
 		Save(ctx)
 	if err != nil {
-		return SetupOut{}, err
+		return BuildOut{}, err
 	}
 	if s == 0 {
-		return SetupOut{}, &ent.NotFoundError{}
+		return BuildOut{}, &ent.NotFoundError{}
 	}
 	return r.GetOne(ctx, gid, id)
 }
 
-func (r *SetupRepository) Delete(ctx context.Context, gid, id uuid.UUID) error {
-	deleted, err := r.db.Setup.Delete().
-		Where(setup.ID(id), setupScoped(gid)).
+func (r *BuildRepository) Delete(ctx context.Context, gid, id uuid.UUID) error {
+	deleted, err := r.db.Build.Delete().
+		Where(build.ID(id), buildScoped(gid)).
 		Exec(ctx)
 	if err != nil {
 		return err
@@ -217,31 +217,31 @@ func (r *SetupRepository) Delete(ctx context.Context, gid, id uuid.UUID) error {
 	return nil
 }
 
-// AddPart mounts a part on the setup. The part (Entity) must belong to the
+// AddPart mounts a part on the build. The part (Entity) must belong to the
 // caller's group, mirroring the ownership check in MaintenanceEntryRepository.
 // Non-blocking warnings (machine-readable codes) are returned alongside the
 // created assignment; they never fail the mount.
-func (r *SetupRepository) AddPart(ctx context.Context, gid, setupID uuid.UUID, input SetupPartCreate) (SetupPartAddOut, error) {
+func (r *BuildRepository) AddPart(ctx context.Context, gid, buildID uuid.UUID, input BuildPartCreate) (BuildPartAddOut, error) {
 	e, err := r.db.Entity.Query().
 		Where(entity.ID(input.EntityID), entity.HasGroupWith(group.ID(gid))).
 		WithEntityType().
 		Only(ctx)
 	if err != nil {
-		return SetupPartAddOut{}, err
+		return BuildPartAddOut{}, err
 	}
 
-	created, err := r.db.SetupPart.Create().
-		SetSetupID(setupID).
+	created, err := r.db.BuildPart.Create().
+		SetBuildID(buildID).
 		SetEntityID(input.EntityID).
 		SetNillablePosition(&input.Position).
 		Save(ctx)
 	if err != nil {
-		return SetupPartAddOut{}, err
+		return BuildPartAddOut{}, err
 	}
 
 	part, err := r.GetPart(ctx, gid, created.ID)
 	if err != nil {
-		return SetupPartAddOut{}, err
+		return BuildPartAddOut{}, err
 	}
 
 	warnings := []string{}
@@ -249,56 +249,56 @@ func (r *SetupRepository) AddPart(ctx context.Context, gid, setupID uuid.UUID, i
 		warnings = append(warnings, "entity_is_location")
 	}
 
-	return SetupPartAddOut{Part: part, Warnings: warnings}, nil
+	return BuildPartAddOut{Part: part, Warnings: warnings}, nil
 }
 
-func (r *SetupRepository) GetPart(ctx context.Context, gid, id uuid.UUID) (SetupPartOut, error) {
-	p, err := r.db.SetupPart.Query().
+func (r *BuildRepository) GetPart(ctx context.Context, gid, id uuid.UUID) (BuildPartOut, error) {
+	p, err := r.db.BuildPart.Query().
 		Where(
-			setuppart.ID(id),
-			setuppart.HasSetupWith(setupScoped(gid)),
+			buildpart.ID(id),
+			buildpart.HasBuildWith(buildScoped(gid)),
 		).
 		WithEntity().
 		Only(ctx)
 	if err != nil {
-		return SetupPartOut{}, err
+		return BuildPartOut{}, err
 	}
-	return mapSetupPart(p), nil
+	return mapBuildPart(p), nil
 }
 
-// GetParts returns the part assignments of a setup. When currentOnly is true,
+// GetParts returns the part assignments of a build. When currentOnly is true,
 // only currently mounted parts (removed_date IS NULL) are returned.
-func (r *SetupRepository) GetParts(ctx context.Context, gid, setupID uuid.UUID, currentOnly bool) ([]SetupPartOut, error) {
-	query := r.db.SetupPart.Query().
+func (r *BuildRepository) GetParts(ctx context.Context, gid, buildID uuid.UUID, currentOnly bool) ([]BuildPartOut, error) {
+	query := r.db.BuildPart.Query().
 		Where(
-			setuppart.SetupID(setupID),
-			setuppart.HasSetupWith(setupScoped(gid)),
+			buildpart.BuildID(buildID),
+			buildpart.HasBuildWith(buildScoped(gid)),
 		).
 		WithEntity().
-		Order(ent.Asc(setuppart.FieldAddedDate))
+		Order(ent.Asc(buildpart.FieldAddedDate))
 	if currentOnly {
-		query = query.Where(setuppart.RemovedDateIsNil())
+		query = query.Where(buildpart.RemovedDateIsNil())
 	}
 	parts, err := query.All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	out := make([]SetupPartOut, len(parts))
+	out := make([]BuildPartOut, len(parts))
 	for i, p := range parts {
-		out[i] = mapSetupPart(p)
+		out[i] = mapBuildPart(p)
 	}
 	return out, nil
 }
 
 // RemovePart stamps removed_date on the assignment rather than deleting the
 // row, so the mounting history survives. Deleting the row outright would
-// silently erase evidence that the part was ever in the setup.
-func (r *SetupRepository) RemovePart(ctx context.Context, gid, id uuid.UUID) error {
-	updated, err := r.db.SetupPart.Update().
+// silently erase evidence that the part was ever in the build.
+func (r *BuildRepository) RemovePart(ctx context.Context, gid, id uuid.UUID) error {
+	updated, err := r.db.BuildPart.Update().
 		Where(
-			setuppart.ID(id),
-			setuppart.RemovedDateIsNil(),
-			setuppart.HasSetupWith(setupScoped(gid)),
+			buildpart.ID(id),
+			buildpart.RemovedDateIsNil(),
+			buildpart.HasBuildWith(buildScoped(gid)),
 		).
 		SetRemovedDate(time.Now()).
 		Save(ctx)
@@ -311,12 +311,12 @@ func (r *SetupRepository) RemovePart(ctx context.Context, gid, id uuid.UUID) err
 	return nil
 }
 
-// DeletePart permanently removes a setup-part assignment row.
-func (r *SetupRepository) DeletePart(ctx context.Context, gid, id uuid.UUID) error {
-	deleted, err := r.db.SetupPart.Delete().
+// DeletePart permanently removes a build-part assignment row.
+func (r *BuildRepository) DeletePart(ctx context.Context, gid, id uuid.UUID) error {
+	deleted, err := r.db.BuildPart.Delete().
 		Where(
-			setuppart.ID(id),
-			setuppart.HasSetupWith(setupScoped(gid)),
+			buildpart.ID(id),
+			buildpart.HasBuildWith(buildScoped(gid)),
 		).
 		Exec(ctx)
 	if err != nil {
@@ -329,22 +329,22 @@ func (r *SetupRepository) DeletePart(ctx context.Context, gid, id uuid.UUID) err
 }
 
 // GetPartsByEntity returns the full mounting history of one part across all
-// of the group's setups, newest first.
-func (r *SetupRepository) GetPartsByEntity(ctx context.Context, gid, entityID uuid.UUID) ([]SetupPartOut, error) {
-	parts, err := r.db.SetupPart.Query().
+// of the group's builds, newest first.
+func (r *BuildRepository) GetPartsByEntity(ctx context.Context, gid, entityID uuid.UUID) ([]BuildPartOut, error) {
+	parts, err := r.db.BuildPart.Query().
 		Where(
-			setuppart.EntityID(entityID),
-			setuppart.HasSetupWith(setupScoped(gid)),
+			buildpart.EntityID(entityID),
+			buildpart.HasBuildWith(buildScoped(gid)),
 		).
 		WithEntity().
-		Order(ent.Desc(setuppart.FieldAddedDate)).
+		Order(ent.Desc(buildpart.FieldAddedDate)).
 		All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	out := make([]SetupPartOut, len(parts))
+	out := make([]BuildPartOut, len(parts))
 	for i, p := range parts {
-		out[i] = mapSetupPart(p)
+		out[i] = mapBuildPart(p)
 	}
 	return out, nil
 }
@@ -354,22 +354,22 @@ var (
 	mapEachUsageSession = mapTEachFunc(mapUsageSession)
 )
 
-// Stats aggregates analytics across all of the group's setups: total
+// Stats aggregates analytics across all of the group's builds: total
 // investment in currently mounted parts (sum of distinct part purchase
 // prices), logged session count, and cost per session (0 when no sessions).
-func (r *SetupRepository) Stats(ctx context.Context, gid uuid.UUID) (SetupsStatsOut, error) {
-	parts, err := r.db.SetupPart.Query().
+func (r *BuildRepository) Stats(ctx context.Context, gid uuid.UUID) (BuildsStatsOut, error) {
+	parts, err := r.db.BuildPart.Query().
 		Where(
-			setuppart.RemovedDateIsNil(),
-			setuppart.HasSetupWith(setupScoped(gid)),
+			buildpart.RemovedDateIsNil(),
+			buildpart.HasBuildWith(buildScoped(gid)),
 		).
 		WithEntity().
 		All(ctx)
 	if err != nil {
-		return SetupsStatsOut{}, err
+		return BuildsStatsOut{}, err
 	}
 
-	// A part can be mounted in several setups at once; count its purchase
+	// A part can be mounted in several builds at once; count its purchase
 	// price only once toward the investment total.
 	seen := make(map[uuid.UUID]struct{}, len(parts))
 	var investment float64
@@ -386,10 +386,10 @@ func (r *SetupRepository) Stats(ctx context.Context, gid uuid.UUID) (SetupsStats
 	}
 
 	sessionCount, err := r.db.UsageSession.Query().
-		Where(usagesession.HasSetupWith(setupScoped(gid))).
+		Where(usagesession.HasBuildWith(buildScoped(gid))).
 		Count(ctx)
 	if err != nil {
-		return SetupsStatsOut{}, err
+		return BuildsStatsOut{}, err
 	}
 
 	costPerSession := 0.0
@@ -397,18 +397,18 @@ func (r *SetupRepository) Stats(ctx context.Context, gid uuid.UUID) (SetupsStats
 		costPerSession = investment / float64(sessionCount)
 	}
 
-	return SetupsStatsOut{
+	return BuildsStatsOut{
 		TotalInvestment: investment,
 		SessionCount:    sessionCount,
 		CostPerSession:  costPerSession,
 	}, nil
 }
 
-func (r *SetupRepository) GetSessions(ctx context.Context, gid, setupID uuid.UUID) ([]UsageSessionOut, error) {
+func (r *BuildRepository) GetSessions(ctx context.Context, gid, buildID uuid.UUID) ([]UsageSessionOut, error) {
 	sessions, err := r.db.UsageSession.Query().
 		Where(
-			usagesession.SetupID(setupID),
-			usagesession.HasSetupWith(setupScoped(gid)),
+			usagesession.BuildID(buildID),
+			usagesession.HasBuildWith(buildScoped(gid)),
 		).
 		Order(ent.Desc(usagesession.FieldDate), ent.Desc(usagesession.FieldCreatedAt)).
 		All(ctx)
@@ -418,9 +418,9 @@ func (r *SetupRepository) GetSessions(ctx context.Context, gid, setupID uuid.UUI
 	return mapEachUsageSession(sessions), nil
 }
 
-func (r *SetupRepository) CreateSession(ctx context.Context, gid, setupID uuid.UUID, input UsageSessionCreate) (UsageSessionOut, error) {
+func (r *BuildRepository) CreateSession(ctx context.Context, gid, buildID uuid.UUID, input UsageSessionCreate) (UsageSessionOut, error) {
 	created, err := r.db.UsageSession.Create().
-		SetSetupID(setupID).
+		SetBuildID(buildID).
 		SetDate(input.Date).
 		SetDurationMinutes(input.DurationMinutes).
 		SetNillableLocation(&input.Location).
@@ -431,11 +431,11 @@ func (r *SetupRepository) CreateSession(ctx context.Context, gid, setupID uuid.U
 	return mapUsageSessionErr(created, err)
 }
 
-func (r *SetupRepository) UpdateSession(ctx context.Context, gid, id uuid.UUID, input UsageSessionUpdate) (UsageSessionOut, error) {
+func (r *BuildRepository) UpdateSession(ctx context.Context, gid, id uuid.UUID, input UsageSessionUpdate) (UsageSessionOut, error) {
 	updated, err := r.db.UsageSession.Update().
 		Where(
 			usagesession.ID(id),
-			usagesession.HasSetupWith(setupScoped(gid)),
+			usagesession.HasBuildWith(buildScoped(gid)),
 		).
 		SetDate(input.Date).
 		SetDurationMinutes(input.DurationMinutes).
@@ -457,11 +457,11 @@ func (r *SetupRepository) UpdateSession(ctx context.Context, gid, id uuid.UUID, 
 	return mapUsageSession(session), nil
 }
 
-func (r *SetupRepository) DeleteSession(ctx context.Context, gid, id uuid.UUID) error {
+func (r *BuildRepository) DeleteSession(ctx context.Context, gid, id uuid.UUID) error {
 	deleted, err := r.db.UsageSession.Delete().
 		Where(
 			usagesession.ID(id),
-			usagesession.HasSetupWith(setupScoped(gid)),
+			usagesession.HasBuildWith(buildScoped(gid)),
 		).
 		Exec(ctx)
 	if err != nil {
