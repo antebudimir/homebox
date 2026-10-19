@@ -2,8 +2,10 @@ import { BaseAPI, route } from "../base";
 import type {
   SetupCreate,
   SetupOut,
+  SetupPartAddOut,
   SetupPartCreate,
   SetupPartOut,
+  SetupStatsOut,
   SetupUpdate,
   UsageSessionCreate,
   UsageSessionOut,
@@ -40,10 +42,14 @@ export class SetupsAPI extends BaseAPI {
   }
 
   addPart(setupId: string, data: SetupPartCreate) {
-    return this.http.post<SetupPartCreate, SetupPartOut>({
+    return this.http.post<SetupPartCreate, SetupPartAddOut>({
       url: route(`/setups/${setupId}/parts`),
       body: data,
     });
+  }
+
+  getStats() {
+    return this.http.get<SetupStatsOut>({ url: route(`/setups/statistics`) });
   }
 
   removePart(setupId: string, partId: string) {

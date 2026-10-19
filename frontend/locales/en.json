@@ -1111,6 +1111,9 @@
             "session_deleted": "Session deleted",
             "session_failed_delete": "Failed to delete session",
             "history_failed_load": "Failed to load mounting history"
+        },
+        "warning": {
+            "entity_is_location": "This entity is marked as a location — you may have meant to mount a part instead."
         }
     }
 }

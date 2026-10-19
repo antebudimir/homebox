@@ -1514,6 +1514,17 @@ export interface SetupPartOut {
   removedDate?: Date | string | null;
 }
 
+export interface SetupPartAddOut {
+  part: SetupPartOut;
+  warnings: string[];
+}
+
+export interface SetupStatsOut {
+  totalInvestment: number;
+  sessionCount: number;
+  costPerSession: number;
+}
+
 export interface UsageSessionCreate {
   date: Date | string;
   durationMinutes: number;

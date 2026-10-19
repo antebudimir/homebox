@@ -124,7 +124,7 @@
       return;
     }
     mounting.value = true;
-    const { error } = await api.setups.addPart(setupId.value, {
+    const { data, error } = await api.setups.addPart(setupId.value, {
       entityId: mountForm.entityId,
       position: mountForm.position,
     });
@@ -132,6 +132,9 @@
     if (error) {
       toast.error(t("setups.toast.part_failed_add"));
       return;
+    }
+    if (data && data.warnings.length > 0) {
+      toast.warning(data.warnings.map(code => t(`setups.warning.${code}`)).join(" "));
     }
     toast.success(t("setups.toast.part_added"));
     showMount.value = false;

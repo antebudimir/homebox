@@ -142,16 +142,33 @@ func (ctrl *V1Controller) HandleSetupPartsCurrentGet() errchain.HandlerFunc {
 //	@Produce	json
 //	@Param		id		path	string					true	"Setup ID"
 //	@Param		payload	body	repo.SetupPartCreate	true	"Part Data"
-//	@Success	201		{object}	repo.SetupPartOut
+//	@Success	201		{object}	repo.SetupPartAddOut
 //	@Router		/v1/setups/{id}/parts [POST]
 //	@Security	Bearer
 func (ctrl *V1Controller) HandleSetupPartAdd() errchain.HandlerFunc {
-	fn := func(r *http.Request, ID uuid.UUID, body repo.SetupPartCreate) (repo.SetupPartOut, error) {
+	fn := func(r *http.Request, ID uuid.UUID, body repo.SetupPartCreate) (repo.SetupPartAddOut, error) {
 		auth := services.NewContext(r.Context())
 		return ctrl.repo.Setups.AddPart(auth, auth.GID, ID, body)
 	}
 
 	return adapters.ActionID("id", fn, http.StatusCreated)
+}
+
+// HandleSetupsStats godoc
+//
+//	@Summary	Get Setup Statistics
+//	@Tags		Setups
+//	@Produce	json
+//	@Success	200	{object}	repo.SetupsStatsOut
+//	@Router		/v1/setups/statistics [GET]
+//	@Security	Bearer
+func (ctrl *V1Controller) HandleSetupsStats() errchain.HandlerFunc {
+	fn := func(r *http.Request, _ struct{}) (repo.SetupsStatsOut, error) {
+		auth := services.NewContext(r.Context())
+		return ctrl.repo.Setups.Stats(auth, auth.GID)
+	}
+
+	return adapters.Query(fn, http.StatusOK)
 }
 
 // HandleSetupPartRemove godoc

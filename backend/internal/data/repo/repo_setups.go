@@ -59,6 +59,21 @@ type SetupPartOut struct {
 	RemovedDate *time.Time `json:"removedDate"`
 }
 
+// SetupPartAddOut wraps a freshly mounted part with non-blocking warnings so
+// the client can surface them without failing the mount.
+type SetupPartAddOut struct {
+	Part     SetupPartOut `json:"part"`
+	Warnings []string     `json:"warnings"`
+}
+
+// SetupsStatsOut aggregates investment and usage analytics across all of the
+// group's setups. CostPerSession is 0 when no sessions have been logged.
+type SetupsStatsOut struct {
+	TotalInvestment float64 `json:"totalInvestment"`
+	SessionCount    int     `json:"sessionCount"`
+	CostPerSession  float64 `json:"costPerSession"`
+}
+
 type UsageSessionCreate struct {
 	Date            time.Time `json:"date"`
 	DurationMinutes int       `json:"durationMinutes"`
@@ -204,15 +219,15 @@ func (r *SetupRepository) Delete(ctx context.Context, gid, id uuid.UUID) error {
 
 // AddPart mounts a part on the setup. The part (Entity) must belong to the
 // caller's group, mirroring the ownership check in MaintenanceEntryRepository.
-func (r *SetupRepository) AddPart(ctx context.Context, gid, setupID uuid.UUID, input SetupPartCreate) (SetupPartOut, error) {
-	owned, err := r.db.Entity.Query().
+// Non-blocking warnings (machine-readable codes) are returned alongside the
+// created assignment; they never fail the mount.
+func (r *SetupRepository) AddPart(ctx context.Context, gid, setupID uuid.UUID, input SetupPartCreate) (SetupPartAddOut, error) {
+	e, err := r.db.Entity.Query().
 		Where(entity.ID(input.EntityID), entity.HasGroupWith(group.ID(gid))).
-		Exist(ctx)
+		WithEntityType().
+		Only(ctx)
 	if err != nil {
-		return SetupPartOut{}, err
-	}
-	if !owned {
-		return SetupPartOut{}, &ent.NotFoundError{}
+		return SetupPartAddOut{}, err
 	}
 
 	created, err := r.db.SetupPart.Create().
@@ -221,10 +236,20 @@ func (r *SetupRepository) AddPart(ctx context.Context, gid, setupID uuid.UUID, i
 		SetNillablePosition(&input.Position).
 		Save(ctx)
 	if err != nil {
-		return SetupPartOut{}, err
+		return SetupPartAddOut{}, err
 	}
 
-	return r.GetPart(ctx, gid, created.ID)
+	part, err := r.GetPart(ctx, gid, created.ID)
+	if err != nil {
+		return SetupPartAddOut{}, err
+	}
+
+	var warnings []string
+	if et := e.Edges.EntityType; et != nil && et.IsLocation {
+		warnings = append(warnings, "entity_is_location")
+	}
+
+	return SetupPartAddOut{Part: part, Warnings: warnings}, nil
 }
 
 func (r *SetupRepository) GetPart(ctx context.Context, gid, id uuid.UUID) (SetupPartOut, error) {
@@ -328,6 +353,56 @@ var (
 	mapUsageSessionErr  = mapTErrFunc(mapUsageSession)
 	mapEachUsageSession = mapTEachFunc(mapUsageSession)
 )
+
+// Stats aggregates analytics across all of the group's setups: total
+// investment in currently mounted parts (sum of distinct part purchase
+// prices), logged session count, and cost per session (0 when no sessions).
+func (r *SetupRepository) Stats(ctx context.Context, gid uuid.UUID) (SetupsStatsOut, error) {
+	parts, err := r.db.SetupPart.Query().
+		Where(
+			setuppart.RemovedDateIsNil(),
+			setuppart.HasSetupWith(setupScoped(gid)),
+		).
+		WithEntity().
+		All(ctx)
+	if err != nil {
+		return SetupsStatsOut{}, err
+	}
+
+	// A part can be mounted in several setups at once; count its purchase
+	// price only once toward the investment total.
+	seen := make(map[uuid.UUID]struct{}, len(parts))
+	var investment float64
+	for _, p := range parts {
+		e := p.Edges.Entity
+		if e == nil {
+			continue
+		}
+		if _, ok := seen[e.ID]; ok {
+			continue
+		}
+		seen[e.ID] = struct{}{}
+		investment += e.PurchasePrice
+	}
+
+	sessionCount, err := r.db.UsageSession.Query().
+		Where(usagesession.HasSetupWith(setupScoped(gid))).
+		Count(ctx)
+	if err != nil {
+		return SetupsStatsOut{}, err
+	}
+
+	costPerSession := 0.0
+	if sessionCount > 0 {
+		costPerSession = investment / float64(sessionCount)
+	}
+
+	return SetupsStatsOut{
+		TotalInvestment: investment,
+		SessionCount:    sessionCount,
+		CostPerSession:  costPerSession,
+	}, nil
+}
 
 func (r *SetupRepository) GetSessions(ctx context.Context, gid, setupID uuid.UUID) ([]UsageSessionOut, error) {
 	sessions, err := r.db.UsageSession.Query().

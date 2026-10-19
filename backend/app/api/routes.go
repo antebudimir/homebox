@@ -242,6 +242,7 @@ func (a *app) mountRoutes(r *chi.Mux, chain *errchain.ErrChain, repos *repo.AllR
 		// Setups
 		r.Get("/setups", chain.ToHandlerFunc(v1Ctrl.HandleSetupsGetAll(), userMW...))
 		r.Post("/setups", chain.ToHandlerFunc(v1Ctrl.HandleSetupsCreate(), userMW...))
+		r.Get("/setups/statistics", chain.ToHandlerFunc(v1Ctrl.HandleSetupsStats(), userMW...))
 		r.Get("/setups/{id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupGet(), userMW...))
 		r.Put("/setups/{id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupUpdate(), userMW...))
 		r.Delete("/setups/{id}", chain.ToHandlerFunc(v1Ctrl.HandleSetupDelete(), userMW...))
