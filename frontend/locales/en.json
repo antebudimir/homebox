@@ -1118,7 +1118,10 @@
             "history_failed_load": "Failed to load mounting history"
         },
         "warning": {
-            "entity_is_location": "This entity is marked as a location — you may have meant to mount a part instead."
+            "entity_is_location": "This entity is marked as a location — you may have meant to mount a part instead.",
+            "part_mounted_elsewhere": "This part is currently mounted on another build — unmount it there if this is a mistake.",
+            "build_disassembled": "This build is disassembled — set it to assembled once it's rideable.",
+            "unknown_position": "This position isn't one of the standard positions for this sport."
         }
     }
 }
