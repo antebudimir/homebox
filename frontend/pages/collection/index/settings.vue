@@ -119,6 +119,10 @@
       setCurrency(res.data.currency);
       toast.success(t("profile.toast.group_updated"));
 
+      // Propagate the builds kill-switch (nav entry, route guard, sport
+      // fields) immediately instead of waiting for the next full load.
+      refreshNuxtData("builds-enabled");
+
       await reloadCollections();
     } catch (e) {
       const msg = (e as Error).message ?? String(e);

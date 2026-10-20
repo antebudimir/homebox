@@ -19,7 +19,7 @@
   } from "~~/lib/api/types/data-contracts";
 
   definePageMeta({
-    middleware: ["auth"],
+    middleware: ["auth", "builds-enabled"],
   });
 
   const { t } = useI18n();

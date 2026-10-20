@@ -162,7 +162,7 @@
         :max-length="255"
         :min-length="1"
       />
-      <div v-if="!selectedEntityType?.isLocation" class="flex flex-col gap-2">
+      <div v-if="!selectedEntityType?.isLocation && buildsEnabled" class="flex flex-col gap-2">
         <Label class="text-sm" for="create-sport">{{ $t("components.entity.create_modal.sport") }}</Label>
         <select
           id="create-sport"
@@ -283,6 +283,8 @@
 
   const { t } = useI18n();
   const { openDialog, closeDialog, registerOpenDialogCallback } = useDialog();
+  // Sport is a builds feature; hide it when builds are disabled.
+  const { buildsEnabled } = useBuildsEnabled();
 
   useDialogHotkey(DialogID.CreateEntity, { code: "Digit1", shift: true }, () => ({
     baseType: "item",

@@ -43,7 +43,8 @@
             "tools": "Tools"
         },
         "uses": "Uses",
-        "show_builds": "Show Builds section in the sidebar"
+        "show_builds": "Enable Builds",
+        "show_builds_desc": "Show the Builds section and sport fields. Turning this off hides Builds everywhere; your build data is kept."
     },
     "components": {
         "app": {

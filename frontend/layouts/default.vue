@@ -448,7 +448,7 @@
     {
       icon: MdiTools,
       id: 70,
-      visible: computed(() => sidebarGroup.value?.showBuilds !== false),
+      visible: computed(() => buildsEnabled.value),
       active: computed(() => route.path.startsWith("/builds")),
       name: computed(() => t("menu.builds")),
       to: "/builds",
@@ -566,21 +566,9 @@
   const authCtx = useAuthContext();
   const api = useUserApi();
 
-  // The Builds sidebar entry can be hidden per group; direct /builds URLs
-  // keep working regardless.
-  const { selectedCollection } = useCollections();
-  const { data: sidebarGroup } = useAsyncData(
-    "sidebar-group",
-    async () => {
-      const cid = selectedCollection.value?.id;
-      if (!cid) {
-        return null;
-      }
-      const { data } = await api.group.get(cid);
-      return data ?? null;
-    },
-    { watch: [selectedCollection] }
-  );
+  // Builds is kill-switchable per group; the composable shares one cached
+  // fetch between the sidebar guard and every sport field in the app.
+  const { buildsEnabled } = useBuildsEnabled();
 
   async function logout() {
     await authCtx.logout(api);

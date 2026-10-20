@@ -58,6 +58,8 @@
   const api = useUserApi();
 
   const itemId = computed<string>(() => route.params.id as string);
+  // Sport is a builds feature; hide its detail row when builds are disabled.
+  const { buildsEnabled } = useBuildsEnabled();
   const preferences = useViewPreferences();
 
   const temporaryDuplicateSettings = ref<DuplicateSettings>({
@@ -243,10 +245,14 @@
         name: "items.insured",
         text: item.value?.insured ? "Yes" : "No",
       },
-      {
-        name: "components.entity.create_modal.sport",
-        text: item.value?.sport ? t(`components.entity.create_modal.sport_${item.value.sport}`) : "—",
-      },
+      ...(buildsEnabled.value
+        ? [
+            {
+              name: "components.entity.create_modal.sport",
+              text: item.value?.sport ? t(`components.entity.create_modal.sport_${item.value.sport}`) : "—",
+            },
+          ]
+        : []),
       {
         name: "items.archived",
         text: item.value?.archived ? "Yes" : "No",

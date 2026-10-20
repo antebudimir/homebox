@@ -88,6 +88,8 @@
   // "generic" is a real stored value (usable on all builds).
   const SPORT_NONE = "__none__";
   const sportSelect = computed(() => item.value.sport || SPORT_NONE);
+  // Sport is a builds feature; hide it when builds are disabled.
+  const { buildsEnabled } = useBuildsEnabled();
 
   watchEffect(() => {
     if (nullableItem.value) {
@@ -767,7 +769,10 @@
                 />
               </div>
             </div>
-            <div v-if="item.entityType && !item.entityType.isLocation" class="border-b px-4 pb-4 pt-2 sm:px-6">
+            <div
+              v-if="item.entityType && !item.entityType.isLocation && buildsEnabled"
+              class="border-b px-4 pb-4 pt-2 sm:px-6"
+            >
               <Label class="px-1">{{ $t("components.entity.create_modal.sport") }}</Label>
               <Select
                 :model-value="sportSelect"

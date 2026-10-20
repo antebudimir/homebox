@@ -144,6 +144,9 @@
   // stored as "". "generic" is a real stored value (default for all builds).
   const SPORT_NONE = "__none__";
 
+  // Sport is a builds feature; hide it when builds are disabled.
+  const { buildsEnabled } = useBuildsEnabled();
+
   const defaultSportLabel = computed(() => {
     const sport = template.value?.defaultSport;
     return sport ? t(`components.entity.create_modal.sport_${sport}`) : t("components.entity.create_modal.sport_none");
@@ -206,7 +209,7 @@
             v-model="updateData.defaultLocation"
             :label="$t('components.template.form.default_location')"
           />
-          <div>
+          <div v-if="buildsEnabled">
             <Label class="text-sm" for="edit-sport">{{ $t("components.template.form.default_sport") }}</Label>
             <!-- Radix Select forbids empty item values; unassigned is a sentinel stored as "" -->
             <Select
@@ -334,7 +337,7 @@
               <dt class="text-muted-foreground">{{ $t("components.template.form.manufacturer") }}</dt>
               <dd>{{ template.defaultManufacturer }}</dd>
             </div>
-            <div class="flex justify-between">
+            <div v-if="buildsEnabled" class="flex justify-between">
               <dt class="text-muted-foreground">{{ $t("components.template.form.default_sport") }}</dt>
               <dd>{{ defaultSportLabel }}</dd>
             </div>
