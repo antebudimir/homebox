@@ -18,8 +18,8 @@ var SportPositionConfigs = []SportPositionConfig{
 		Positions: []string{"front_truck", "rear_truck", "front_wheel", "rear_wheel"},
 	},
 	{
-		Slug:      "bmx",
-		Label:     "BMX",
+		Slug:      "cycling",
+		Label:     "Cycling",
 		Positions: []string{"frame", "front_wheel", "rear_wheel", "handlebars", "saddle"},
 	},
 }
