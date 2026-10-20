@@ -766,6 +766,8 @@ export interface EntityCreate {
   name: string;
   parentId?: string | null;
   quantity: number;
+  /** Fork only: build-part sport; empty = generic (all builds). */
+  sport?: string;
   /** Edges */
   tagIds: string[];
 }
@@ -888,6 +890,8 @@ export interface EntityTemplateCreate {
   defaultDescription?: string | null;
   defaultInsured: boolean;
   defaultLifetimeWarranty: boolean;
+  /** Fork only: sport inherited by entities created from this template. */
+  defaultSport?: string | null;
   /** Default location and tags */
   defaultLocationId?: string | null;
   /** @maxLength 255 */
@@ -923,6 +927,8 @@ export interface EntityTemplateOut {
   defaultDescription: string;
   defaultInsured: boolean;
   defaultLifetimeWarranty: boolean;
+  /** Fork only: sport inherited by entities created from this template. */
+  defaultSport?: string | null;
   /** Default location and tags */
   defaultLocation: TemplateLocationSummary;
   defaultManufacturer: string;

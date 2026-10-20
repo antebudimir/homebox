@@ -162,6 +162,18 @@
         :max-length="255"
         :min-length="1"
       />
+      <div v-if="!selectedEntityType?.isLocation" class="flex flex-col gap-2">
+        <Label class="text-sm" for="create-sport">{{ $t("components.entity.create_modal.sport") }}</Label>
+        <select
+          id="create-sport"
+          v-model="form.sport"
+          class="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
+        >
+          <option value="">{{ $t("components.entity.create_modal.sport_generic") }}</option>
+          <option value="skateboarding">{{ $t("components.entity.create_modal.sport_skateboarding") }}</option>
+          <option value="cycling">{{ $t("components.entity.create_modal.sport_cycling") }}</option>
+        </select>
+      </div>
       <FormTextField
         v-if="!selectedEntityType?.isLocation"
         v-model.number="form.quantity"
@@ -226,6 +238,7 @@
 <script setup lang="ts">
   import { useI18n } from "vue-i18n";
   import { DialogID } from "@/components/ui/dialog-provider/utils";
+  import { Label } from "@/components/ui/label";
   import { toast } from "@/components/ui/sonner";
   import { Button, ButtonGroup } from "~/components/ui/button";
   import BaseModal from "@/components/App/CreateModal.vue";
@@ -344,6 +357,7 @@
         } as EntityTemplateSummary;
         templateData.value = data;
         form.quantity = data.defaultQuantity;
+        if (data.defaultSport) form.sport = data.defaultSport;
         if (data.defaultName) form.name = data.defaultName;
         if (data.defaultDescription) form.description = data.defaultDescription;
         if (data.defaultLocation) {
@@ -372,6 +386,7 @@
     location: locations.value && locations.value.length > 0 ? locations.value[0] : ({} as EntityOut),
     parentId: null,
     name: "",
+    sport: "",
     quantity: 1,
     description: "",
     color: "",
@@ -406,6 +421,7 @@
 
     // Pre-fill form with template defaults
     form.quantity = data.defaultQuantity;
+    if (data.defaultSport) form.sport = data.defaultSport;
     if (data.defaultName) {
       form.name = data.defaultName;
     }
@@ -448,6 +464,7 @@
     templateData.value = data;
     templateUserSelected.value = true;
     form.quantity = data.defaultQuantity;
+    if (data.defaultSport) form.sport = data.defaultSport;
     if (data.defaultName) {
       form.name = data.defaultName;
     }
@@ -696,6 +713,7 @@
         description: form.description,
         manufacturer: form.manufacturer,
         modelNumber: form.modelNumber,
+        sport: form.sport,
         tagIds: form.tags,
         entityTypeId: selectedEntityType.value?.id || "",
       };
