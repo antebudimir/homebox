@@ -37,6 +37,8 @@ const (
 	FieldAssetID = "asset_id"
 	// FieldSyncChildEntityLocations holds the string denoting the sync_child_entity_locations field in the database.
 	FieldSyncChildEntityLocations = "sync_child_entity_locations"
+	// FieldSport holds the string denoting the sport field in the database.
+	FieldSport = "sport"
 	// FieldSerialNumber holds the string denoting the serial_number field in the database.
 	FieldSerialNumber = "serial_number"
 	// FieldModelNumber holds the string denoting the model_number field in the database.
@@ -166,6 +168,7 @@ var Columns = []string{
 	FieldArchived,
 	FieldAssetID,
 	FieldSyncChildEntityLocations,
+	FieldSport,
 	FieldSerialNumber,
 	FieldModelNumber,
 	FieldManufacturer,
@@ -236,6 +239,8 @@ var (
 	DefaultAssetID int64
 	// DefaultSyncChildEntityLocations holds the default value on creation for the "sync_child_entity_locations" field.
 	DefaultSyncChildEntityLocations bool
+	// SportValidator is a validator for the "sport" field. It is called by the builders before save.
+	SportValidator func(string) error
 	// SerialNumberValidator is a validator for the "serial_number" field. It is called by the builders before save.
 	SerialNumberValidator func(string) error
 	// ModelNumberValidator is a validator for the "model_number" field. It is called by the builders before save.
@@ -317,6 +322,11 @@ func ByAssetID(opts ...sql.OrderTermOption) OrderOption {
 // BySyncChildEntityLocations orders the results by the sync_child_entity_locations field.
 func BySyncChildEntityLocations(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSyncChildEntityLocations, opts...).ToFunc()
+}
+
+// BySport orders the results by the sport field.
+func BySport(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSport, opts...).ToFunc()
 }
 
 // BySerialNumber orders the results by the serial_number field.

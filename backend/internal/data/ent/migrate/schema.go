@@ -199,6 +199,7 @@ var (
 		{Name: "archived", Type: field.TypeBool, Default: false},
 		{Name: "asset_id", Type: field.TypeInt64, Default: 0},
 		{Name: "sync_child_entity_locations", Type: field.TypeBool, Default: false},
+		{Name: "sport", Type: field.TypeString, Nullable: true, Size: 50},
 		{Name: "serial_number", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "model_number", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "manufacturer", Type: field.TypeString, Nullable: true, Size: 255},
@@ -225,25 +226,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "entities_entities_children",
-				Columns:    []*schema.Column{EntitiesColumns[25]},
-				RefColumns: []*schema.Column{EntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "entities_entities_location_entities",
 				Columns:    []*schema.Column{EntitiesColumns[26]},
 				RefColumns: []*schema.Column{EntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "entities_entity_types_entities",
+				Symbol:     "entities_entities_location_entities",
 				Columns:    []*schema.Column{EntitiesColumns[27]},
+				RefColumns: []*schema.Column{EntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "entities_entity_types_entities",
+				Columns:    []*schema.Column{EntitiesColumns[28]},
 				RefColumns: []*schema.Column{EntityTypesColumns[0]},
 				OnDelete:   schema.Restrict,
 			},
 			{
 				Symbol:     "entities_groups_entities",
-				Columns:    []*schema.Column{EntitiesColumns[28]},
+				Columns:    []*schema.Column{EntitiesColumns[29]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
@@ -257,17 +258,17 @@ var (
 			{
 				Name:    "entity_manufacturer",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[14]},
+				Columns: []*schema.Column{EntitiesColumns[15]},
 			},
 			{
 				Name:    "entity_model_number",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[13]},
+				Columns: []*schema.Column{EntitiesColumns[14]},
 			},
 			{
 				Name:    "entity_serial_number",
 				Unique:  false,
-				Columns: []*schema.Column{EntitiesColumns[12]},
+				Columns: []*schema.Column{EntitiesColumns[13]},
 			},
 			{
 				Name:    "entity_archived",

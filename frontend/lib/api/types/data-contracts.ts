@@ -875,6 +875,7 @@ export interface EntitySummary {
   parent?: EntitySummary | null;
   purchasePrice: number;
   quantity: number;
+  sport?: string;
   /** Sale details */
   soldDate: Date | string;
   tags: TagSummary[];

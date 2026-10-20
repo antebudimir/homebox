@@ -4315,6 +4315,10 @@ const docTemplate = `{
                     "description": "SoldTo holds the value of the \"sold_to\" field.",
                     "type": "string"
                 },
+                "sport": {
+                    "description": "Sport holds the value of the \"sport\" field.",
+                    "type": "string"
+                },
                 "sync_child_entity_locations": {
                     "description": "SyncChildEntityLocations holds the value of the \"sync_child_entity_locations\" field.",
                     "type": "boolean"
@@ -5811,6 +5815,10 @@ const docTemplate = `{
                 "quantity": {
                     "type": "number"
                 },
+                "sport": {
+                    "type": "string",
+                    "maxLength": 50
+                },
                 "tagIds": {
                     "description": "Edges",
                     "type": "array",
@@ -5997,6 +6005,10 @@ const docTemplate = `{
                 "soldTo": {
                     "type": "string"
                 },
+                "sport": {
+                    "type": "string",
+                    "x-omitempty": true
+                },
                 "syncChildEntityLocations": {
                     "type": "boolean"
                 },
@@ -6148,6 +6160,10 @@ const docTemplate = `{
                 "soldDate": {
                     "description": "Sale details",
                     "type": "string"
+                },
+                "sport": {
+                    "type": "string",
+                    "x-omitempty": true
                 },
                 "tags": {
                     "type": "array",

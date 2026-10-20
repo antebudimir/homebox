@@ -42,6 +42,8 @@ type Entity struct {
 	AssetID int64 `json:"asset_id,omitempty"`
 	// SyncChildEntityLocations holds the value of the "sync_child_entity_locations" field.
 	SyncChildEntityLocations bool `json:"sync_child_entity_locations,omitempty"`
+	// Sport holds the value of the "sport" field.
+	Sport string `json:"sport,omitempty"`
 	// SerialNumber holds the value of the "serial_number" field.
 	SerialNumber string `json:"serial_number,omitempty"`
 	// ModelNumber holds the value of the "model_number" field.
@@ -225,7 +227,7 @@ func (*Entity) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullFloat64)
 		case entity.FieldAssetID:
 			values[i] = new(sql.NullInt64)
-		case entity.FieldName, entity.FieldDescription, entity.FieldImportRef, entity.FieldNotes, entity.FieldSerialNumber, entity.FieldModelNumber, entity.FieldManufacturer, entity.FieldWarrantyDetails, entity.FieldPurchaseFrom, entity.FieldSoldTo, entity.FieldSoldNotes:
+		case entity.FieldName, entity.FieldDescription, entity.FieldImportRef, entity.FieldNotes, entity.FieldSport, entity.FieldSerialNumber, entity.FieldModelNumber, entity.FieldManufacturer, entity.FieldWarrantyDetails, entity.FieldPurchaseFrom, entity.FieldSoldTo, entity.FieldSoldNotes:
 			values[i] = new(sql.NullString)
 		case entity.FieldCreatedAt, entity.FieldUpdatedAt, entity.FieldWarrantyExpires, entity.FieldPurchaseDate, entity.FieldSoldDate:
 			values[i] = new(sql.NullTime)
@@ -325,6 +327,12 @@ func (_m *Entity) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field sync_child_entity_locations", values[i])
 			} else if value.Valid {
 				_m.SyncChildEntityLocations = value.Bool
+			}
+		case entity.FieldSport:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field sport", values[i])
+			} else if value.Valid {
+				_m.Sport = value.String
 			}
 		case entity.FieldSerialNumber:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -555,6 +563,9 @@ func (_m *Entity) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("sync_child_entity_locations=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SyncChildEntityLocations))
+	builder.WriteString(", ")
+	builder.WriteString("sport=")
+	builder.WriteString(_m.Sport)
 	builder.WriteString(", ")
 	builder.WriteString("serial_number=")
 	builder.WriteString(_m.SerialNumber)

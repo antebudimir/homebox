@@ -79,28 +79,29 @@ func defaultTags() []repo.TagCreate {
 type buildPartTemplate struct {
 	Name        string
 	Description string
+	Sport       string
 }
 
 // buildPartTemplates are seeded into every new group, keyed by name so
 // seeding is idempotent. 8 skateboard + 7 bike parts.
 var buildPartTemplates = []buildPartTemplate{
-	// Skateboard
-	{Name: "Skateboard Deck", Description: "Deck template — set your width, wheelbase and concave."},
-	{Name: "Skateboard Grip Tape", Description: "Grip tape sheet."},
-	{Name: "Skateboard Front Truck", Description: "Front truck — record hanger width and brand."},
-	{Name: "Skateboard Rear Truck", Description: "Rear truck — record hanger width and brand."},
-	{Name: "Skateboard Front Wheels", Description: "Front wheels — record diameter and durometer."},
-	{Name: "Skateboard Rear Wheels", Description: "Rear wheels — record diameter and durometer."},
-	{Name: "Skateboard Bearings", Description: "Bearing set (8 pack for a full rebuild)."},
-	{Name: "Skateboard Hardware", Description: "Mounting hardware bolt set."},
-	// Bike
-	{Name: "Bike Frame", Description: "Frame template — record size and material."},
-	{Name: "Bike Front Wheel", Description: "Front wheel — record rim, hub and spokes."},
-	{Name: "Bike Rear Wheel", Description: "Rear wheel — record rim, hub, driver and spokes."},
-	{Name: "Bike Handlebars", Description: "Handlebars — record width, rise and clamp size."},
-	{Name: "Bike Saddle", Description: "Saddle / seat + post."},
-	{Name: "Bike Crankset", Description: "Crankset — record spindle size and gearing."},
-	{Name: "Bike Chain", Description: "Chain — record length and half-link."},
+	// Skateboarding
+	{Name: "Deck", Description: "Deck template — set your width, wheelbase and concave.", Sport: "skateboarding"},
+	{Name: "Grip Tape", Description: "Grip tape sheet.", Sport: "skateboarding"},
+	{Name: "Front Truck", Description: "Front truck — record hanger width and brand.", Sport: "skateboarding"},
+	{Name: "Rear Truck", Description: "Rear truck — record hanger width and brand.", Sport: "skateboarding"},
+	{Name: "Front Wheels", Description: "Front wheels — record diameter and durometer.", Sport: "skateboarding"},
+	{Name: "Rear Wheels", Description: "Rear wheels — record diameter and durometer.", Sport: "skateboarding"},
+	{Name: "Bearings", Description: "Bearing set (8 pack for a full rebuild).", Sport: "skateboarding"},
+	{Name: "Hardware", Description: "Mounting hardware bolt set.", Sport: "skateboarding"},
+	// Cycling
+	{Name: "Frame", Description: "Frame template — record size and material.", Sport: "cycling"},
+	{Name: "Front Wheel", Description: "Front wheel — record rim, hub and spokes.", Sport: "cycling"},
+	{Name: "Rear Wheel", Description: "Rear wheel — record rim, hub, driver and spokes.", Sport: "cycling"},
+	{Name: "Handlebars", Description: "Handlebars — record width, rise and clamp size.", Sport: "cycling"},
+	{Name: "Saddle", Description: "Saddle / seat + post.", Sport: "cycling"},
+	{Name: "Crankset", Description: "Crankset — record spindle size and gearing.", Sport: "cycling"},
+	{Name: "Chain", Description: "Chain — record length and half-link.", Sport: "cycling"},
 }
 
 // ensureBuildPartTemplates seeds the sport part templates into a freshly
@@ -128,6 +129,7 @@ func ensureBuildPartTemplates(ctx context.Context, repos *repo.AllRepos, gid uui
 		if _, err := repos.Entities.Create(ctx, gid, repo.EntityCreate{
 			Name:         tpl.Name,
 			Description:  tpl.Description,
+			Sport:        tpl.Sport,
 			EntityTypeID: itemType.ID,
 		}); err != nil {
 			return err

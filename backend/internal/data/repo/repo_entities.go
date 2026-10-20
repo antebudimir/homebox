@@ -97,6 +97,7 @@ type (
 		ImportRef    string    `json:"-"`
 		ParentID     uuid.UUID `json:"parentId"     extensions:"x-nullable"`
 		Name         string    `json:"name"         validate:"required,min=1,max=255"`
+		Sport        string    `json:"sport"         validate:"max=50"`
 		Quantity     float64   `json:"quantity"`
 		Description  string    `json:"description"  validate:"max=1000"`
 		AssetID      AssetID   `json:"-"`
@@ -167,6 +168,7 @@ type (
 		AssetID     AssetID   `json:"assetId,string"`
 		Name        string    `json:"name"`
 		Description string    `json:"description"`
+		Sport       string    `json:"sport"         extensions:"x-omitempty"`
 		Quantity    float64   `json:"quantity"`
 		Insured     bool      `json:"insured"`
 		Archived    bool      `json:"archived"`
@@ -276,6 +278,7 @@ func mapEntitySummary(e *ent.Entity) EntitySummary {
 		AssetID:       AssetID(e.AssetID),
 		Name:          e.Name,
 		Description:   e.Description,
+		Sport:         e.Sport,
 		ImportRef:     e.ImportRef,
 		Quantity:      e.Quantity,
 		CreatedAt:     e.CreatedAt,
@@ -1262,6 +1265,8 @@ func (r *EntityRepository) Create(ctx context.Context, gid uuid.UUID, data Entit
 		SetName(data.Name).
 		SetQuantity(data.Quantity).
 		SetDescription(data.Description).
+		SetDescription(data.Description).
+		SetNillableSport(lo.Ternary(data.Sport != "", lo.ToPtr(data.Sport), nil)).
 		SetModelNumber(data.ModelNumber).
 		SetManufacturer(data.Manufacturer).
 		SetGroupID(gid).

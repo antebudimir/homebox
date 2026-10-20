@@ -1077,7 +1077,8 @@
             "unmount": "Unmount",
             "purge": "Delete Permanently",
             "empty": "No parts mounted yet.",
-            "entity_placeholder": "Select a part…"
+            "entity_placeholder": "Select a part…",
+            "other_group": "Other"
         },
         "sessions": {
             "title": "Usage Sessions",

@@ -4308,6 +4308,7 @@ type EntityMutation struct {
 	asset_id                    *int64
 	addasset_id                 *int64
 	sync_child_entity_locations *bool
+	sport                       *string
 	serial_number               *string
 	model_number                *string
 	manufacturer                *string
@@ -4935,6 +4936,55 @@ func (m *EntityMutation) OldSyncChildEntityLocations(ctx context.Context) (v boo
 // ResetSyncChildEntityLocations resets all changes to the "sync_child_entity_locations" field.
 func (m *EntityMutation) ResetSyncChildEntityLocations() {
 	m.sync_child_entity_locations = nil
+}
+
+// SetSport sets the "sport" field.
+func (m *EntityMutation) SetSport(s string) {
+	m.sport = &s
+}
+
+// Sport returns the value of the "sport" field in the mutation.
+func (m *EntityMutation) Sport() (r string, exists bool) {
+	v := m.sport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSport returns the old "sport" field's value of the Entity entity.
+// If the Entity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityMutation) OldSport(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSport is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSport requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSport: %w", err)
+	}
+	return oldValue.Sport, nil
+}
+
+// ClearSport clears the value of the "sport" field.
+func (m *EntityMutation) ClearSport() {
+	m.sport = nil
+	m.clearedFields[entity.FieldSport] = struct{}{}
+}
+
+// SportCleared returns if the "sport" field was cleared in this mutation.
+func (m *EntityMutation) SportCleared() bool {
+	_, ok := m.clearedFields[entity.FieldSport]
+	return ok
+}
+
+// ResetSport resets all changes to the "sport" field.
+func (m *EntityMutation) ResetSport() {
+	m.sport = nil
+	delete(m.clearedFields, entity.FieldSport)
 }
 
 // SetSerialNumber sets the "serial_number" field.
@@ -6143,7 +6193,7 @@ func (m *EntityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EntityMutation) Fields() []string {
-	fields := make([]string, 0, 24)
+	fields := make([]string, 0, 25)
 	if m.created_at != nil {
 		fields = append(fields, entity.FieldCreatedAt)
 	}
@@ -6176,6 +6226,9 @@ func (m *EntityMutation) Fields() []string {
 	}
 	if m.sync_child_entity_locations != nil {
 		fields = append(fields, entity.FieldSyncChildEntityLocations)
+	}
+	if m.sport != nil {
+		fields = append(fields, entity.FieldSport)
 	}
 	if m.serial_number != nil {
 		fields = append(fields, entity.FieldSerialNumber)
@@ -6246,6 +6299,8 @@ func (m *EntityMutation) Field(name string) (ent.Value, bool) {
 		return m.AssetID()
 	case entity.FieldSyncChildEntityLocations:
 		return m.SyncChildEntityLocations()
+	case entity.FieldSport:
+		return m.Sport()
 	case entity.FieldSerialNumber:
 		return m.SerialNumber()
 	case entity.FieldModelNumber:
@@ -6303,6 +6358,8 @@ func (m *EntityMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldAssetID(ctx)
 	case entity.FieldSyncChildEntityLocations:
 		return m.OldSyncChildEntityLocations(ctx)
+	case entity.FieldSport:
+		return m.OldSport(ctx)
 	case entity.FieldSerialNumber:
 		return m.OldSerialNumber(ctx)
 	case entity.FieldModelNumber:
@@ -6414,6 +6471,13 @@ func (m *EntityMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSyncChildEntityLocations(v)
+		return nil
+	case entity.FieldSport:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSport(v)
 		return nil
 	case entity.FieldSerialNumber:
 		v, ok := value.(string)
@@ -6596,6 +6660,9 @@ func (m *EntityMutation) ClearedFields() []string {
 	if m.FieldCleared(entity.FieldNotes) {
 		fields = append(fields, entity.FieldNotes)
 	}
+	if m.FieldCleared(entity.FieldSport) {
+		fields = append(fields, entity.FieldSport)
+	}
 	if m.FieldCleared(entity.FieldSerialNumber) {
 		fields = append(fields, entity.FieldSerialNumber)
 	}
@@ -6648,6 +6715,9 @@ func (m *EntityMutation) ClearField(name string) error {
 		return nil
 	case entity.FieldNotes:
 		m.ClearNotes()
+		return nil
+	case entity.FieldSport:
+		m.ClearSport()
 		return nil
 	case entity.FieldSerialNumber:
 		m.ClearSerialNumber()
@@ -6719,6 +6789,9 @@ func (m *EntityMutation) ResetField(name string) error {
 		return nil
 	case entity.FieldSyncChildEntityLocations:
 		m.ResetSyncChildEntityLocations()
+		return nil
+	case entity.FieldSport:
+		m.ResetSport()
 		return nil
 	case entity.FieldSerialNumber:
 		m.ResetSerialNumber()

@@ -174,6 +174,20 @@ func (_c *EntityCreate) SetNillableSyncChildEntityLocations(v *bool) *EntityCrea
 	return _c
 }
 
+// SetSport sets the "sport" field.
+func (_c *EntityCreate) SetSport(v string) *EntityCreate {
+	_c.mutation.SetSport(v)
+	return _c
+}
+
+// SetNillableSport sets the "sport" field if the given value is not nil.
+func (_c *EntityCreate) SetNillableSport(v *string) *EntityCreate {
+	if v != nil {
+		_c.SetSport(*v)
+	}
+	return _c
+}
+
 // SetSerialNumber sets the "serial_number" field.
 func (_c *EntityCreate) SetSerialNumber(v string) *EntityCreate {
 	_c.mutation.SetSerialNumber(v)
@@ -662,6 +676,11 @@ func (_c *EntityCreate) check() error {
 	if _, ok := _c.mutation.SyncChildEntityLocations(); !ok {
 		return &ValidationError{Name: "sync_child_entity_locations", err: errors.New(`ent: missing required field "Entity.sync_child_entity_locations"`)}
 	}
+	if v, ok := _c.mutation.Sport(); ok {
+		if err := entity.SportValidator(v); err != nil {
+			return &ValidationError{Name: "sport", err: fmt.Errorf(`ent: validator failed for field "Entity.sport": %w`, err)}
+		}
+	}
 	if v, ok := _c.mutation.SerialNumber(); ok {
 		if err := entity.SerialNumberValidator(v); err != nil {
 			return &ValidationError{Name: "serial_number", err: fmt.Errorf(`ent: validator failed for field "Entity.serial_number": %w`, err)}
@@ -780,6 +799,10 @@ func (_c *EntityCreate) createSpec() (*Entity, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.SyncChildEntityLocations(); ok {
 		_spec.SetField(entity.FieldSyncChildEntityLocations, field.TypeBool, value)
 		_node.SyncChildEntityLocations = value
+	}
+	if value, ok := _c.mutation.Sport(); ok {
+		_spec.SetField(entity.FieldSport, field.TypeString, value)
+		_node.Sport = value
 	}
 	if value, ok := _c.mutation.SerialNumber(); ok {
 		_spec.SetField(entity.FieldSerialNumber, field.TypeString, value)

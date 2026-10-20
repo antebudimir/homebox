@@ -200,6 +200,26 @@ func (_u *EntityUpdate) SetNillableSyncChildEntityLocations(v *bool) *EntityUpda
 	return _u
 }
 
+// SetSport sets the "sport" field.
+func (_u *EntityUpdate) SetSport(v string) *EntityUpdate {
+	_u.mutation.SetSport(v)
+	return _u
+}
+
+// SetNillableSport sets the "sport" field if the given value is not nil.
+func (_u *EntityUpdate) SetNillableSport(v *string) *EntityUpdate {
+	if v != nil {
+		_u.SetSport(*v)
+	}
+	return _u
+}
+
+// ClearSport clears the value of the "sport" field.
+func (_u *EntityUpdate) ClearSport() *EntityUpdate {
+	_u.mutation.ClearSport()
+	return _u
+}
+
 // SetSerialNumber sets the "serial_number" field.
 func (_u *EntityUpdate) SetSerialNumber(v string) *EntityUpdate {
 	_u.mutation.SetSerialNumber(v)
@@ -855,6 +875,11 @@ func (_u *EntityUpdate) check() error {
 			return &ValidationError{Name: "notes", err: fmt.Errorf(`ent: validator failed for field "Entity.notes": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Sport(); ok {
+		if err := entity.SportValidator(v); err != nil {
+			return &ValidationError{Name: "sport", err: fmt.Errorf(`ent: validator failed for field "Entity.sport": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.SerialNumber(); ok {
 		if err := entity.SerialNumberValidator(v); err != nil {
 			return &ValidationError{Name: "serial_number", err: fmt.Errorf(`ent: validator failed for field "Entity.serial_number": %w`, err)}
@@ -945,6 +970,12 @@ func (_u *EntityUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.SyncChildEntityLocations(); ok {
 		_spec.SetField(entity.FieldSyncChildEntityLocations, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Sport(); ok {
+		_spec.SetField(entity.FieldSport, field.TypeString, value)
+	}
+	if _u.mutation.SportCleared() {
+		_spec.ClearField(entity.FieldSport, field.TypeString)
 	}
 	if value, ok := _u.mutation.SerialNumber(); ok {
 		_spec.SetField(entity.FieldSerialNumber, field.TypeString, value)
@@ -1636,6 +1667,26 @@ func (_u *EntityUpdateOne) SetNillableSyncChildEntityLocations(v *bool) *EntityU
 	return _u
 }
 
+// SetSport sets the "sport" field.
+func (_u *EntityUpdateOne) SetSport(v string) *EntityUpdateOne {
+	_u.mutation.SetSport(v)
+	return _u
+}
+
+// SetNillableSport sets the "sport" field if the given value is not nil.
+func (_u *EntityUpdateOne) SetNillableSport(v *string) *EntityUpdateOne {
+	if v != nil {
+		_u.SetSport(*v)
+	}
+	return _u
+}
+
+// ClearSport clears the value of the "sport" field.
+func (_u *EntityUpdateOne) ClearSport() *EntityUpdateOne {
+	_u.mutation.ClearSport()
+	return _u
+}
+
 // SetSerialNumber sets the "serial_number" field.
 func (_u *EntityUpdateOne) SetSerialNumber(v string) *EntityUpdateOne {
 	_u.mutation.SetSerialNumber(v)
@@ -2304,6 +2355,11 @@ func (_u *EntityUpdateOne) check() error {
 			return &ValidationError{Name: "notes", err: fmt.Errorf(`ent: validator failed for field "Entity.notes": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.Sport(); ok {
+		if err := entity.SportValidator(v); err != nil {
+			return &ValidationError{Name: "sport", err: fmt.Errorf(`ent: validator failed for field "Entity.sport": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.SerialNumber(); ok {
 		if err := entity.SerialNumberValidator(v); err != nil {
 			return &ValidationError{Name: "serial_number", err: fmt.Errorf(`ent: validator failed for field "Entity.serial_number": %w`, err)}
@@ -2411,6 +2467,12 @@ func (_u *EntityUpdateOne) sqlSave(ctx context.Context) (_node *Entity, err erro
 	}
 	if value, ok := _u.mutation.SyncChildEntityLocations(); ok {
 		_spec.SetField(entity.FieldSyncChildEntityLocations, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.Sport(); ok {
+		_spec.SetField(entity.FieldSport, field.TypeString, value)
+	}
+	if _u.mutation.SportCleared() {
+		_spec.ClearField(entity.FieldSport, field.TypeString)
 	}
 	if value, ok := _u.mutation.SerialNumber(); ok {
 		_spec.SetField(entity.FieldSerialNumber, field.TypeString, value)

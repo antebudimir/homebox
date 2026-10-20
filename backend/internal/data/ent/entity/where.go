@@ -111,6 +111,11 @@ func SyncChildEntityLocations(v bool) predicate.Entity {
 	return predicate.Entity(sql.FieldEQ(FieldSyncChildEntityLocations, v))
 }
 
+// Sport applies equality check predicate on the "sport" field. It's identical to SportEQ.
+func Sport(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldSport, v))
+}
+
 // SerialNumber applies equality check predicate on the "serial_number" field. It's identical to SerialNumberEQ.
 func SerialNumber(v string) predicate.Entity {
 	return predicate.Entity(sql.FieldEQ(FieldSerialNumber, v))
@@ -654,6 +659,81 @@ func SyncChildEntityLocationsEQ(v bool) predicate.Entity {
 // SyncChildEntityLocationsNEQ applies the NEQ predicate on the "sync_child_entity_locations" field.
 func SyncChildEntityLocationsNEQ(v bool) predicate.Entity {
 	return predicate.Entity(sql.FieldNEQ(FieldSyncChildEntityLocations, v))
+}
+
+// SportEQ applies the EQ predicate on the "sport" field.
+func SportEQ(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldEQ(FieldSport, v))
+}
+
+// SportNEQ applies the NEQ predicate on the "sport" field.
+func SportNEQ(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldNEQ(FieldSport, v))
+}
+
+// SportIn applies the In predicate on the "sport" field.
+func SportIn(vs ...string) predicate.Entity {
+	return predicate.Entity(sql.FieldIn(FieldSport, vs...))
+}
+
+// SportNotIn applies the NotIn predicate on the "sport" field.
+func SportNotIn(vs ...string) predicate.Entity {
+	return predicate.Entity(sql.FieldNotIn(FieldSport, vs...))
+}
+
+// SportGT applies the GT predicate on the "sport" field.
+func SportGT(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldGT(FieldSport, v))
+}
+
+// SportGTE applies the GTE predicate on the "sport" field.
+func SportGTE(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldGTE(FieldSport, v))
+}
+
+// SportLT applies the LT predicate on the "sport" field.
+func SportLT(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldLT(FieldSport, v))
+}
+
+// SportLTE applies the LTE predicate on the "sport" field.
+func SportLTE(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldLTE(FieldSport, v))
+}
+
+// SportContains applies the Contains predicate on the "sport" field.
+func SportContains(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldContains(FieldSport, v))
+}
+
+// SportHasPrefix applies the HasPrefix predicate on the "sport" field.
+func SportHasPrefix(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldHasPrefix(FieldSport, v))
+}
+
+// SportHasSuffix applies the HasSuffix predicate on the "sport" field.
+func SportHasSuffix(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldHasSuffix(FieldSport, v))
+}
+
+// SportIsNil applies the IsNil predicate on the "sport" field.
+func SportIsNil() predicate.Entity {
+	return predicate.Entity(sql.FieldIsNull(FieldSport))
+}
+
+// SportNotNil applies the NotNil predicate on the "sport" field.
+func SportNotNil() predicate.Entity {
+	return predicate.Entity(sql.FieldNotNull(FieldSport))
+}
+
+// SportEqualFold applies the EqualFold predicate on the "sport" field.
+func SportEqualFold(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldEqualFold(FieldSport, v))
+}
+
+// SportContainsFold applies the ContainsFold predicate on the "sport" field.
+func SportContainsFold(v string) predicate.Entity {
+	return predicate.Entity(sql.FieldContainsFold(FieldSport, v))
 }
 
 // SerialNumberEQ applies the EQ predicate on the "serial_number" field.
