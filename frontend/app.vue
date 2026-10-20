@@ -1,7 +1,7 @@
 <template>
   <DialogProvider>
     <ClientOnly>
-      <Toaster class="pointer-events-auto" />
+      <Toaster class="pointer-events-auto" expand />
     </ClientOnly>
 
     <NuxtLayout>
