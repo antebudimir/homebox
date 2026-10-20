@@ -450,6 +450,7 @@
     "global": {
         "add": "Add",
         "archived": "Archived",
+        "toggle_theme": "Toggle dark mode",
         "build": "Build: { build }",
         "cancel": "Cancel",
         "close": "Close",

@@ -148,6 +148,8 @@
                   <span>{{ $t("menu.scanner") }}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
+              <AppThemeToggle />
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
@@ -295,6 +297,7 @@
   import AppQuickMenuModal from "~/components/App/QuickMenuModal.vue";
   import AppScannerModal from "~/components/App/ScannerModal.vue";
   import AppLogo from "~/components/App/Logo.vue";
+  import AppThemeToggle from "~/components/App/ThemeToggle.vue";
   import AppHeaderDecor from "~/components/App/HeaderDecor.vue";
   import AppHeaderText from "~/components/App/HeaderText.vue";
   import CollectionSelector from "~/components/Collection/Selector.vue";
