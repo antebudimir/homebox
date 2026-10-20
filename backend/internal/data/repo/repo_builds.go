@@ -48,7 +48,8 @@ type BuildOut struct {
 type BuildPartCreate struct {
 	// EntityID is the part (an Entity) being mounted.
 	EntityID uuid.UUID `json:"entityId" validate:"required"`
-	Position string    `json:"position"`
+	// Position is required; a mounted part must live at a concrete position.
+	Position string `json:"position" validate:"required"`
 }
 
 type BuildPartOut struct {

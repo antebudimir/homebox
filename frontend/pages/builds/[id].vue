@@ -165,7 +165,7 @@
   }
 
   async function mountPart() {
-    if (!mountForm.entityId) {
+    if (!mountForm.entityId || !mountForm.position) {
       return;
     }
     mounting.value = true;
@@ -319,7 +319,7 @@
                       {{ part.entityName }}
                     </NuxtLink>
                   </td>
-                  <td class="p-4">{{ humanizePosition(part.position) }}</td>
+                  <td class="p-4">{{ humanizePosition(part.position) || "—" }}</td>
                   <td class="p-4">{{ new Date(part.addedDate).toLocaleDateString() }}</td>
                   <td v-if="showHistory" class="p-4">
                     {{ part.removedDate ? new Date(part.removedDate).toLocaleDateString() : "—" }}
@@ -472,8 +472,9 @@
                   id="mount-position"
                   v-model="mountForm.position"
                   class="rounded-md border bg-background px-3 py-2 text-sm"
+                  required
                 >
-                  <option value="">—</option>
+                  <option value="" disabled>{{ $t("builds.parts.position_placeholder") }}</option>
                   <option v-for="pos in currentSportPositions" :key="pos" :value="pos">
                     {{ humanizePosition(pos) }}
                   </option>
@@ -481,7 +482,7 @@
               </div>
               <DialogFooter>
                 <Button type="button" variant="outline" @click="showMount = false">{{ $t("global.cancel") }}</Button>
-                <Button type="submit" :disabled="mounting">{{ $t("global.add") }}</Button>
+                <Button type="submit" :disabled="mounting || !mountForm.position">{{ $t("global.add") }}</Button>
               </DialogFooter>
             </form>
           </DialogContent>
