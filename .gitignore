@@ -38,6 +38,7 @@ go.work
 .task/
 backend/.env
 build/*
+backend/build/
 
 # Output Directory for Nuxt/Frontend during build steps
 backend/app/api/public/*
