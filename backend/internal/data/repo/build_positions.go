@@ -13,9 +13,12 @@ type SportPositionConfig struct {
 // SportPositionConfigs maps each supported sport to its mount positions.
 var SportPositionConfigs = []SportPositionConfig{
 	{
-		Slug:      "skateboarding",
-		Label:     "Skateboarding",
-		Positions: []string{"front_truck", "rear_truck", "front_wheel", "rear_wheel"},
+		Slug:  "skateboarding",
+		Label: "Skateboarding",
+		// Skateboards have four wheels tracked as pairs, so wheels and
+		// bearings mount to the truck they live on rather than having
+		// their own positions.
+		Positions: []string{"deck", "front_truck", "rear_truck"},
 	},
 	{
 		Slug:      "cycling",
