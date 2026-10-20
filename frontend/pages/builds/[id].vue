@@ -83,39 +83,9 @@
     return sports.value.find(s => s.slug === build.value?.sport)?.positions ?? [];
   });
 
-  // Group the part picker by the entity's sport column, with known sports in
-  // stable order and everything without a sport in a trailing "Other" group.
-  // Grouping is display-only: every entity stays selectable.
-  const groupedEntities = computed(() => {
-    const groups = new Map<string, EntitySummary[]>();
-    for (const entity of allEntities.value) {
-      const key = entity.sport || "";
-      if (!groups.has(key)) {
-        groups.set(key, []);
-      }
-      groups.get(key)!.push(entity);
-    }
-
-    const sportLabels = new Map(sports.value.map(s => [s.slug, s.label]));
-    const knownOrder = sports.value.map(s => s.slug);
-    const ordered: { key: string; label: string; entities: EntitySummary[] }[] = [];
-    for (const slug of knownOrder) {
-      const entities = groups.get(slug);
-      if (entities && entities.length > 0) {
-        ordered.push({ key: slug, label: sportLabels.get(slug) ?? slug, entities });
-      }
-      groups.delete(slug);
-    }
-    const rest = [...groups.entries()]
-      .filter(([slug]) => slug !== "")
-      .sort(([a], [b]) => (sportLabels.get(a) ?? a).localeCompare(sportLabels.get(b) ?? b))
-      .map(([slug, entities]) => ({ key: slug, label: sportLabels.get(slug) ?? slug, entities }));
-    const other = groups.get("");
-    if (other && other.length > 0) {
-      rest.push({ key: "", label: t("builds.parts.other_group"), entities: other });
-    }
-    return [...ordered, ...rest];
-  });
+  // The part picker is a flat list: the build's sport already constrains the
+  // position dropdown, and cross-sport parts are warned about on mount, so
+  // grouping by sport adds no value here.
 
   // Prettified label for a raw position slug ("front_wheel" -> "Front Wheel").
   // Values written to the API stay the raw slug.
@@ -491,11 +461,9 @@
                   required
                 >
                   <option value="" disabled>{{ $t("builds.parts.entity_placeholder") }}</option>
-                  <optgroup v-for="group in groupedEntities" :key="group.key || 'other'" :label="group.label">
-                    <option v-for="entity in group.entities" :key="entity.id" :value="entity.id">
-                      {{ entity.name }}
-                    </option>
-                  </optgroup>
+                  <option v-for="entity in allEntities" :key="entity.id" :value="entity.id">
+                    {{ entity.name }}
+                  </option>
                 </select>
               </div>
               <div class="flex flex-col gap-2">

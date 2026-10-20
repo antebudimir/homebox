@@ -280,6 +280,12 @@ func (r *BuildRepository) AddPart(ctx context.Context, gid, buildID uuid.UUID, i
 		warnings = append(warnings, "build_disassembled")
 	}
 
+	// Warn (but don't block) when a part made for one sport is mounted on a
+	// build for another. Generic parts without a sport are never flagged.
+	if b.Sport != "" && e.Sport != "" && b.Sport != e.Sport {
+		warnings = append(warnings, "part_sport_mismatch")
+	}
+
 	// Soft-validate the position against the build's sport; unknown sports
 	// or empty positions are left untouched.
 	if input.Position != "" {

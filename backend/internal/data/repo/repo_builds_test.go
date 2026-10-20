@@ -233,6 +233,24 @@ func TestBuildRepository_MountGuards(t *testing.T) {
 	require.NoError(t, err)
 	assert.NotContains(t, out.Warnings, "unknown_position")
 
+	// A part made for a different sport warns but still mounts; generic
+	// parts without a sport never trigger the mismatch warning.
+	chain, err := tRepos.Entities.Create(ctx, tGroup.ID, EntityCreate{
+		Name:         "Chain",
+		Description:  "Bike chain",
+		EntityTypeID: useItemEntityType(t).ID,
+		Sport:        "cycling",
+	})
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = tRepos.Entities.Delete(ctx, chain.ID) })
+	out, err = tRepos.Builds.AddPart(ctx, tGroup.ID, skate.ID, BuildPartCreate{EntityID: chain.ID, Position: "deck"})
+	require.NoError(t, err)
+	assert.Contains(t, out.Warnings, "part_sport_mismatch")
+
+	out, err = tRepos.Builds.AddPart(ctx, tGroup.ID, skate.ID, BuildPartCreate{EntityID: entities[1].ID, Position: "deck"})
+	require.NoError(t, err)
+	assert.NotContains(t, out.Warnings, "part_sport_mismatch")
+
 	// Mounting on a disassembled build warns but succeeds.
 	_, err = tRepos.Builds.Update(ctx, tGroup.ID, build.ID, BuildUpdate{Name: build.Name, Status: "disassembled"})
 	require.NoError(t, err)
