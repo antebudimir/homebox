@@ -169,7 +169,8 @@
           v-model="form.sport"
           class="flex h-9 w-full rounded-md border bg-background px-3 text-sm"
         >
-          <option value="">{{ $t("components.entity.create_modal.sport_generic") }}</option>
+          <option value="">{{ $t("components.entity.create_modal.sport_none") }}</option>
+          <option value="generic">{{ $t("components.entity.create_modal.sport_generic") }}</option>
           <option value="skateboarding">{{ $t("components.entity.create_modal.sport_skateboarding") }}</option>
           <option value="cycling">{{ $t("components.entity.create_modal.sport_cycling") }}</option>
         </select>

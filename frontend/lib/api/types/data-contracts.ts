@@ -831,6 +831,8 @@ export interface EntityOut {
   purchasePrice: number;
   quantity: number;
   serialNumber: string;
+  /** Fork only: sport tag; empty = generic (all builds). */
+  sport?: string;
   /** Sold */
   soldDate: Date | string;
   soldNotes: string;
@@ -964,6 +966,8 @@ export interface EntityTemplateUpdate {
   defaultDescription?: string | null;
   defaultInsured: boolean;
   defaultLifetimeWarranty: boolean;
+  /** Fork only: sport inherited by entities created from this template. */
+  defaultSport?: string | null;
   /** Default location and tags */
   defaultLocationId?: string | null;
   /** @maxLength 255 */
@@ -1040,6 +1044,8 @@ export interface EntityUpdate {
   locationId?: string | null;
   manufacturer: string;
   modelNumber: string;
+  /** Fork only: sport tag; empty = generic (all builds). */
+  sport?: string;
   /**
    * @minLength 1
    * @maxLength 255

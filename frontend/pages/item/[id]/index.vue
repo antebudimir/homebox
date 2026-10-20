@@ -244,6 +244,10 @@
         text: item.value?.insured ? "Yes" : "No",
       },
       {
+        name: "components.entity.create_modal.sport",
+        text: item.value?.sport ? t(`components.entity.create_modal.sport_${item.value.sport}`) : "—",
+      },
+      {
         name: "items.archived",
         text: item.value?.archived ? "Yes" : "No",
       },

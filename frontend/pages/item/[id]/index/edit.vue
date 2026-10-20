@@ -83,6 +83,12 @@
 
   const item = ref<EntityOut & { tagIds: string[] }>(null as never);
 
+  // Radix Select forbids empty-string item values, so "unassigned" is a
+  // sentinel in the UI and stored as "" (excluded from sport build pickers).
+  // "generic" is a real stored value (usable on all builds).
+  const SPORT_NONE = "__none__";
+  const sportSelect = computed(() => item.value.sport || SPORT_NONE);
+
   watchEffect(() => {
     if (nullableItem.value) {
       item.value = {
@@ -760,6 +766,25 @@
                   inline
                 />
               </div>
+            </div>
+            <div v-if="item.entityType && !item.entityType.isLocation" class="border-b px-4 pb-4 pt-2 sm:px-6">
+              <Label class="px-1">{{ $t("components.entity.create_modal.sport") }}</Label>
+              <Select
+                :model-value="sportSelect"
+                @update:model-value="v => (item.sport = v === SPORT_NONE ? '' : String(v))"
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem :value="SPORT_NONE">{{ $t("components.entity.create_modal.sport_none") }}</SelectItem>
+                  <SelectItem value="generic">{{ $t("components.entity.create_modal.sport_generic") }}</SelectItem>
+                  <SelectItem value="skateboarding">{{
+                    $t("components.entity.create_modal.sport_skateboarding")
+                  }}</SelectItem>
+                  <SelectItem value="cycling">{{ $t("components.entity.create_modal.sport_cycling") }}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </BaseCard>

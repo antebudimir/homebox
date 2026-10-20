@@ -11,6 +11,7 @@
   import { Separator } from "@/components/ui/separator";
   import { Switch } from "@/components/ui/switch";
   import { Label } from "@/components/ui/label";
+  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
   import { DialogID } from "~/components/ui/dialog-provider/utils";
   import FormTextField from "~/components/Form/TextField.vue";
   import FormTextArea from "~/components/Form/TextArea.vue";
@@ -73,6 +74,7 @@
     defaultInsured: false,
     defaultManufacturer: "",
     defaultModelNumber: "",
+    defaultSport: "",
     defaultLifetimeWarranty: false,
     defaultWarrantyDetails: "",
     defaultLocation: null as EntityOut | null,
@@ -96,6 +98,7 @@
       defaultInsured: template.value.defaultInsured,
       defaultManufacturer: template.value.defaultManufacturer,
       defaultModelNumber: template.value.defaultModelNumber ?? "",
+      defaultSport: template.value.defaultSport ?? "",
       defaultLifetimeWarranty: template.value.defaultLifetimeWarranty,
       defaultWarrantyDetails: template.value.defaultWarrantyDetails,
       defaultLocation: template.value.defaultLocation ?? null,
@@ -136,6 +139,15 @@
   }
 
   const NIL_UUID = "00000000-0000-0000-0000-000000000000";
+
+  // Radix Select forbids empty-string item values; "unassigned" is a sentinel
+  // stored as "". "generic" is a real stored value (default for all builds).
+  const SPORT_NONE = "__none__";
+
+  const defaultSportLabel = computed(() => {
+    const sport = template.value?.defaultSport;
+    return sport ? t(`components.entity.create_modal.sport_${sport}`) : t("components.entity.create_modal.sport_none");
+  });
 </script>
 
 <template>
@@ -194,6 +206,27 @@
             v-model="updateData.defaultLocation"
             :label="$t('components.template.form.default_location')"
           />
+          <div>
+            <Label class="text-sm" for="edit-sport">{{ $t("components.template.form.default_sport") }}</Label>
+            <!-- Radix Select forbids empty item values; unassigned is a sentinel stored as "" -->
+            <Select
+              id="edit-sport"
+              :model-value="updateData.defaultSport || SPORT_NONE"
+              @update:model-value="v => (updateData.defaultSport = v === SPORT_NONE ? '' : String(v))"
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem :value="SPORT_NONE">{{ $t("components.entity.create_modal.sport_none") }}</SelectItem>
+                <SelectItem value="generic">{{ $t("components.entity.create_modal.sport_generic") }}</SelectItem>
+                <SelectItem value="skateboarding">{{
+                  $t("components.entity.create_modal.sport_skateboarding")
+                }}</SelectItem>
+                <SelectItem value="cycling">{{ $t("components.entity.create_modal.sport_cycling") }}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <TagSelector v-model="updateData.defaultTagIds" :tags="tags ?? []" />
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
@@ -300,6 +333,10 @@
             <div v-if="template.defaultManufacturer" class="flex justify-between">
               <dt class="text-muted-foreground">{{ $t("components.template.form.manufacturer") }}</dt>
               <dd>{{ template.defaultManufacturer }}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-muted-foreground">{{ $t("components.template.form.default_sport") }}</dt>
+              <dd>{{ defaultSportLabel }}</dd>
             </div>
             <div v-if="template.defaultLocation" class="flex justify-between">
               <dt class="text-muted-foreground">{{ $t("components.template.form.location") }}</dt>

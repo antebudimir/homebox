@@ -160,7 +160,7 @@
     if (!entity) {
       return "";
     }
-    if (build.value?.sport && entity.sport && build.value.sport !== entity.sport) {
+    if (build.value?.sport && entity.sport && entity.sport !== "generic" && build.value.sport !== entity.sport) {
       return "";
     }
     const name = entity.name.toLowerCase();
@@ -186,14 +186,16 @@
 
   const showAllParts = ref(false);
 
-  // Strict mode: a sported build only lists its own sport's parts plus
-  // generic (sportless) parts. "Show All" lifts the filter for rare
-  // cross-sport mounts; the server-side mismatch warning still applies.
+  // Strict mode: a sported build lists its own sport's parts plus explicit
+  // "generic" parts. Parts without a sport (unassigned) are excluded, so
+  // assigning a sport is a deliberate choice. "Show All" lifts the filter
+  // for rare cross-sport mounts; the server-side mismatch warning still
+  // applies.
   const selectableEntities = computed(() => {
     if (showAllParts.value || !build.value?.sport) {
       return allEntities.value;
     }
-    return allEntities.value.filter(e => !e.sport || e.sport === build.value?.sport);
+    return allEntities.value.filter(e => e.sport === "generic" || e.sport === build.value?.sport);
   });
 
   async function openMount() {
