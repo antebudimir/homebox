@@ -8090,6 +8090,7 @@ type EntityTemplateMutation struct {
 	default_quantity          *float64
 	adddefault_quantity       *float64
 	default_insured           *bool
+	default_sport             *string
 	default_name              *string
 	default_description       *string
 	default_manufacturer      *string
@@ -8514,6 +8515,55 @@ func (m *EntityTemplateMutation) OldDefaultInsured(ctx context.Context) (v bool,
 // ResetDefaultInsured resets all changes to the "default_insured" field.
 func (m *EntityTemplateMutation) ResetDefaultInsured() {
 	m.default_insured = nil
+}
+
+// SetDefaultSport sets the "default_sport" field.
+func (m *EntityTemplateMutation) SetDefaultSport(s string) {
+	m.default_sport = &s
+}
+
+// DefaultSport returns the value of the "default_sport" field in the mutation.
+func (m *EntityTemplateMutation) DefaultSport() (r string, exists bool) {
+	v := m.default_sport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDefaultSport returns the old "default_sport" field's value of the EntityTemplate entity.
+// If the EntityTemplate object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *EntityTemplateMutation) OldDefaultSport(ctx context.Context) (v *string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDefaultSport is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDefaultSport requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDefaultSport: %w", err)
+	}
+	return oldValue.DefaultSport, nil
+}
+
+// ClearDefaultSport clears the value of the "default_sport" field.
+func (m *EntityTemplateMutation) ClearDefaultSport() {
+	m.default_sport = nil
+	m.clearedFields[entitytemplate.FieldDefaultSport] = struct{}{}
+}
+
+// DefaultSportCleared returns if the "default_sport" field was cleared in this mutation.
+func (m *EntityTemplateMutation) DefaultSportCleared() bool {
+	_, ok := m.clearedFields[entitytemplate.FieldDefaultSport]
+	return ok
+}
+
+// ResetDefaultSport resets all changes to the "default_sport" field.
+func (m *EntityTemplateMutation) ResetDefaultSport() {
+	m.default_sport = nil
+	delete(m.clearedFields, entitytemplate.FieldDefaultSport)
 }
 
 // SetDefaultName sets the "default_name" field.
@@ -9136,7 +9186,7 @@ func (m *EntityTemplateMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *EntityTemplateMutation) Fields() []string {
-	fields := make([]string, 0, 17)
+	fields := make([]string, 0, 18)
 	if m.created_at != nil {
 		fields = append(fields, entitytemplate.FieldCreatedAt)
 	}
@@ -9157,6 +9207,9 @@ func (m *EntityTemplateMutation) Fields() []string {
 	}
 	if m.default_insured != nil {
 		fields = append(fields, entitytemplate.FieldDefaultInsured)
+	}
+	if m.default_sport != nil {
+		fields = append(fields, entitytemplate.FieldDefaultSport)
 	}
 	if m.default_name != nil {
 		fields = append(fields, entitytemplate.FieldDefaultName)
@@ -9210,6 +9263,8 @@ func (m *EntityTemplateMutation) Field(name string) (ent.Value, bool) {
 		return m.DefaultQuantity()
 	case entitytemplate.FieldDefaultInsured:
 		return m.DefaultInsured()
+	case entitytemplate.FieldDefaultSport:
+		return m.DefaultSport()
 	case entitytemplate.FieldDefaultName:
 		return m.DefaultName()
 	case entitytemplate.FieldDefaultDescription:
@@ -9253,6 +9308,8 @@ func (m *EntityTemplateMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldDefaultQuantity(ctx)
 	case entitytemplate.FieldDefaultInsured:
 		return m.OldDefaultInsured(ctx)
+	case entitytemplate.FieldDefaultSport:
+		return m.OldDefaultSport(ctx)
 	case entitytemplate.FieldDefaultName:
 		return m.OldDefaultName(ctx)
 	case entitytemplate.FieldDefaultDescription:
@@ -9330,6 +9387,13 @@ func (m *EntityTemplateMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDefaultInsured(v)
+		return nil
+	case entitytemplate.FieldDefaultSport:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDefaultSport(v)
 		return nil
 	case entitytemplate.FieldDefaultName:
 		v, ok := value.(string)
@@ -9452,6 +9516,9 @@ func (m *EntityTemplateMutation) ClearedFields() []string {
 	if m.FieldCleared(entitytemplate.FieldNotes) {
 		fields = append(fields, entitytemplate.FieldNotes)
 	}
+	if m.FieldCleared(entitytemplate.FieldDefaultSport) {
+		fields = append(fields, entitytemplate.FieldDefaultSport)
+	}
 	if m.FieldCleared(entitytemplate.FieldDefaultName) {
 		fields = append(fields, entitytemplate.FieldDefaultName)
 	}
@@ -9489,6 +9556,9 @@ func (m *EntityTemplateMutation) ClearField(name string) error {
 		return nil
 	case entitytemplate.FieldNotes:
 		m.ClearNotes()
+		return nil
+	case entitytemplate.FieldDefaultSport:
+		m.ClearDefaultSport()
 		return nil
 	case entitytemplate.FieldDefaultName:
 		m.ClearDefaultName()
@@ -9536,6 +9606,9 @@ func (m *EntityTemplateMutation) ResetField(name string) error {
 		return nil
 	case entitytemplate.FieldDefaultInsured:
 		m.ResetDefaultInsured()
+		return nil
+	case entitytemplate.FieldDefaultSport:
+		m.ResetDefaultSport()
 		return nil
 	case entitytemplate.FieldDefaultName:
 		m.ResetDefaultName()

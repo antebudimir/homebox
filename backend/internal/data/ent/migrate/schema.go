@@ -320,6 +320,7 @@ var (
 		{Name: "notes", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "default_quantity", Type: field.TypeFloat64, Default: 1},
 		{Name: "default_insured", Type: field.TypeBool, Default: false},
+		{Name: "default_sport", Type: field.TypeString, Nullable: true, Size: 50},
 		{Name: "default_name", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "default_description", Type: field.TypeString, Nullable: true, Size: 1000},
 		{Name: "default_manufacturer", Type: field.TypeString, Nullable: true, Size: 255},
@@ -341,13 +342,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "entity_templates_entities_location",
-				Columns:    []*schema.Column{EntityTemplatesColumns[18]},
+				Columns:    []*schema.Column{EntityTemplatesColumns[19]},
 				RefColumns: []*schema.Column{EntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "entity_templates_groups_entity_templates",
-				Columns:    []*schema.Column{EntityTemplatesColumns[19]},
+				Columns:    []*schema.Column{EntityTemplatesColumns[20]},
 				RefColumns: []*schema.Column{GroupsColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

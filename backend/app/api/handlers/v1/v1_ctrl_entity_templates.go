@@ -164,6 +164,7 @@ func (ctrl *V1Controller) HandleEntityTemplatesCreateItem() errchain.HandlerFunc
 			ModelNumber:      template.DefaultModelNumber,
 			LifetimeWarranty: template.DefaultLifetimeWarranty,
 			WarrantyDetails:  template.DefaultWarrantyDetails,
+			Sport:            lo.FromPtr(template.DefaultSport),
 			Fields:           fields,
 		})
 	}

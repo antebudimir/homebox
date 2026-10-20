@@ -91,6 +91,11 @@ func DefaultInsured(v bool) predicate.EntityTemplate {
 	return predicate.EntityTemplate(sql.FieldEQ(FieldDefaultInsured, v))
 }
 
+// DefaultSport applies equality check predicate on the "default_sport" field. It's identical to DefaultSportEQ.
+func DefaultSport(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldEQ(FieldDefaultSport, v))
+}
+
 // DefaultName applies equality check predicate on the "default_name" field. It's identical to DefaultNameEQ.
 func DefaultName(v string) predicate.EntityTemplate {
 	return predicate.EntityTemplate(sql.FieldEQ(FieldDefaultName, v))
@@ -479,6 +484,81 @@ func DefaultInsuredEQ(v bool) predicate.EntityTemplate {
 // DefaultInsuredNEQ applies the NEQ predicate on the "default_insured" field.
 func DefaultInsuredNEQ(v bool) predicate.EntityTemplate {
 	return predicate.EntityTemplate(sql.FieldNEQ(FieldDefaultInsured, v))
+}
+
+// DefaultSportEQ applies the EQ predicate on the "default_sport" field.
+func DefaultSportEQ(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldEQ(FieldDefaultSport, v))
+}
+
+// DefaultSportNEQ applies the NEQ predicate on the "default_sport" field.
+func DefaultSportNEQ(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldNEQ(FieldDefaultSport, v))
+}
+
+// DefaultSportIn applies the In predicate on the "default_sport" field.
+func DefaultSportIn(vs ...string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldIn(FieldDefaultSport, vs...))
+}
+
+// DefaultSportNotIn applies the NotIn predicate on the "default_sport" field.
+func DefaultSportNotIn(vs ...string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldNotIn(FieldDefaultSport, vs...))
+}
+
+// DefaultSportGT applies the GT predicate on the "default_sport" field.
+func DefaultSportGT(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldGT(FieldDefaultSport, v))
+}
+
+// DefaultSportGTE applies the GTE predicate on the "default_sport" field.
+func DefaultSportGTE(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldGTE(FieldDefaultSport, v))
+}
+
+// DefaultSportLT applies the LT predicate on the "default_sport" field.
+func DefaultSportLT(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldLT(FieldDefaultSport, v))
+}
+
+// DefaultSportLTE applies the LTE predicate on the "default_sport" field.
+func DefaultSportLTE(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldLTE(FieldDefaultSport, v))
+}
+
+// DefaultSportContains applies the Contains predicate on the "default_sport" field.
+func DefaultSportContains(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldContains(FieldDefaultSport, v))
+}
+
+// DefaultSportHasPrefix applies the HasPrefix predicate on the "default_sport" field.
+func DefaultSportHasPrefix(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldHasPrefix(FieldDefaultSport, v))
+}
+
+// DefaultSportHasSuffix applies the HasSuffix predicate on the "default_sport" field.
+func DefaultSportHasSuffix(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldHasSuffix(FieldDefaultSport, v))
+}
+
+// DefaultSportIsNil applies the IsNil predicate on the "default_sport" field.
+func DefaultSportIsNil() predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldIsNull(FieldDefaultSport))
+}
+
+// DefaultSportNotNil applies the NotNil predicate on the "default_sport" field.
+func DefaultSportNotNil() predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldNotNull(FieldDefaultSport))
+}
+
+// DefaultSportEqualFold applies the EqualFold predicate on the "default_sport" field.
+func DefaultSportEqualFold(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldEqualFold(FieldDefaultSport, v))
+}
+
+// DefaultSportContainsFold applies the ContainsFold predicate on the "default_sport" field.
+func DefaultSportContainsFold(v string) predicate.EntityTemplate {
+	return predicate.EntityTemplate(sql.FieldContainsFold(FieldDefaultSport, v))
 }
 
 // DefaultNameEQ applies the EQ predicate on the "default_name" field.

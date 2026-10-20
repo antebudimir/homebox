@@ -128,6 +128,26 @@ func (_u *EntityTemplateUpdate) SetNillableDefaultInsured(v *bool) *EntityTempla
 	return _u
 }
 
+// SetDefaultSport sets the "default_sport" field.
+func (_u *EntityTemplateUpdate) SetDefaultSport(v string) *EntityTemplateUpdate {
+	_u.mutation.SetDefaultSport(v)
+	return _u
+}
+
+// SetNillableDefaultSport sets the "default_sport" field if the given value is not nil.
+func (_u *EntityTemplateUpdate) SetNillableDefaultSport(v *string) *EntityTemplateUpdate {
+	if v != nil {
+		_u.SetDefaultSport(*v)
+	}
+	return _u
+}
+
+// ClearDefaultSport clears the value of the "default_sport" field.
+func (_u *EntityTemplateUpdate) ClearDefaultSport() *EntityTemplateUpdate {
+	_u.mutation.ClearDefaultSport()
+	return _u
+}
+
 // SetDefaultName sets the "default_name" field.
 func (_u *EntityTemplateUpdate) SetDefaultName(v string) *EntityTemplateUpdate {
 	_u.mutation.SetDefaultName(v)
@@ -438,6 +458,11 @@ func (_u *EntityTemplateUpdate) check() error {
 			return &ValidationError{Name: "notes", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.notes": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.DefaultSport(); ok {
+		if err := entitytemplate.DefaultSportValidator(v); err != nil {
+			return &ValidationError{Name: "default_sport", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.default_sport": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.DefaultName(); ok {
 		if err := entitytemplate.DefaultNameValidator(v); err != nil {
 			return &ValidationError{Name: "default_name", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.default_name": %w`, err)}
@@ -507,6 +532,12 @@ func (_u *EntityTemplateUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.DefaultInsured(); ok {
 		_spec.SetField(entitytemplate.FieldDefaultInsured, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.DefaultSport(); ok {
+		_spec.SetField(entitytemplate.FieldDefaultSport, field.TypeString, value)
+	}
+	if _u.mutation.DefaultSportCleared() {
+		_spec.ClearField(entitytemplate.FieldDefaultSport, field.TypeString)
 	}
 	if value, ok := _u.mutation.DefaultName(); ok {
 		_spec.SetField(entitytemplate.FieldDefaultName, field.TypeString, value)
@@ -776,6 +807,26 @@ func (_u *EntityTemplateUpdateOne) SetNillableDefaultInsured(v *bool) *EntityTem
 	if v != nil {
 		_u.SetDefaultInsured(*v)
 	}
+	return _u
+}
+
+// SetDefaultSport sets the "default_sport" field.
+func (_u *EntityTemplateUpdateOne) SetDefaultSport(v string) *EntityTemplateUpdateOne {
+	_u.mutation.SetDefaultSport(v)
+	return _u
+}
+
+// SetNillableDefaultSport sets the "default_sport" field if the given value is not nil.
+func (_u *EntityTemplateUpdateOne) SetNillableDefaultSport(v *string) *EntityTemplateUpdateOne {
+	if v != nil {
+		_u.SetDefaultSport(*v)
+	}
+	return _u
+}
+
+// ClearDefaultSport clears the value of the "default_sport" field.
+func (_u *EntityTemplateUpdateOne) ClearDefaultSport() *EntityTemplateUpdateOne {
+	_u.mutation.ClearDefaultSport()
 	return _u
 }
 
@@ -1102,6 +1153,11 @@ func (_u *EntityTemplateUpdateOne) check() error {
 			return &ValidationError{Name: "notes", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.notes": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.DefaultSport(); ok {
+		if err := entitytemplate.DefaultSportValidator(v); err != nil {
+			return &ValidationError{Name: "default_sport", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.default_sport": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.DefaultName(); ok {
 		if err := entitytemplate.DefaultNameValidator(v); err != nil {
 			return &ValidationError{Name: "default_name", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.default_name": %w`, err)}
@@ -1188,6 +1244,12 @@ func (_u *EntityTemplateUpdateOne) sqlSave(ctx context.Context) (_node *EntityTe
 	}
 	if value, ok := _u.mutation.DefaultInsured(); ok {
 		_spec.SetField(entitytemplate.FieldDefaultInsured, field.TypeBool, value)
+	}
+	if value, ok := _u.mutation.DefaultSport(); ok {
+		_spec.SetField(entitytemplate.FieldDefaultSport, field.TypeString, value)
+	}
+	if _u.mutation.DefaultSportCleared() {
+		_spec.ClearField(entitytemplate.FieldDefaultSport, field.TypeString)
 	}
 	if value, ok := _u.mutation.DefaultName(); ok {
 		_spec.SetField(entitytemplate.FieldDefaultName, field.TypeString, value)

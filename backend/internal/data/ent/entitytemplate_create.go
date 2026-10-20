@@ -114,6 +114,20 @@ func (_c *EntityTemplateCreate) SetNillableDefaultInsured(v *bool) *EntityTempla
 	return _c
 }
 
+// SetDefaultSport sets the "default_sport" field.
+func (_c *EntityTemplateCreate) SetDefaultSport(v string) *EntityTemplateCreate {
+	_c.mutation.SetDefaultSport(v)
+	return _c
+}
+
+// SetNillableDefaultSport sets the "default_sport" field if the given value is not nil.
+func (_c *EntityTemplateCreate) SetNillableDefaultSport(v *string) *EntityTemplateCreate {
+	if v != nil {
+		_c.SetDefaultSport(*v)
+	}
+	return _c
+}
+
 // SetDefaultName sets the "default_name" field.
 func (_c *EntityTemplateCreate) SetDefaultName(v string) *EntityTemplateCreate {
 	_c.mutation.SetDefaultName(v)
@@ -410,6 +424,11 @@ func (_c *EntityTemplateCreate) check() error {
 	if _, ok := _c.mutation.DefaultInsured(); !ok {
 		return &ValidationError{Name: "default_insured", err: errors.New(`ent: missing required field "EntityTemplate.default_insured"`)}
 	}
+	if v, ok := _c.mutation.DefaultSport(); ok {
+		if err := entitytemplate.DefaultSportValidator(v); err != nil {
+			return &ValidationError{Name: "default_sport", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.default_sport": %w`, err)}
+		}
+	}
 	if v, ok := _c.mutation.DefaultName(); ok {
 		if err := entitytemplate.DefaultNameValidator(v); err != nil {
 			return &ValidationError{Name: "default_name", err: fmt.Errorf(`ent: validator failed for field "EntityTemplate.default_name": %w`, err)}
@@ -512,6 +531,10 @@ func (_c *EntityTemplateCreate) createSpec() (*EntityTemplate, *sqlgraph.CreateS
 	if value, ok := _c.mutation.DefaultInsured(); ok {
 		_spec.SetField(entitytemplate.FieldDefaultInsured, field.TypeBool, value)
 		_node.DefaultInsured = value
+	}
+	if value, ok := _c.mutation.DefaultSport(); ok {
+		_spec.SetField(entitytemplate.FieldDefaultSport, field.TypeString, value)
+		_node.DefaultSport = &value
 	}
 	if value, ok := _c.mutation.DefaultName(); ok {
 		_spec.SetField(entitytemplate.FieldDefaultName, field.TypeString, value)

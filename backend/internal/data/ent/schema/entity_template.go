@@ -44,6 +44,14 @@ func (EntityTemplate) Fields() []ent.Field {
 		field.Bool("default_insured").
 			Default(false),
 
+		// Default sport for build parts created from this template (fork
+		// only). Optional/nullable so upstream flows are unaffected.
+		field.String("default_sport").
+			MaxLen(50).
+			Optional().
+			Nillable().
+			Comment("Default sport for entities created from this template"),
+
 		// ------------------------------------
 		// Default item name/description (templates for item identity)
 		field.String("default_name").

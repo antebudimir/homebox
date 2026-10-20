@@ -29,6 +29,8 @@ const (
 	FieldDefaultQuantity = "default_quantity"
 	// FieldDefaultInsured holds the string denoting the default_insured field in the database.
 	FieldDefaultInsured = "default_insured"
+	// FieldDefaultSport holds the string denoting the default_sport field in the database.
+	FieldDefaultSport = "default_sport"
 	// FieldDefaultName holds the string denoting the default_name field in the database.
 	FieldDefaultName = "default_name"
 	// FieldDefaultDescription holds the string denoting the default_description field in the database.
@@ -90,6 +92,7 @@ var Columns = []string{
 	FieldNotes,
 	FieldDefaultQuantity,
 	FieldDefaultInsured,
+	FieldDefaultSport,
 	FieldDefaultName,
 	FieldDefaultDescription,
 	FieldDefaultManufacturer,
@@ -141,6 +144,8 @@ var (
 	DefaultDefaultQuantity float64
 	// DefaultDefaultInsured holds the default value on creation for the "default_insured" field.
 	DefaultDefaultInsured bool
+	// DefaultSportValidator is a validator for the "default_sport" field. It is called by the builders before save.
+	DefaultSportValidator func(string) error
 	// DefaultNameValidator is a validator for the "default_name" field. It is called by the builders before save.
 	DefaultNameValidator func(string) error
 	// DefaultDescriptionValidator is a validator for the "default_description" field. It is called by the builders before save.
@@ -204,6 +209,11 @@ func ByDefaultQuantity(opts ...sql.OrderTermOption) OrderOption {
 // ByDefaultInsured orders the results by the default_insured field.
 func ByDefaultInsured(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDefaultInsured, opts...).ToFunc()
+}
+
+// ByDefaultSport orders the results by the default_sport field.
+func ByDefaultSport(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDefaultSport, opts...).ToFunc()
 }
 
 // ByDefaultName orders the results by the default_name field.

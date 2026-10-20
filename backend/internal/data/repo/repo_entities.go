@@ -1314,11 +1314,14 @@ func (r *EntityRepository) Create(ctx context.Context, gid uuid.UUID, data Entit
 
 // EntityCreateFromTemplate contains all data needed to create an entity from a template.
 type EntityCreateFromTemplate struct {
-	Name             string
-	Description      string
-	Manufacturer     string
-	ModelNumber      string
-	WarrantyDetails  string
+	Name            string
+	Description     string
+	Manufacturer    string
+	ModelNumber     string
+	WarrantyDetails string
+	// Sport (fork only) is inherited from the template's default sport;
+	// empty keeps the entity generic.
+	Sport            string
 	TagIDs           []uuid.UUID
 	Fields           []EntityFieldData
 	Quantity         float64
@@ -1420,7 +1423,8 @@ func (r *EntityRepository) CreateFromTemplate(ctx context.Context, gid uuid.UUID
 		SetManufacturer(data.Manufacturer).
 		SetModelNumber(data.ModelNumber).
 		SetLifetimeWarranty(data.LifetimeWarranty).
-		SetWarrantyDetails(data.WarrantyDetails)
+		SetWarrantyDetails(data.WarrantyDetails).
+		SetNillableSport(lo.Ternary(data.Sport != "", lo.ToPtr(data.Sport), nil))
 
 	if templateParentID != uuid.Nil {
 		entityBuilder.SetParentID(templateParentID)

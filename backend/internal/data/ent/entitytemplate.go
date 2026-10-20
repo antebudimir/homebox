@@ -35,6 +35,8 @@ type EntityTemplate struct {
 	DefaultQuantity float64 `json:"default_quantity,omitempty"`
 	// DefaultInsured holds the value of the "default_insured" field.
 	DefaultInsured bool `json:"default_insured,omitempty"`
+	// Default sport for entities created from this template
+	DefaultSport *string `json:"default_sport,omitempty"`
 	// Default name template for items (can use placeholders)
 	DefaultName string `json:"default_name,omitempty"`
 	// Default description for items created from this template
@@ -118,7 +120,7 @@ func (*EntityTemplate) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullBool)
 		case entitytemplate.FieldDefaultQuantity:
 			values[i] = new(sql.NullFloat64)
-		case entitytemplate.FieldName, entitytemplate.FieldDescription, entitytemplate.FieldNotes, entitytemplate.FieldDefaultName, entitytemplate.FieldDefaultDescription, entitytemplate.FieldDefaultManufacturer, entitytemplate.FieldDefaultModelNumber, entitytemplate.FieldDefaultWarrantyDetails:
+		case entitytemplate.FieldName, entitytemplate.FieldDescription, entitytemplate.FieldNotes, entitytemplate.FieldDefaultSport, entitytemplate.FieldDefaultName, entitytemplate.FieldDefaultDescription, entitytemplate.FieldDefaultManufacturer, entitytemplate.FieldDefaultModelNumber, entitytemplate.FieldDefaultWarrantyDetails:
 			values[i] = new(sql.NullString)
 		case entitytemplate.FieldCreatedAt, entitytemplate.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -190,6 +192,13 @@ func (_m *EntityTemplate) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field default_insured", values[i])
 			} else if value.Valid {
 				_m.DefaultInsured = value.Bool
+			}
+		case entitytemplate.FieldDefaultSport:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field default_sport", values[i])
+			} else if value.Valid {
+				_m.DefaultSport = new(string)
+				*_m.DefaultSport = value.String
 			}
 		case entitytemplate.FieldDefaultName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -338,6 +347,11 @@ func (_m *EntityTemplate) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("default_insured=")
 	builder.WriteString(fmt.Sprintf("%v", _m.DefaultInsured))
+	builder.WriteString(", ")
+	if v := _m.DefaultSport; v != nil {
+		builder.WriteString("default_sport=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("default_name=")
 	builder.WriteString(_m.DefaultName)

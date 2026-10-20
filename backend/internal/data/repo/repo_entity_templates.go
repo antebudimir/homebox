@@ -50,9 +50,12 @@ type (
 		DefaultModelNumber     *string      `json:"defaultModelNumber,omitempty"     validate:"omitempty,max=255"      extensions:"x-nullable"`
 		DefaultWarrantyDetails *string      `json:"defaultWarrantyDetails,omitempty" validate:"omitempty,max=1000"     extensions:"x-nullable"`
 		DefaultTagIDs          *[]uuid.UUID `json:"defaultTagIds,omitempty"          extensions:"x-nullable"`
-		Name                   string       `json:"name"                             validate:"required,min=1,max=255"`
-		Description            string       `json:"description"                      validate:"max=1000"`
-		Notes                  string       `json:"notes"                            validate:"max=1000"`
+		// DefaultSport (fork only) is inherited by entities created from
+		// this template; nil keeps them generic.
+		DefaultSport *string `json:"defaultSport,omitempty"            extensions:"x-nullable"`
+		Name         string  `json:"name"                             validate:"required,min=1,max=255"`
+		Description  string  `json:"description"                      validate:"max=1000"`
+		Notes        string  `json:"notes"                            validate:"max=1000"`
 		// Custom fields
 		Fields []TemplateField `json:"fields"`
 		// Default location and tags
@@ -74,9 +77,12 @@ type (
 		DefaultModelNumber     *string      `json:"defaultModelNumber,omitempty"     validate:"omitempty,max=255"      extensions:"x-nullable"`
 		DefaultWarrantyDetails *string      `json:"defaultWarrantyDetails,omitempty" validate:"omitempty,max=1000"     extensions:"x-nullable"`
 		DefaultTagIDs          *[]uuid.UUID `json:"defaultTagIds,omitempty"          extensions:"x-nullable"`
-		Name                   string       `json:"name"                             validate:"required,min=1,max=255"`
-		Description            string       `json:"description"                      validate:"max=1000"`
-		Notes                  string       `json:"notes"                            validate:"max=1000"`
+		// DefaultSport (fork only) is inherited by entities created from
+		// this template; nil keeps them generic.
+		DefaultSport *string `json:"defaultSport,omitempty"            extensions:"x-nullable"`
+		Name         string  `json:"name"                             validate:"required,min=1,max=255"`
+		Description  string  `json:"description"                      validate:"max=1000"`
+		Notes        string  `json:"notes"                            validate:"max=1000"`
 		// Custom fields
 		Fields []TemplateField `json:"fields"`
 		ID     uuid.UUID       `json:"id"`
@@ -111,6 +117,7 @@ type (
 		DefaultManufacturer    string                   `json:"defaultManufacturer"`
 		DefaultModelNumber     string                   `json:"defaultModelNumber"`
 		DefaultWarrantyDetails string                   `json:"defaultWarrantyDetails"`
+		DefaultSport           *string                  `json:"defaultSport,omitempty"`
 		DefaultTags            []TemplateTagSummary     `json:"defaultTags"`
 		// Custom fields
 		Fields []TemplateField `json:"fields"`
@@ -200,6 +207,7 @@ func (r *EntityTemplatesRepository) mapTemplateOut(ctx context.Context, template
 		DefaultModelNumber:      template.DefaultModelNumber,
 		DefaultLifetimeWarranty: template.DefaultLifetimeWarranty,
 		DefaultWarrantyDetails:  template.DefaultWarrantyDetails,
+		DefaultSport:            template.DefaultSport,
 		DefaultLocation:         location,
 		DefaultTags:             tags,
 		IncludeWarrantyFields:   template.IncludeWarrantyFields,
@@ -269,6 +277,7 @@ func (r *EntityTemplatesRepository) Create(ctx context.Context, gid uuid.UUID, d
 		SetNillableDefaultModelNumber(data.DefaultModelNumber).
 		SetDefaultLifetimeWarranty(data.DefaultLifetimeWarranty).
 		SetNillableDefaultWarrantyDetails(data.DefaultWarrantyDetails).
+		SetNillableDefaultSport(data.DefaultSport).
 		SetIncludeWarrantyFields(data.IncludeWarrantyFields).
 		SetIncludePurchaseFields(data.IncludePurchaseFields).
 		SetIncludeSoldFields(data.IncludeSoldFields).
@@ -336,6 +345,7 @@ func (r *EntityTemplatesRepository) Update(ctx context.Context, gid uuid.UUID, d
 		SetNillableDefaultModelNumber(data.DefaultModelNumber).
 		SetDefaultLifetimeWarranty(data.DefaultLifetimeWarranty).
 		SetNillableDefaultWarrantyDetails(data.DefaultWarrantyDetails).
+		SetNillableDefaultSport(data.DefaultSport).
 		SetIncludeWarrantyFields(data.IncludeWarrantyFields).
 		SetIncludePurchaseFields(data.IncludePurchaseFields).
 		SetIncludeSoldFields(data.IncludeSoldFields)
