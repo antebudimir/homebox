@@ -83,7 +83,7 @@ type buildPartTemplate struct {
 }
 
 // buildPartTemplates are seeded into every new group, keyed by name so
-// seeding is idempotent. 8 skateboard + 7 bike parts.
+// seeding is idempotent. 9 skateboard + 7 bike parts.
 var buildPartTemplates = []buildPartTemplate{
 	// Skateboarding
 	{Name: "Deck", Description: "Deck template — set your width, wheelbase and concave.", Sport: "skateboarding"},
@@ -93,7 +93,8 @@ var buildPartTemplates = []buildPartTemplate{
 	{Name: "Front Wheels", Description: "Front wheels — record diameter and durometer.", Sport: "skateboarding"},
 	{Name: "Rear Wheels", Description: "Rear wheels — record diameter and durometer.", Sport: "skateboarding"},
 	{Name: "Bearings", Description: "Bearing set (8 pack for a full rebuild).", Sport: "skateboarding"},
-	{Name: "Hardware", Description: "Mounting hardware bolt set.", Sport: "skateboarding"},
+	{Name: "Hardware", Description: "4 bolts, 4 nuts, 4 washers.", Sport: "skateboarding"},
+	{Name: "Bushings", Description: "4 bushings (or 2 pairs).", Sport: "skateboarding"},
 	// Cycling
 	{Name: "Frame", Description: "Frame template — record size and material.", Sport: "cycling"},
 	{Name: "Front Wheel", Description: "Front wheel — record rim, hub and spokes.", Sport: "cycling"},
