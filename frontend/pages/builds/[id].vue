@@ -152,6 +152,38 @@
   const allEntities = ref<EntitySummary[]>([]);
   const mountForm = reactive({ entityId: "", position: "" });
 
+  // Pre-select the most likely position for the chosen part, based on its
+  // name (parts are bought/used by category: a "Deck" goes on the deck,
+  // wheels and bearings mount to a truck). Cross-sport parts picked via
+  // "Show All" get no guess — the user decides deliberately.
+  function guessPosition(entity: EntitySummary | undefined): string {
+    if (!entity) {
+      return "";
+    }
+    if (build.value?.sport && entity.sport && build.value.sport !== entity.sport) {
+      return "";
+    }
+    const name = entity.name.toLowerCase();
+    if (name.includes("deck") || name.includes("grip")) {
+      return "deck";
+    }
+    if (name.includes("truck") || name.includes("wheel") || name.includes("bearing")) {
+      return name.includes("rear") ? "rear_truck" : "front_truck";
+    }
+    return "";
+  }
+
+  watch(
+    () => mountForm.entityId,
+    id => {
+      if (!id) {
+        mountForm.position = "";
+        return;
+      }
+      mountForm.position = guessPosition(allEntities.value.find(e => e.id === id));
+    }
+  );
+
   async function openMount() {
     showMount.value = true;
     if (allEntities.value.length === 0) {
