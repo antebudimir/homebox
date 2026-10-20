@@ -224,9 +224,15 @@
       return;
     }
     if (data && data.warnings && data.warnings.length > 0) {
-      toast.warning(data.warnings.map(code => t(`builds.warning.${code}`)).join(" "));
+      // Success first so the warning stacks on top, then let the warning
+      // persist until dismissed instead of auto-dismissing behind it.
+      toast.success(t("builds.toast.part_added"));
+      toast.warning(data.warnings.map(code => t(`builds.warning.${code}`)).join(" "), {
+        duration: Infinity,
+      });
+    } else {
+      toast.success(t("builds.toast.part_added"));
     }
-    toast.success(t("builds.toast.part_added"));
     showMount.value = false;
     mountForm.entityId = "";
     mountForm.position = "";
