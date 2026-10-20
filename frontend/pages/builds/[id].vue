@@ -184,8 +184,21 @@
     }
   );
 
+  const showAllParts = ref(false);
+
+  // Strict mode: a sported build only lists its own sport's parts plus
+  // generic (sportless) parts. "Show All" lifts the filter for rare
+  // cross-sport mounts; the server-side mismatch warning still applies.
+  const selectableEntities = computed(() => {
+    if (showAllParts.value || !build.value?.sport) {
+      return allEntities.value;
+    }
+    return allEntities.value.filter(e => !e.sport || e.sport === build.value?.sport);
+  });
+
   async function openMount() {
     showMount.value = true;
+    showAllParts.value = false;
     if (allEntities.value.length === 0) {
       const { data, error } = await api.items.getAll();
       if (error) {
@@ -485,7 +498,13 @@
             </DialogHeader>
             <form class="flex flex-col gap-4" @submit.prevent="mountPart">
               <div class="flex flex-col gap-2">
-                <Label for="mount-entity">{{ $t("builds.parts.entity") }}</Label>
+                <div class="flex items-center justify-between">
+                  <Label for="mount-entity">{{ $t("builds.parts.entity") }}</Label>
+                  <Label class="flex cursor-pointer items-center gap-2 text-xs text-foreground/70">
+                    <Switch v-model="showAllParts" />
+                    {{ $t("builds.parts.show_all") }}
+                  </Label>
+                </div>
                 <select
                   id="mount-entity"
                   v-model="mountForm.entityId"
@@ -493,7 +512,7 @@
                   required
                 >
                   <option value="" disabled>{{ $t("builds.parts.entity_placeholder") }}</option>
-                  <option v-for="entity in allEntities" :key="entity.id" :value="entity.id">
+                  <option v-for="entity in selectableEntities" :key="entity.id" :value="entity.id">
                     {{ entity.name }}
                   </option>
                 </select>

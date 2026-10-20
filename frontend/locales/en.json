@@ -1078,7 +1078,8 @@
             "purge": "Delete Permanently",
             "empty": "No parts mounted yet.",
             "entity_placeholder": "Select a part…",
-            "position_placeholder": "Select a position…"
+            "position_placeholder": "Select a position…",
+            "show_all": "Show All Parts"
         },
         "sessions": {
             "title": "Usage Sessions",
