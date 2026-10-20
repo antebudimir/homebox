@@ -148,8 +148,6 @@
                   <span>{{ $t("menu.scanner") }}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-
-              <AppThemeToggle />
             </SidebarMenu>
           </SidebarGroup>
         </SidebarContent>
@@ -208,6 +206,7 @@
                   <MdiQrcodeScan />
                 </Button>
               </div>
+              <AppThemeToggle />
             </div>
           </div>
 

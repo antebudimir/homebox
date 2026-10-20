@@ -41,7 +41,13 @@ export type LocationViewPreferences = {
   }[];
 };
 export type PreferenceSyncConfig = Partial<Record<keyof LocationViewPreferences, boolean>>;
-type PreferenceChange = true | Record<string, PreferenceChange>;
+
+// An interface is used for the recursive branch because type aliases cannot
+// reference themselves directly (TS2456); interfaces support circular refs.
+interface PreferenceChangeTree {
+  [key: string]: PreferenceChange;
+}
+type PreferenceChange = true | PreferenceChangeTree;
 type PreferenceChanges = Partial<Record<keyof LocationViewPreferences, PreferenceChange>>;
 
 const DEFAULT_PREFERENCES: LocationViewPreferences = {

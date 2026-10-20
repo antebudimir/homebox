@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import { darkThemes } from "~~/lib/data/themes";
-  import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
+  import { Button } from "@/components/ui/button";
   import MdiWhiteBalanceSunny from "~icons/mdi/white-balance-sunny";
   import MdiWeatherNight from "~icons/mdi/weather-night";
   import { useTheme } from "~/composables/use-theme";
@@ -29,11 +29,14 @@
 </script>
 
 <template>
-  <SidebarMenuItem>
-    <SidebarMenuButton :tooltip="$t('global.toggle_theme')" @click="toggle">
-      <MdiWhiteBalanceSunny v-if="isDark" />
-      <MdiWeatherNight v-else />
-      <span>{{ $t("global.toggle_theme") }}</span>
-    </SidebarMenuButton>
-  </SidebarMenuItem>
+  <Button
+    size="icon"
+    variant="outline"
+    :aria-label="$t('global.toggle_theme')"
+    :title="$t('global.toggle_theme')"
+    @click="toggle"
+  >
+    <MdiWhiteBalanceSunny v-if="isDark" class="size-5" />
+    <MdiWeatherNight v-else class="size-5" />
+  </Button>
 </template>
