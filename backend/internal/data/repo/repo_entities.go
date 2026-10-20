@@ -2523,6 +2523,7 @@ func (r *EntityRepository) Duplicate(ctx context.Context, gid, id uuid.UUID, opt
 		SetNotes(originalEntity.Notes).
 		SetInsured(originalEntity.Insured).
 		SetArchived(originalEntity.Archived).
+		SetSport(originalEntity.Sport).
 		SetSyncChildEntityLocations(originalEntity.SyncChildEntityLocations)
 
 	// Skip Set on zero dates so the duplicate's nullable date columns end up
