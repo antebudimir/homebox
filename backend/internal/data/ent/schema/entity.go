@@ -52,8 +52,9 @@ func (Entity) Fields() []ent.Field {
 			Default(0),
 		field.Bool("sync_child_entity_locations").
 			Default(false),
-		// Sport tags build parts (e.g. "skateboarding", "cycling") so the
-		// build part picker can group them. Empty for generic entities.
+		// Sport tags build parts (e.g. "generic", "skateboarding", "cycling") so
+		// the build part picker can group them. Empty means no sport assigned:
+		// the entity is excluded from sport-scoped build part pickers.
 		field.String("sport").
 			MaxLen(50).
 			Optional(),

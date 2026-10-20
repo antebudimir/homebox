@@ -122,6 +122,9 @@ type (
 		SoldDate    types.Date `json:"soldDate"`
 		Name        string     `json:"name"        validate:"required,min=1,max=255"`
 		Description string     `json:"description" validate:"max=1000"`
+		// Sport (fork only) — empty means unassigned (excluded from sport
+		// build pickers); "generic" means usable on all builds.
+		Sport string `json:"sport" validate:"max=50"`
 		// Identifications
 		SerialNumber    string `json:"serialNumber"`
 		ModelNumber     string `json:"modelNumber"`
@@ -1799,7 +1802,15 @@ func (r *EntityRepository) UpdateByGroup(ctx context.Context, gid uuid.UUID, dat
 		SetWarrantyDetails(data.WarrantyDetails).
 		SetQuantity(data.Quantity).
 		SetAssetID(int64(data.AssetID)).
-		SetSyncChildEntityLocations(data.SyncChildEntityLocations)
+		SetSyncChildEntityLocations(data.SyncChildEntityLocations).
+		SetNillableSport(lo.Ternary(data.Sport != "", lo.ToPtr(data.Sport), nil))
+
+	// An empty sport means "unassigned" — clear the column, since
+	// SetNillableSport(nil) above leaves it untouched (mirrors the date
+	// clearing pattern right below).
+	if data.Sport == "" {
+		q.ClearSport()
+	}
 
 	// Date fields are nullable. Writing types.Date{}.Time() would persist
 	// the 0001-01-01 sentinel that ZeroOutTimeFields then has to chase —
