@@ -63,9 +63,22 @@
 
   const currentParts = computed(() => parts.value.filter(p => !p.removedDate));
 
+  // Positions are strictly scoped to the build's sport. A build without a
+  // sport is generic, so it may use any sport's positions (deduplicated,
+  // first-seen order). A part's own sport never restricts this list.
   const currentSportPositions = computed(() => {
     if (!build.value?.sport) {
-      return [];
+      const seen = new Set<string>();
+      const all: string[] = [];
+      for (const s of sports.value) {
+        for (const pos of s.positions) {
+          if (!seen.has(pos)) {
+            seen.add(pos);
+            all.push(pos);
+          }
+        }
+      }
+      return all;
     }
     return sports.value.find(s => s.slug === build.value?.sport)?.positions ?? [];
   });
