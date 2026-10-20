@@ -92,7 +92,7 @@
                   </SidebarMenuLink>
                 </SidebarMenuItem>
 
-                <Collapsible v-else default-open class="group/collapsible">
+                <Collapsible v-else-if="n.collapsible" default-open class="group/collapsible">
                   <SidebarMenuItem>
                     <SidebarMenuItem class="flex gap-1">
                       <SidebarMenuLink

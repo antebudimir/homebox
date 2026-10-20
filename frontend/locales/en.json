@@ -34,6 +34,10 @@
         },
         "no_invites": "No invites",
         "remaining_uses": "Remaining uses",
+        "settings": {
+            "show_builds": "Enable Builds",
+            "show_builds_desc": "Show the Builds section and sport fields. Turning this off hides Builds everywhere; your build data is kept."
+        },
         "tabs": {
             "entity_types": "Entity Types",
             "invites": "Invites",
@@ -42,9 +46,7 @@
             "settings": "Settings",
             "tools": "Tools"
         },
-        "uses": "Uses",
-        "show_builds": "Enable Builds",
-        "show_builds_desc": "Show the Builds section and sport fields. Turning this off hides Builds everywhere; your build data is kept."
+        "uses": "Uses"
     },
     "components": {
         "app": {

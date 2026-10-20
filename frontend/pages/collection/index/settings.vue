@@ -121,7 +121,7 @@
 
       // Propagate the builds kill-switch (nav entry, route guard, sport
       // fields) immediately instead of waiting for the next full load.
-      refreshNuxtData("builds-enabled");
+      await refreshNuxtData("builds-enabled");
 
       await reloadCollections();
     } catch (e) {
@@ -171,6 +171,9 @@
           <input v-model="showBuilds" type="checkbox" class="size-4 accent-primary" />
           {{ $t("collection.settings.show_builds") }}
         </Label>
+        <p class="mt-1 text-sm text-muted-foreground">
+          {{ $t("collection.settings.show_builds_desc") }}
+        </p>
 
         <div class="mt-4">
           <Button variant="secondary" size="sm" :disabled="saving" @click="save">
