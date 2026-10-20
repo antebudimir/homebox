@@ -249,7 +249,7 @@
   import MdiAccount from "~icons/mdi/account";
   import MdiCog from "~icons/mdi/cog";
   import MdiWrench from "~icons/mdi/wrench";
-  import MdiSkateboard from "~icons/mdi/skate";
+  import MdiTools from "~icons/mdi/tools";
   import MdiPlus from "~icons/mdi/plus";
   import MdiLogout from "~icons/mdi/logout";
   import MdiFileDocumentMultiple from "~icons/mdi/file-document-multiple";
@@ -446,7 +446,7 @@
       to: "/maintenance",
     },
     {
-      icon: MdiSkateboard,
+      icon: MdiTools,
       id: 70,
       visible: computed(() => sidebarGroup.value?.showBuilds !== false),
       active: computed(() => route.path.startsWith("/builds")),
