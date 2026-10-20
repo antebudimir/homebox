@@ -70,7 +70,7 @@ type (
 	GroupUpdate struct {
 		Name       string `json:"name"`
 		Currency   string `json:"currency"`
-		ShowBuilds *bool  `json:"-"`
+		ShowBuilds *bool `json:"showBuilds,omitempty"`
 	}
 
 	GroupInvitationCreate struct {
