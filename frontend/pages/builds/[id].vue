@@ -223,16 +223,17 @@
       toast.error(t("builds.toast.part_failed_add"));
       return;
     }
-    // Warning goes first so the success toast (newest) stacks below it
-    // and both stay visible until they auto-dismiss.
+    // Success first, warning last: this Toaster stacks newest on top, so
+    // the warning ends up fully visible above the success toast; both
+    // auto-dismiss on their own.
+    toast.success(t("builds.toast.part_added"), {
+      duration: 3000,
+    });
     if (data && data.warnings && data.warnings.length > 0) {
       toast.warning(data.warnings.map(code => t(`builds.warning.${code}`)).join(" "), {
         duration: 5000,
       });
     }
-    toast.success(t("builds.toast.part_added"), {
-      duration: 3000,
-    });
     showMount.value = false;
     mountForm.entityId = "";
     mountForm.position = "";
