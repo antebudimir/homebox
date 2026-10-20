@@ -4,6 +4,7 @@ ALTER TABLE "setups" RENAME TO "builds";
 ALTER TABLE "setup_parts" RENAME TO "build_parts";
 ALTER TABLE "setup_parts" RENAME COLUMN "setup_id" TO "build_id";
 ALTER TABLE "usage_sessions" RENAME COLUMN "setup_id" TO "build_id";
+ALTER TABLE "builds" RENAME COLUMN "group_setups" TO "group_builds";
 
 ALTER TABLE "builds" RENAME CONSTRAINT "setups_groups_setups" TO "builds_groups_builds";
 ALTER TABLE "build_parts" RENAME CONSTRAINT "setup_parts_entities_setup_parts" TO "build_parts_entities_build_parts";
@@ -28,5 +29,6 @@ ALTER TABLE "builds" RENAME CONSTRAINT "builds_groups_builds" TO "setups_groups_
 
 ALTER TABLE "usage_sessions" RENAME COLUMN "build_id" TO "setup_id";
 ALTER TABLE "build_parts" RENAME COLUMN "build_id" TO "setup_id";
+ALTER TABLE "builds" RENAME COLUMN "group_builds" TO "group_setups";
 ALTER TABLE "build_parts" RENAME TO "setup_parts";
 ALTER TABLE "builds" RENAME TO "setups";
