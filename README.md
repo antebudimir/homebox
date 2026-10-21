@@ -1,3 +1,6 @@
+> **⚠️ Fork Notice**: This is a fork of the original [Homebox](https://github.com/sysadminsmedia/homebox) project. I created this fork primarily to add a builds system for tracking skateboard and bike parts (with sport-tagged parts, position-based mounting, and per build part tracking), plus a few handy additions like a light/dark theme toggle and a kill-switch to disable the Builds feature. I'll try to keep this fork in sync with the original repo & continue to implement feats I find useful for my use case, but for full support and the most up-to-date version, please use the original repository.
+>
+
 <div align="center">
   <img src="/docs/src/assets/lilbox.svg" height="200"/>
 </div>
@@ -40,6 +43,8 @@ HomeBox is the inventory and organization system built for the Home User! With a
 - 📄 Document and Warranty Tracking - Keep track of important documents and warranties for your items.
 - 💰 Purchase & Maintenance Tracking - Track purchase dates, prices, and maintenance schedules for your items.
 - 📱 Responsive Design - Homebox is designed to work on any device, including desktops, tablets, and smartphones.
+- 🛹 Builds System - Track complete builds for skateboards and bikes, mounting sport-tagged parts to specific positions (deck, trucks, wheels, bearings).
+- 🏷️ Sport Tagging - Tag parts as skateboard, bike, or generic so they only appear in the relevant builds.
 
 ## Screenshots
 ![Login Screen](.github/screenshots/1.png)
@@ -52,29 +57,38 @@ You can also try the demo instances of Homebox:
 - [Demo](https://demo.homebox.software)
 - [Nightly](https://nightly.homebox.software)
 
-## Quick Start
-
-[Configuration & Docker Compose](https://homebox.software/en/quick-start/)
+## Quick Start (Podman)
 
 ```bash
 # Save pepper to local file
 openssl rand -base64 48 > hbox.pepper
 chmod 400 hbox.pepper
-# If using the rootless or hardened image, ensure data 
-# folder has correct permissions
+
+# If using the rootless or hardened image, ensure the data
+# folder is owned by the MAPPED host UID (not 65532).
+# Under rootless Podman, container UID 65532 = host UID 165531
+# (offset +99999 from the default rootless uid_map).
 mkdir -p /path/to/data/folder
-chown 65532:65532 -R /path/to/data/folder
-docker run -d \
+sudo chown 165531:165531 -R /path/to/data/folder
+
+# Verify the container will see it as its own UID:
+podman unshare ls -ld /path/to/data/folder   # must show 65532 65532
+
+podman run -d \
   --name homebox \
   --restart unless-stopped \
-  --publish 3100:7745 \
-  --env TZ=Europe/Bucharest \
-  --env HBOX_AUTH_API_KEY_PEPPER=$(cat hbox.pepper) \
+  --publish 8085:7745 \
+  --env TZ=Europe/London \
+  --env HBOX_AUTH_API_KEY_PEPPER="$(tr -d '\n' < hbox.pepper)" \
   --volume /path/to/data/folder/:/data \
-  ghcr.io/sysadminsmedia/homebox:latest
-# ghcr.io/sysadminsmedia/homebox:latest-rootless
-# ghcr.io/sysadminsmedia/homebox:latest-hardened
+  ghcr.io/antebudimir/homebox:latest
 ```
+
+**Note (rootless Podman):** The hardened image runs as UID `65532`. Under rootless Podman this maps to a different host UID — with the default `uid_map` the offset is `+99999`, so the host UID is `165531`. Chowning to `65532` directly will fail with `unable to open database file (14)`. Always verify with `podman unshare ls -ld <dir>` — it must report `65532`. If your `subuid` config differs, compute the correct host UID from `podman unshare cat /proc/self/uid_map`.
+
+**Do not add `:Z` to the volume** — it relabels the directory and breaks the UID mapping.
+
+---
 
 <!-- CONTRIBUTING -->
 
