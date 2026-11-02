@@ -39,6 +39,10 @@ export type LocationViewPreferences = {
     query: string;
     id: string;
   }[];
+  // Label template preferences
+  defaultTemplateId: string | null;
+  // Unit for label dimensions; null follows the locale
+  measurementSystem: "metric" | "imperial" | null;
 };
 export type PreferenceSyncConfig = Partial<Record<keyof LocationViewPreferences, boolean>>;
 
@@ -74,6 +78,8 @@ const DEFAULT_PREFERENCES: LocationViewPreferences = {
     enabled: true,
   },
   savedSearches: [],
+  defaultTemplateId: null,
+  measurementSystem: null,
 };
 let syncConfig: PreferenceSyncConfig = {
   itemDisplayView: false,

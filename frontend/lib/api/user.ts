@@ -14,6 +14,7 @@ import { BuildsAPI } from "./classes/builds";
 import { ProductAPI } from "./classes/product";
 import { TemplatesApi } from "./classes/templates";
 import { BackupsAPI } from "./classes/backups";
+import { LabelTemplatesApi } from "./classes/label-templates";
 import type { Requests } from "~~/lib/requests";
 
 export class UserClient extends BaseAPI {
@@ -21,6 +22,7 @@ export class UserClient extends BaseAPI {
   items: ItemsApi;
   templates: TemplatesApi;
   entityTypes: EntityTypesApi;
+  labelTemplates: LabelTemplatesApi;
   maintenance: MaintenanceAPI;
   builds: BuildsAPI;
   group: GroupApi;
@@ -50,6 +52,7 @@ export class UserClient extends BaseAPI {
     this.items = new ItemsApi(requests, attachmentToken);
     this.templates = new TemplatesApi(requests);
     this.entityTypes = new EntityTypesApi(requests);
+    this.labelTemplates = new LabelTemplatesApi(requests, attachmentToken);
     this.maintenance = new MaintenanceAPI(requests);
     this.builds = new BuildsAPI(requests);
     this.group = new GroupApi(requests);
