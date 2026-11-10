@@ -45,7 +45,6 @@ export type LocationViewPreferences = {
   measurementSystem: "metric" | "imperial" | null;
 };
 export type PreferenceSyncConfig = Partial<Record<keyof LocationViewPreferences, boolean>>;
-
 // An interface is used for the recursive branch because type aliases cannot
 // reference themselves directly (TS2456); interfaces support circular refs.
 interface PreferenceChangeTree {

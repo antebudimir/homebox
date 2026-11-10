@@ -4371,6 +4371,8 @@ components:
           maxLength: 1000
         entityTypeId:
           type: string
+          x-omitempty: true
+          nullable: true
         locationId:
           description: Only needed when ParentID is another item and this lives elsewhere
             (#1688).
@@ -4902,6 +4904,8 @@ components:
           maxLength: 1000
         entityTypeId:
           type: string
+          x-omitempty: true
+          nullable: true
         fields:
           type: array
           items:
@@ -5495,16 +5499,22 @@ components:
       properties:
         booleanValue:
           type: boolean
+          x-omitempty: true
+          nullable: true
         id:
           type: string
         name:
           type: string
         numberValue:
           type: integer
+          x-omitempty: true
+          nullable: true
         textValue:
           type: string
         timeValue:
           type: string
+          x-omitempty: true
+          nullable: true
         type:
           type: string
     repo.TemplateLocationSummary:
