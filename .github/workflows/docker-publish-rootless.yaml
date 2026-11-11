@@ -4,15 +4,25 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '00 0 * * *'
-  # No path filters here on purpose: GitHub also applies path filters to tag
-  # pushes, and a tag pushed onto a commit that is already on the remote has no
-  # changed files, so filters can silently suppress the publish run. The `test`
-  # gate below keeps unfiltered runs cheap.
+  # Path filters are only evaluated for branch pushes, not tag pushes, so this
+  # limits CI cost on main while tags still always publish.
   push:
     branches: [ "main" ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Dockerfile.rootless'
+      - '.dockerignore'
+      - '.github/workflows/docker-publish-rootless.yaml'
     tags: [ 'v*.*.*' ]
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'backend/**'
+      - 'frontend/**'
+      - 'Dockerfile.rootless'
+      - '.dockerignore'
+      - '.github/workflows/docker-publish-rootless.yaml'
 
 # A nightly run and a tag/main push can race for the same image tags, so all
 # publishing events share one concurrency group and cancel each other. Pull

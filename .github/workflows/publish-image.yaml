@@ -1,9 +1,15 @@
 name: Publish image to GHCR
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - 'v*'
+
+# Re-tagging the same version cancels the in-flight publish instead of racing it.
+concurrency:
+  group: publish-image-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -13,14 +19,61 @@ env:
   GHCR_REPO: ghcr.io/antebudimir/homebox
 
 jobs:
+  test:
+    name: Backend + frontend gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c
+        with:
+          go-version: "1.27"
+          cache-dependency-path: backend/go.mod
+
+      - name: Build backend
+        working-directory: backend
+        run: go build ./...
+
+      - name: Test backend
+        working-directory: backend
+        run: go test ./...
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f
+        with:
+          node-version: lts/*
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Frontend typecheck
+        working-directory: frontend
+        run: pnpm run typecheck
+
   publish:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Derive image tag from git tag
-        run: echo "IMAGE_TAG=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: Derive image tags
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "IMAGE_TAGS=${GHCR_REPO}:${GITHUB_REF_NAME#v},${GHCR_REPO}:latest" >> "$GITHUB_ENV"
+          else
+            echo "IMAGE_TAGS=${GHCR_REPO}:${GITHUB_REF_NAME//\//-}-${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          fi
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -35,6 +88,9 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
+          # The package was created by a PAT push, so it is not linked to this
+          # repository for GITHUB_TOKEN writes. Switch to GITHUB_TOKEN after
+          # granting this repo write access in the package's Actions settings.
           password: ${{ secrets.CR_PAT }}
 
       - name: Build and push multi-arch image
@@ -44,9 +100,7 @@ jobs:
           file: ./Dockerfile.rootless
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: |
-            ${{ env.GHCR_REPO }}:${{ env.IMAGE_TAG }}
-            ${{ env.GHCR_REPO }}:latest
+          tags: ${{ env.IMAGE_TAGS }}
           build-args: |
             VERSION=${{ github.ref_name }}
             COMMIT=${{ github.sha }}
