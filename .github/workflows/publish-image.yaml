@@ -88,10 +88,9 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          # The package was created by a PAT push, so it is not linked to this
-          # repository for GITHUB_TOKEN writes. Switch to GITHUB_TOKEN after
-          # granting this repo write access in the package's Actions settings.
-          password: ${{ secrets.CR_PAT }}
+          # Requires the package to grant this repo Actions write access
+          # (Package settings → Manage Actions access).
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push multi-arch image
         uses: docker/build-push-action@v6
