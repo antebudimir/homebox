@@ -41,7 +41,49 @@ permissions:
   attestations: write   # Required for signing and attestation (if needed)
 
 jobs:
+  test:
+    name: Backend + frontend gate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+
+      - name: Set up Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c
+        with:
+          go-version: "1.27"
+          cache-dependency-path: backend/go.mod
+
+      - name: Build backend
+        working-directory: backend
+        run: go build ./...
+
+      - name: Test backend
+        working-directory: backend
+        run: go test ./...
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f
+        with:
+          node-version: lts/*
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Frontend typecheck
+        working-directory: frontend
+        run: pnpm run typecheck
+
   build:
+    needs: test
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: read

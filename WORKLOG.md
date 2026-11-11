@@ -40,9 +40,7 @@ Upstream is `sysadminsmedia/homebox`, tracked locally as the `upstream` remote.
   upstream `binfmt`/`buildkit` images replaced with action defaults, `workflow_dispatch` and
   `concurrency: cancel-in-progress` added.
 - Test gate (`go build ./... && go test ./...`, `pnpm install --frozen-lockfile && pnpm run typecheck`)
-  runs in `docker-publish-rootless.yaml` and `publish-image.yaml` (the two that produce the images
-  the server runs). The `docker-publish` and `docker-publish-hardened` variants publish only the
-  plain/hardened variants and skip the gate to avoid tripling test cost on every main push.
+  runs in all four publish workflows; each `build`/`publish` job has `needs: test`.
 - `publish-image.yaml`'s gate is wired but not yet exercised by CI (tag/manual-trigger only) — it
   proves itself on the next tag.
 - `Publish Release Binaries` (SLSA) fails on tags; it is upstream release plumbing this fork does not
