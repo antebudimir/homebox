@@ -23,6 +23,26 @@ func assertHasUsableTenant(t *testing.T, ctx Context, userID uuid.UUID) uuid.UUI
 	return u.DefaultGroupID
 }
 
+// assertHasBuildPartTemplates asserts the fork's sport build-part templates
+// were seeded into the group. Collections created by the orphan path must get
+// the same defaults as a collection created through the UI.
+func assertHasBuildPartTemplates(t *testing.T, ctx Context, gid uuid.UUID) {
+	t.Helper()
+
+	ents, err := tRepos.Entities.GetAll(ctx, gid)
+	require.NoError(t, err)
+
+	sports := make(map[string]string, len(ents))
+	for _, e := range ents {
+		sports[e.Name] = e.Sport
+	}
+
+	require.Contains(t, sports, "Deck", "build part templates must be seeded")
+	assert.Equal(t, "skateboarding", sports["Deck"])
+	require.Contains(t, sports, "Frame")
+	assert.Equal(t, "cycling", sports["Frame"])
+}
+
 func TestGroupService_RemoveMember_OnlyGroupGetsPersonalCollection(t *testing.T) {
 	f := newOwnershipFixture(t)
 
@@ -30,6 +50,7 @@ func TestGroupService_RemoveMember_OnlyGroupGetsPersonalCollection(t *testing.T)
 
 	gid := assertHasUsableTenant(t, f.ownerCtx, f.memberCtx.UID)
 	assert.NotEqual(t, f.group.ID, gid)
+	assertHasBuildPartTemplates(t, f.ownerCtx, gid)
 
 	// The removed user owns the new collection, so they can use and delete it.
 	isOwner, err := tRepos.Groups.IsOwnerOf(f.ownerCtx, f.memberCtx.UID, gid)
@@ -85,6 +106,7 @@ func TestGroupService_DeleteGroup_OrphanedMembersKeepATenant(t *testing.T) {
 	for _, uid := range []uuid.UUID{f.memberCtx.UID, f.ownerCtx.UID} {
 		gid := assertHasUsableTenant(t, f.ownerCtx, uid)
 		assert.NotEqual(t, f.group.ID, gid)
+		assertHasBuildPartTemplates(t, f.ownerCtx, gid)
 	}
 
 	// The multi-group member falls back to the collection they already had,

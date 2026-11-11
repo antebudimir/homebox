@@ -93,10 +93,14 @@ func (svc *GroupService) DeleteGroup(ctx Context) error {
 }
 
 // seedCreatedGroups gives collections created for orphaned members the same
-// default entity types a user-created collection gets.
+// defaults a user-created collection gets: both entity types and the fork's
+// sport build-part templates.
 func (svc *GroupService) seedCreatedGroups(ctx Context, groupIDs []uuid.UUID) error {
 	for _, gid := range groupIDs {
 		if err := ensureDefaultEntityTypes(ctx.Context, svc.repos, gid); err != nil {
+			return err
+		}
+		if err := ensureBuildPartTemplates(ctx.Context, svc.repos, gid); err != nil {
 			return err
 		}
 	}

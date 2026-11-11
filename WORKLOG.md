@@ -76,4 +76,10 @@ Upstream is `sysadminsmedia/homebox`, tracked locally as the `upstream` remote.
 - **2026-11-11 — the gate paid off immediately.** `go test ./...` failed to compile
   `repo_builds_test.go` after the upstream merge changed `GroupDelete` to return
   `([]uuid.UUID, error)`. Exactly the class of breakage the gate exists to catch.
+- **2026-11-11 — smoke test: orphan-created collections had no build-part templates.** Removing a
+  member whose only collection was someone else's creates a replacement collection; it got the
+  default entity types but not the fork's sport build-part templates, because `seedCreatedGroups`
+  only called `ensureDefaultEntityTypes`. Fixed by also calling `ensureBuildPartTemplates` there and
+  covered by `service_group_orphan_test.go`. Found by running the published image end-to-end — the
+  unit tests alone did not catch it.
 
