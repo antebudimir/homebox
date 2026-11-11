@@ -156,7 +156,7 @@ func TestBuildRepository_Stats(t *testing.T) {
 	otherGroup, err := tRepos.Groups.GroupCreate(ctx, "stats-foreign-"+uuid.NewString(), uuid.Nil)
 	require.NoError(t, err)
 	t.Cleanup(func() {
-		_ = tRepos.Groups.GroupDelete(ctx, otherGroup.ID)
+		_, _ = tRepos.Groups.GroupDelete(ctx, otherGroup.ID)
 	})
 
 	otherET, err := tRepos.EntityTypes.GetDefault(ctx, otherGroup.ID, false)
